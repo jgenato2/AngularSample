@@ -1,0 +1,35 @@
+<section class="page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">User module</p>
+      <h1>Accounts</h1>
+      <p class="sub">Secure CRUD with role-based access.</p>
+    </div>
+    <div class="actions">
+      <button mat-stroked-button (click)="load()">Refresh</button>
+      <button mat-flat-button color="primary" (click)="openCreate()" *ngIf="auth.isAdmin()">
+        Create user
+      </button>
+    </div>
+  </header>
+
+  <mat-card class="grid-card">
+    <div class="grid-shell">
+      <ag-grid-angular
+        class="ag-theme-quartz"
+        [theme]="'legacy'"
+        [modules]="modules"
+        [rowData]="users"
+        [columnDefs]="columnDefs"
+        [defaultColDef]="defaultColDef"
+        [rowHeight]="54"
+        (gridReady)="onGridReady($event)"
+        (rowClicked)="openDetail($event.data)"
+      ></ag-grid-angular>
+      <div class="loading" *ngIf="loading">
+        <mat-progress-spinner diameter="36" mode="indeterminate"></mat-progress-spinner>
+        <span>Loading users...</span>
+      </div>
+    </div>
+  </mat-card>
+</section>

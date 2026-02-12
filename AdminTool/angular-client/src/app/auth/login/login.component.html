@@ -1,0 +1,35 @@
+<div class="auth-shell">
+  <mat-card class="auth-card">
+    <div class="auth-header">
+      <p class="eyebrow">AdminTool</p>
+      <h1>Secure sign-in</h1>
+      <p class="sub">Use the seeded admin account or your own credentials.</p>
+    </div>
+    <form [formGroup]="form" (ngSubmit)="submit()">
+      <mat-form-field appearance="outline">
+        <mat-label>Email</mat-label>
+        <input matInput formControlName="email" type="email" />
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Password</mat-label>
+        <input matInput formControlName="password" type="password" />
+      </mat-form-field>
+      <button mat-flat-button color="primary" type="submit" [disabled]="form.invalid || loading">
+        {{ loading ? "Signing in..." : "Sign in" }}
+      </button>
+    </form>
+    <div class="hint">
+      <span>Seed admin:</span>
+      <strong>admin@local</strong> / <strong>Admin123!</strong>
+    </div>
+  </mat-card>
+  <div class="auth-panel">
+    <h2>User module control</h2>
+    <p>Manage profiles, roles, and secure CRUD flows in one place.</p>
+    <div class="tag-row">
+      <span class="tag">JWT</span>
+      <span class="tag">Role-based</span>
+      <span class="tag">AG Grid</span>
+    </div>
+  </div>
+</div>

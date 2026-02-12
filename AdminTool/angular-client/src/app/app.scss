@@ -1,0 +1,34 @@
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: linear-gradient(120deg, rgba(14, 42, 72, 0.92), rgba(8, 22, 40, 0.9));
+  color: #f4f7fb;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(10px);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+.brand-mark {
+  width: 32px;
+  height: 32px;
+  border-radius: 12px;
+  background: radial-gradient(circle at top, #7bc8ff, #2957a4);
+  box-shadow: 0 0 18px rgba(123, 200, 255, 0.5);
+}
+
+.spacer {
+  flex: 1;
+}
+
+.app-shell {
+  padding: 2.5rem clamp(1rem, 4vw, 3.5rem) 4rem;
+  min-height: calc(100vh - 64px);
+}

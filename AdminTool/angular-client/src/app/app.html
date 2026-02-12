@@ -1,0 +1,18 @@
+<mat-toolbar class="topbar">
+  <div class="brand">
+    <span class="brand-mark"></span>
+    <span>AdminTool</span>
+  </div>
+  <span class="spacer"></span>
+  <a mat-button routerLink="/users" *ngIf="auth.isAuthenticated()">Users</a>
+  <button mat-stroked-button color="primary" (click)="logout()" *ngIf="auth.isAuthenticated()">
+    Logout
+  </button>
+  <a mat-flat-button color="primary" routerLink="/login" *ngIf="!auth.isAuthenticated()">
+    Login
+  </a>
+</mat-toolbar>
+
+<main class="app-shell">
+  <router-outlet></router-outlet>
+</main>

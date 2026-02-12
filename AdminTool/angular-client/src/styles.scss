@@ -1,0 +1,48 @@
+@use "@angular/material" as mat;
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:wght@500;700&family=Space+Grotesk:wght@400;600;700&display=swap");
+@import "ag-grid-community/styles/ag-grid.css";
+@import "ag-grid-community/styles/ag-theme-quartz.css";
+
+html {
+  height: 100%;
+  @include mat.theme(
+    (
+      color: (
+        primary: mat.$azure-palette,
+        tertiary: mat.$cyan-palette,
+      ),
+      typography: "Space Grotesk",
+      density: 0,
+    )
+  );
+}
+
+body {
+  color-scheme: light;
+  background: radial-gradient(circle at top, rgba(90, 170, 255, 0.25), transparent 40%),
+    radial-gradient(circle at 80% 20%, rgba(255, 214, 112, 0.35), transparent 45%),
+    linear-gradient(180deg, #f8fbff 0%, #eef4fb 100%);
+  color: var(--mat-sys-on-surface);
+  font-family: "Space Grotesk", sans-serif;
+  margin: 0;
+  min-height: 100%;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+.ag-theme-quartz {
+  --ag-font-family: "Space Grotesk", sans-serif;
+  --ag-header-background-color: rgba(12, 40, 68, 0.08);
+  --ag-odd-row-background-color: rgba(12, 40, 68, 0.03);
+  --ag-borders: none;
+  --ag-row-hover-color: rgba(12, 40, 68, 0.08);
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+.mat-mdc-card {
+  box-shadow: 0 24px 60px rgba(8, 20, 40, 0.12);
+}

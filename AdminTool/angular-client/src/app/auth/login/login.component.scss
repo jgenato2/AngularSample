@@ -1,0 +1,73 @@
+.auth-shell {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 2rem;
+  align-items: center;
+  padding: 2.5rem 1rem;
+}
+
+.auth-card {
+  padding: 2rem;
+  border-radius: 24px;
+  backdrop-filter: blur(8px);
+  background: color-mix(in srgb, var(--mat-sys-surface) 82%, transparent);
+}
+
+.auth-header {
+  margin-bottom: 1.5rem;
+}
+
+.eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.3em;
+  font-size: 0.7rem;
+  margin: 0;
+}
+
+h1 {
+  margin: 0.4rem 0 0.6rem;
+  font-family: "Fraunces", serif;
+}
+
+.sub {
+  margin: 0;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+form {
+  display: grid;
+  gap: 1rem;
+}
+
+.hint {
+  margin-top: 1rem;
+  font-size: 0.85rem;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.auth-panel {
+  padding: 2rem;
+  border-radius: 28px;
+  background: linear-gradient(135deg, rgba(8, 34, 59, 0.9), rgba(19, 70, 108, 0.85));
+  color: #f2f6fb;
+  box-shadow: 0 24px 48px rgba(8, 20, 40, 0.35);
+}
+
+.auth-panel h2 {
+  margin-top: 0;
+  font-family: "Fraunces", serif;
+}
+
+.tag-row {
+  margin-top: 1.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.tag {
+  padding: 0.3rem 0.8rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  font-size: 0.8rem;
+}
