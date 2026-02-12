@@ -1,13 +1,11 @@
 import { Component } from "@angular/core";
 import { Router, RouterLink, RouterOutlet } from "@angular/router";
 import { CommonModule } from "@angular/common";
-import { MatToolbarModule } from "@angular/material/toolbar";
-import { MatButtonModule } from "@angular/material/button";
 import { AuthService } from "./core/auth.service";
 
 @Component({
   selector: "app-root",
-  imports: [CommonModule, RouterOutlet, RouterLink, MatToolbarModule, MatButtonModule],
+  imports: [CommonModule, RouterOutlet, RouterLink],
   templateUrl: "./app.html",
   styleUrl: "./app.scss",
 })

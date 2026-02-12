@@ -1,31 +1,80 @@
-<h2 mat-dialog-title>{{ data.mode === "create" ? "Create user" : "Update user" }}</h2>
-<form [formGroup]="form" (ngSubmit)="submit()" mat-dialog-content>
-  <div class="form-grid">
-    <mat-form-field appearance="outline">
-      <mat-label>Full name</mat-label>
-      <input matInput formControlName="name" />
-    </mat-form-field>
-    <mat-form-field appearance="outline">
-      <mat-label>Email</mat-label>
-      <input matInput formControlName="email" type="email" />
-    </mat-form-field>
-    <mat-form-field appearance="outline">
-      <mat-label>Role</mat-label>
-      <mat-select formControlName="role">
-        <mat-option value="user">User</mat-option>
-        <mat-option value="admin">Admin</mat-option>
-      </mat-select>
-    </mat-form-field>
-    <mat-form-field appearance="outline">
-      <mat-label>Password</mat-label>
-      <input matInput formControlName="password" type="password" />
-    </mat-form-field>
+<div
+  class="modal fade"
+  [id]="modalId"
+  tabindex="-1"
+  [attr.aria-labelledby]="modalId + '-label'"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" [id]="modalId + '-label'">
+          {{ data.mode === "create" ? "Create user" : "Update user" }}
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+          (click)="cancel()"
+        ></button>
+      </div>
+      <form id="user-form" [formGroup]="form" (ngSubmit)="submit()" class="modal-body">
+        <div class="form-grid">
+          <div>
+            <label class="form-label" for="user-name">Full name</label>
+            <input id="user-name" class="form-control" formControlName="name" />
+          </div>
+          <div>
+            <label class="form-label" for="user-email">Email</label>
+            <input
+              id="user-email"
+              class="form-control"
+              formControlName="email"
+              type="email"
+              autocomplete="email"
+            />
+          </div>
+          <div>
+            <label class="form-label" for="user-role">Role</label>
+            <select id="user-role" class="form-select" formControlName="role">
+              <option value="user">User</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label" for="user-password">Password</label>
+            <input
+              id="user-password"
+              class="form-control"
+              formControlName="password"
+              type="password"
+              autocomplete="new-password"
+            />
+          </div>
+        </div>
+        <p class="hint" *ngIf="data.mode === 'edit'">
+          Leave password empty to keep it unchanged.
+        </p>
+      </form>
+      <div class="modal-footer">
+        <button
+          class="btn btn-outline-secondary"
+          type="button"
+          data-bs-dismiss="modal"
+          (click)="cancel()"
+        >
+          Cancel
+        </button>
+        <button
+          class="btn btn-primary"
+          type="submit"
+          form="user-form"
+          [disabled]="form.invalid"
+        >
+          {{ data.mode === "create" ? "Create" : "Save" }}
+        </button>
+      </div>
+    </div>
   </div>
-  <p class="hint" *ngIf="data.mode === 'edit'">Leave password empty to keep it unchanged.</p>
-  <div class="actions" mat-dialog-actions>
-    <button mat-button type="button" (click)="dialogRef.close()">Cancel</button>
-    <button mat-flat-button color="primary" type="submit" [disabled]="form.invalid">
-      {{ data.mode === "create" ? "Create" : "Save" }}
-    </button>
-  </div>
-</form>
+</div>

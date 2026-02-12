@@ -6,15 +6,25 @@
       <p class="sub">Secure CRUD with role-based access.</p>
     </div>
     <div class="actions">
-      <button mat-stroked-button (click)="load()">Refresh</button>
-      <button mat-flat-button color="primary" (click)="openCreate()" *ngIf="auth.isAdmin()">
+      <button class="btn btn-outline-secondary" (click)="load()">Refresh</button>
+      <button
+        class="btn btn-primary"
+        (click)="prepareCreate()"
+        data-bs-toggle="modal"
+        [attr.data-bs-target]="'#' + createModalId"
+        *ngIf="auth.isAdmin()"
+      >
         Create user
       </button>
     </div>
   </header>
 
-  <mat-card class="grid-card">
-    <div class="grid-shell">
+  <div *ngIf="alertMessage" class="alert" [ngClass]="'alert-' + alertType" role="alert">
+    {{ alertMessage }}
+  </div>
+
+  <div class="card grid-card">
+    <div class="card-body grid-shell">
       <ag-grid-angular
         class="ag-theme-quartz"
         [theme]="'legacy'"
@@ -27,9 +37,17 @@
         (rowClicked)="openDetail($event.data)"
       ></ag-grid-angular>
       <div class="loading" *ngIf="loading">
-        <mat-progress-spinner diameter="36" mode="indeterminate"></mat-progress-spinner>
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
         <span>Loading users...</span>
       </div>
     </div>
-  </mat-card>
+  </div>
 </section>
+
+<app-user-form-dialog
+  [modalId]="createModalId"
+  [data]="createDialogData"
+  (submitted)="handleCreateSubmit($event)"
+></app-user-form-dialog>

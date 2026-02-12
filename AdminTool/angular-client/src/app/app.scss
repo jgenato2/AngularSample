@@ -4,8 +4,20 @@
   z-index: 10;
   background: linear-gradient(120deg, rgba(14, 42, 72, 0.92), rgba(8, 22, 40, 0.9));
   color: #f4f7fb;
+  --bs-navbar-brand-color: #ffffff !important;
+  --bs-navbar-brand-hover-color: #ffffff !important;
   border-bottom: 1px solid rgba(255, 255, 255, 0.12);
   backdrop-filter: blur(10px);
+}
+
+.topbar .navbar-brand,
+.topbar .brand,
+.topbar .brand span {
+  color: #ffffff !important;
+}
+
+.brand-text {
+  color: #ffffff !important;
 }
 
 .brand {

@@ -3,13 +3,7 @@
   gap: 1rem;
 }
 
-.actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.5rem;
-}
-
 .hint {
-  color: var(--mat-sys-on-surface-variant);
+  color: var(--text-muted);
   margin: 0.5rem 0 0;
 }

@@ -10,7 +10,7 @@
   padding: 2rem;
   border-radius: 24px;
   backdrop-filter: blur(8px);
-  background: color-mix(in srgb, var(--mat-sys-surface) 82%, transparent);
+  background: color-mix(in srgb, var(--surface) 82%, transparent);
 }
 
 .auth-header {
@@ -31,7 +31,7 @@ h1 {
 
 .sub {
   margin: 0;
-  color: var(--mat-sys-on-surface-variant);
+  color: var(--text-muted);
 }
 
 form {
@@ -42,7 +42,7 @@ form {
 .hint {
   margin-top: 1rem;
   font-size: 0.85rem;
-  color: var(--mat-sys-on-surface-variant);
+  color: var(--text-muted);
 }
 
 .auth-panel {

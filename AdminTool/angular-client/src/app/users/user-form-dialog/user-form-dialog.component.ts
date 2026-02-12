@@ -1,11 +1,6 @@
-import { Component, inject } from "@angular/core";
+import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, inject } from "@angular/core";
 import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
 import { CommonModule } from "@angular/common";
-import { MatButtonModule } from "@angular/material/button";
-import { MatDialogModule, MAT_DIALOG_DATA, MatDialogRef } from "@angular/material/dialog";
-import { MatFormFieldModule } from "@angular/material/form-field";
-import { MatInputModule } from "@angular/material/input";
-import { MatSelectModule } from "@angular/material/select";
 import { UserItem } from "../users.service";
 import {
   emailValidators,
@@ -25,53 +20,82 @@ export interface UserDialogData {
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    MatButtonModule,
-    MatDialogModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatSelectModule,
   ],
   templateUrl: "./user-form-dialog.component.html",
   styleUrl: "./user-form-dialog.component.scss",
 })
-export class UserFormDialogComponent {
+export class UserFormDialogComponent implements OnChanges {
   private readonly fb = inject(FormBuilder);
-  readonly data = inject<UserDialogData>(MAT_DIALOG_DATA);
-  readonly dialogRef = inject(MatDialogRef<UserFormDialogComponent>);
+
+  @Input({ required: true }) data!: UserDialogData;
+  @Input() modalId = "user-form-modal";
+  @Output() submitted = new EventEmitter<{
+    name: string;
+    email: string;
+    role: "admin" | "user";
+    password: string;
+  }>();
+  @Output() canceled = new EventEmitter<void>();
 
   form = this.fb.group({
     name: ["", Validators.required],
     email: ["", emailValidators],
-    role: [{ value: "user", disabled: !this.data.isAdmin }, Validators.required],
+    role: ["user", Validators.required],
     password: ["", optionalPasswordValidators],
   });
 
-  constructor() {
-    const data = this.data;
-
-    if (data.user) {
-      this.form.patchValue({
-        name: data.user.name,
-        email: data.user.email,
-        role: data.user.role,
-      });
-    }
-
-    if (!data.isAdmin) {
-      this.form.get("role")?.disable({ emitEvent: false });
-    }
-
-    if (data.mode === "create") {
-      this.form.get("password")?.setValidators(passwordValidators);
-      this.form.updateValueAndValidity();
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes["data"] && this.data) {
+      this.resetForm();
     }
   }
 
   submit() {
     if (this.form.invalid) {
+      this.form.markAllAsTouched();
       return;
     }
     const value = this.form.getRawValue();
-    this.dialogRef.close(value);
+    this.submitted.emit({
+      name: value.name ?? "",
+      email: value.email ?? "",
+      role: (value.role as "admin" | "user") ?? "user",
+      password: value.password ?? "",
+    });
+  }
+
+  cancel() {
+    this.canceled.emit();
+  }
+
+  private resetForm() {
+    this.form.reset({
+      name: "",
+      email: "",
+      role: "user",
+      password: "",
+    });
+
+    if (this.data.user) {
+      this.form.patchValue({
+        name: this.data.user.name,
+        email: this.data.user.email,
+        role: this.data.user.role,
+      });
+    }
+
+    if (this.data.isAdmin) {
+      this.form.get("role")?.enable({ emitEvent: false });
+    } else {
+      this.form.get("role")?.disable({ emitEvent: false });
+    }
+
+    if (this.data.mode === "create") {
+      this.form.get("password")?.setValidators(passwordValidators);
+    } else {
+      this.form.get("password")?.setValidators(optionalPasswordValidators);
+    }
+
+    this.form.updateValueAndValidity();
   }
 }

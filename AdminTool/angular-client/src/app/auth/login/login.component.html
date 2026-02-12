@@ -1,28 +1,45 @@
 <div class="auth-shell">
-  <mat-card class="auth-card">
-    <div class="auth-header">
-      <p class="eyebrow">AdminTool</p>
-      <h1>Secure sign-in</h1>
-      <p class="sub">Use the seeded admin account or your own credentials.</p>
+  <div class="card auth-card">
+    <div class="card-body">
+      <div class="auth-header">
+        <p class="eyebrow">AdminTool</p>
+        <h1>Secure sign-in</h1>
+        <p class="sub">Use the seeded admin account or your own credentials.</p>
+      </div>
+      <div *ngIf="alertMessage" class="alert" [ngClass]="'alert-' + alertType" role="alert">
+        {{ alertMessage }}
+      </div>
+      <form [formGroup]="form" (ngSubmit)="submit()">
+        <div class="mb-3">
+          <label for="login-email" class="form-label">Email</label>
+          <input
+            id="login-email"
+            class="form-control"
+            formControlName="email"
+            type="email"
+            autocomplete="email"
+          />
+        </div>
+        <div class="mb-3">
+          <label for="login-password" class="form-label">Password</label>
+          <input
+            id="login-password"
+            class="form-control"
+            formControlName="password"
+            type="password"
+            autocomplete="current-password"
+          />
+        </div>
+        <button class="btn btn-primary w-100" type="submit" [disabled]="form.invalid || loading">
+          {{ loading ? "Signing in..." : "Sign in" }}
+        </button>
+      </form>
+      <div class="hint">
+        <span>Seed admin:</span>
+        <strong>admin@local.com</strong> / <strong>Admin123!</strong>
+      </div>
     </div>
-    <form [formGroup]="form" (ngSubmit)="submit()">
-      <mat-form-field appearance="outline">
-        <mat-label>Email</mat-label>
-        <input matInput formControlName="email" type="email" />
-      </mat-form-field>
-      <mat-form-field appearance="outline">
-        <mat-label>Password</mat-label>
-        <input matInput formControlName="password" type="password" />
-      </mat-form-field>
-      <button mat-flat-button color="primary" type="submit" [disabled]="form.invalid || loading">
-        {{ loading ? "Signing in..." : "Sign in" }}
-      </button>
-    </form>
-    <div class="hint">
-      <span>Seed admin:</span>
-      <strong>admin@local</strong> / <strong>Admin123!</strong>
-    </div>
-  </mat-card>
+  </div>
   <div class="auth-panel">
     <h2>User module control</h2>
     <p>Manage profiles, roles, and secure CRUD flows in one place.</p>

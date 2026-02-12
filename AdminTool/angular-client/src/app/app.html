@@ -1,17 +1,18 @@
-<mat-toolbar class="topbar">
-  <div class="brand">
-    <span class="brand-mark"></span>
-    <span>AdminTool</span>
+<nav class="navbar topbar navbar-expand">
+  <div class="container-fluid">
+    <div class="brand navbar-brand">
+      <span class="brand-mark"></span>
+      <span style="color: white;">AdminTool</span>
+    </div>
+    <div class="ms-auto d-flex gap-2 align-items-center">
+      <a class="btn btn-link" routerLink="/users" *ngIf="auth.isAuthenticated()">Users</a>
+      <button class="btn btn-outline-primary" (click)="logout()" *ngIf="auth.isAuthenticated()">
+        Logout
+      </button>
+      <a class="btn btn-primary" routerLink="/login" *ngIf="!auth.isAuthenticated()">Login</a>
+    </div>
   </div>
-  <span class="spacer"></span>
-  <a mat-button routerLink="/users" *ngIf="auth.isAuthenticated()">Users</a>
-  <button mat-stroked-button color="primary" (click)="logout()" *ngIf="auth.isAuthenticated()">
-    Logout
-  </button>
-  <a mat-flat-button color="primary" routerLink="/login" *ngIf="!auth.isAuthenticated()">
-    Login
-  </a>
-</mat-toolbar>
+</nav>
 
 <main class="app-shell">
   <router-outlet></router-outlet>

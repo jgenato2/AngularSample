@@ -2,17 +2,16 @@ import { ChangeDetectorRef, Component, OnDestroy, OnInit } from "@angular/core";
 import { CommonModule, DatePipe } from "@angular/common";
 import { NavigationEnd, Router } from "@angular/router";
 import { HttpErrorResponse } from "@angular/common/http";
-import { MatButtonModule } from "@angular/material/button";
-import { MatCardModule } from "@angular/material/card";
-import { MatDialog, MatDialogModule } from "@angular/material/dialog";
-import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
-import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { AgGridModule } from "ag-grid-angular";
 import { AllCommunityModule, ColDef, GridApi, GridReadyEvent } from "ag-grid-community";
 import { AuthService } from "../../core/auth.service";
 import { UsersService, UserItem } from "../users.service";
 import { filter, finalize, Subscription } from "rxjs";
-import { UserFormDialogComponent } from "../user-form-dialog/user-form-dialog.component";
+import { Modal } from "bootstrap";
+import {
+  UserFormDialogComponent,
+  UserDialogData,
+} from "../user-form-dialog/user-form-dialog.component";
 
 @Component({
   selector: "app-user-list",
@@ -20,11 +19,7 @@ import { UserFormDialogComponent } from "../user-form-dialog/user-form-dialog.co
   imports: [
     CommonModule,
     AgGridModule,
-    MatButtonModule,
-    MatCardModule,
-    MatDialogModule,
-    MatSnackBarModule,
-    MatProgressSpinnerModule,
+    UserFormDialogComponent,
   ],
   providers: [DatePipe],
   templateUrl: "./user-list.component.html",
@@ -33,7 +28,11 @@ import { UserFormDialogComponent } from "../user-form-dialog/user-form-dialog.co
 export class UserListComponent implements OnInit, OnDestroy {
   users: UserItem[] = [];
   loading = false;
+  alertMessage: string | null = null;
+  alertType: "danger" | "success" = "danger";
   modules = [AllCommunityModule];
+  createModalId = "create-user-modal";
+  createDialogData: UserDialogData = { mode: "create", isAdmin: true };
   private readonly subscriptions = new Subscription();
   private gridApi: GridApi | null = null;
 
@@ -58,8 +57,6 @@ export class UserListComponent implements OnInit, OnDestroy {
   constructor(
     private readonly usersService: UsersService,
     private readonly router: Router,
-    private readonly dialog: MatDialog,
-    private readonly snackBar: MatSnackBar,
     public readonly auth: AuthService,
     private readonly datePipe: DatePipe,
     private readonly cdr: ChangeDetectorRef
@@ -104,7 +101,7 @@ export class UserListComponent implements OnInit, OnDestroy {
             this.router.navigateByUrl("/login");
             return;
           }
-          this.snackBar.open("Failed to load users.", "Dismiss", { duration: 3000 });
+          this.setAlert("Failed to load users.");
         },
       });
   }
@@ -116,38 +113,51 @@ export class UserListComponent implements OnInit, OnDestroy {
     this.router.navigate(["/users", user.id]);
   }
 
-  openCreate() {
-    const dialogRef = this.dialog.open(UserFormDialogComponent, {
-      data: { mode: "create", isAdmin: true },
-      width: "420px",
-    });
+  prepareCreate() {
+    this.createDialogData = { mode: "create", isAdmin: true };
+  }
 
-    dialogRef.afterClosed().subscribe((result) => {
-      if (!result) {
-        return;
-      }
-
-      this.usersService
-        .create({
-          name: result.name,
-          email: result.email,
-          role: result.role,
-          password: result.password,
-        })
-        .subscribe({
-          next: () => {
-            this.snackBar.open("User created.", "Dismiss", { duration: 2500 });
-            this.load();
-          },
-          error: () => {
-            this.snackBar.open("Failed to create user.", "Dismiss", { duration: 3000 });
-          },
-        });
-    });
+  handleCreateSubmit(result: {
+    name: string;
+    email: string;
+    role: "admin" | "user";
+    password: string;
+  }) {
+    this.usersService
+      .create({
+        name: result.name,
+        email: result.email,
+        role: result.role,
+        password: result.password,
+      })
+      .subscribe({
+        next: () => {
+          this.setAlert("User created.", "success");
+          this.load();
+          this.hideModal(this.createModalId);
+        },
+        error: () => {
+          this.setAlert("Failed to create user.");
+        },
+      });
   }
 
   onGridReady(event: GridReadyEvent) {
     this.gridApi = event.api;
     this.gridApi.setGridOption("rowData", this.users);
+  }
+
+  private setAlert(message: string, type: "danger" | "success" = "danger") {
+    this.alertMessage = message;
+    this.alertType = type;
+  }
+
+  private hideModal(id: string) {
+    const element = document.getElementById(id);
+    if (!element) {
+      return;
+    }
+    const modal = Modal.getOrCreateInstance(element);
+    modal?.hide();
   }
 }

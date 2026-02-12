@@ -1,6 +1,8 @@
 <ng-container *ngIf="loading; else contentTpl">
   <div class="loading">
-    <mat-progress-spinner diameter="36" mode="indeterminate"></mat-progress-spinner>
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
     <span>Loading user...</span>
   </div>
 </ng-container>
@@ -14,17 +16,25 @@
         <p class="sub">{{ user!.email }}</p>
       </div>
       <div class="actions">
-        <button mat-stroked-button routerLink="/users">Back</button>
-        <button mat-flat-button color="primary" (click)="openEdit()" *ngIf="canEdit">
+        <button class="btn btn-outline-secondary" routerLink="/users">Back</button>
+        <button
+          class="btn btn-primary"
+          (click)="openEdit()"
+          data-bs-toggle="modal"
+          [attr.data-bs-target]="'#' + editModalId"
+          *ngIf="canEdit"
+        >
           Edit
         </button>
-        <button mat-flat-button color="warn" (click)="remove()" *ngIf="auth.isAdmin()">
-          Delete
-        </button>
+        <button class="btn btn-danger" (click)="remove()" *ngIf="auth.isAdmin()">Delete</button>
       </div>
     </header>
 
-    <mat-card class="detail-card">
+    <div *ngIf="alertMessage" class="alert" [ngClass]="'alert-' + alertType" role="alert">
+      {{ alertMessage }}
+    </div>
+
+    <div class="card detail-card">
       <div class="info">
         <div>
           <p class="label">Role</p>
@@ -39,14 +49,20 @@
           <p class="value">{{ datePipe.transform(user!.updatedAt, "MMM d, y") }}</p>
         </div>
       </div>
-    </mat-card>
+    </div>
   </section>
 </ng-template>
 
 <ng-template #emptyTpl>
   <section class="page">
-    <mat-card class="detail-card">
+    <div class="card detail-card">
       <p>User not available.</p>
-    </mat-card>
+    </div>
   </section>
 </ng-template>
+
+<app-user-form-dialog
+  [modalId]="editModalId"
+  [data]="editDialogData"
+  (submitted)="handleEditSubmit($event)"
+></app-user-form-dialog>

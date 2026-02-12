@@ -245,7 +245,7 @@ sealed class UserStore
         {
             Id = "1",
             Name = "Admin",
-            Email = "admin@local",
+            Email = "admin@local.com",
             Role = "admin",
             PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin123!"),
             CreatedAt = DateTime.UtcNow,
