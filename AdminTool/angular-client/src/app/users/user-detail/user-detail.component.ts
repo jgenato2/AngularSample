@@ -149,9 +149,19 @@ export class UserDetailComponent implements OnInit {
   private hideModal(id: string) {
     const element = document.getElementById(id);
     if (!element) {
+      this.cleanupModalArtifacts();
       return;
     }
     const modal = Modal.getOrCreateInstance(element);
     modal?.hide();
+    window.setTimeout(() => this.cleanupModalArtifacts(), 250);
+  }
+
+  private cleanupModalArtifacts() {
+    document.body.classList.remove("modal-open");
+    document.body.style.removeProperty("padding-right");
+
+    const backdrops = document.querySelectorAll(".modal-backdrop");
+    backdrops.forEach((backdrop) => backdrop.remove());
   }
 }
