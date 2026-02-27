@@ -46,3 +46,21 @@ Set your email in `AdminTool/k8s/cluster-issuer.yaml`.
 ## Region note
 
 For Azure, the nearest commonly used region for the Philippines is usually `southeastasia`.
+
+## Optional automation script
+
+You can automate most OIDC setup with:
+
+```powershell
+pwsh .github/scripts/setup-aks-oidc.ps1 \
+	-SubscriptionId "<subscription-id>" \
+	-TenantId "<tenant-id>" \
+	-RepoOwner "jgenato2" \
+	-RepoName "AngularSample" \
+	-StagingResourceGroup "<rg-staging>" \
+	-StagingCluster "<aks-staging-name>" \
+	-ProdResourceGroup "<rg-prod>" \
+	-ProdCluster "<aks-prod-name>"
+```
+
+Prerequisite: Azure CLI installed (`az`).
