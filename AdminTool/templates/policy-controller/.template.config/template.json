@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "AdminTool",
+  "classifications": ["Web", "API", "CleanArchitecture"],
+  "identity": "AdminTool.Presentation.PolicyController",
+  "name": "AdminTool Policy Controller",
+  "shortName": "policy-controller",
+  "sourceName": "Sample",
+  "preferNameDirectory": false,
+  "symbols": {
+    "resource": {
+      "type": "parameter",
+      "datatype": "string",
+      "defaultValue": "samples",
+      "description": "Route segment for the controller (e.g. users, orders)"
+    },
+    "serviceInterface": {
+      "type": "parameter",
+      "datatype": "string",
+      "defaultValue": "ISampleApplicationService",
+      "description": "Application service interface injected into the controller"
+    }
+  }
+}

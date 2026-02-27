@@ -21,8 +21,8 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IAuthorizationHandler, SelfOrAdminHandler>();
         services.AddAuthorization(options =>
         {
-            options.AddPolicy("AdminOnly", policy => policy.RequireRole("admin"));
-            options.AddPolicy("SelfOrAdmin", policy =>
+            options.AddPolicy(PresentationPolicies.AdminOnly, policy => policy.RequireRole("admin"));
+            options.AddPolicy(PresentationPolicies.SelfOrAdmin, policy =>
                 policy.RequireAuthenticatedUser().AddRequirements(new SelfOrAdminRequirement()));
         });
         services.AddControllers();
