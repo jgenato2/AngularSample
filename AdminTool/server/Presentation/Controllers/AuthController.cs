@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using Server.Application.Abstractions;
-using Server.Application.Models;
 using Server.Presentation.Contracts;
 using Server.Presentation.Mappings;
 

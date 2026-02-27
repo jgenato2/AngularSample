@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Server.Application.Models;
 using Server.Presentation.Authorization;
 
 namespace Server.Presentation.Controllers;
