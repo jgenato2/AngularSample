@@ -10,6 +10,7 @@ on:
 permissions:
   contents: read
   packages: write
+  id-token: write
 
 env:
   IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/admintool
@@ -40,19 +41,18 @@ jobs:
             ${{ env.IMAGE_NAME }}:${{ github.sha }}
             ${{ env.IMAGE_NAME }}:latest
 
-      - name: Setup kubectl
-        uses: azure/setup-kubectl@v4
+      - name: Azure login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      - name: Configure kubeconfig
-        shell: bash
-        run: |
-          mkdir -p "$HOME/.kube"
-          if echo "${{ secrets.KUBE_CONFIG_PROD }}" | base64 -d > "$HOME/.kube/config" 2>/dev/null; then
-            echo "Decoded base64 kubeconfig"
-          else
-            echo "${{ secrets.KUBE_CONFIG_PROD }}" > "$HOME/.kube/config"
-            echo "Used raw kubeconfig"
-          fi
+      - name: Set AKS context (production)
+        uses: azure/aks-set-context@v4
+        with:
+          resource-group: ${{ vars.AKS_RESOURCE_GROUP_PROD }}
+          cluster-name: ${{ vars.AKS_CLUSTER_PROD }}
 
       - name: Deploy manifests
         run: |
