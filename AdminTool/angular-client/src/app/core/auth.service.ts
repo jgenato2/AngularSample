@@ -20,7 +20,7 @@ interface AuthResponse {
 export class AuthService {
   private readonly tokenKey = "adminTool.token";
   private readonly userKey = "adminTool.user";
-  private readonly baseUrl = "http://localhost:4000/api";
+  private readonly baseUrl = "/api";
 
   private readonly userSignal = signal<AuthUser | null>(null);
   readonly user = computed(() => this.userSignal());

@@ -1,0 +1,16 @@
+services:
+  app:
+    image: admintool-app
+    build:
+      context: .
+      dockerfile: dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+    volumes:
+      - data-protection:/root/.aspnet/DataProtection-Keys
+
+volumes:
+  data-protection:

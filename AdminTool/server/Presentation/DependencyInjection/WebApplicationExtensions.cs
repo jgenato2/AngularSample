@@ -15,9 +15,12 @@ public static class WebApplicationExtensions
         app.UseCors("client");
         app.UseAuthentication();
         app.UseAuthorization();
+        app.UseDefaultFiles();
+        app.UseStaticFiles();
 
-        app.MapGet("/", () => Results.Ok(new { status = "ok" }));
+        app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
         app.MapControllers();
+        app.MapFallbackToFile("index.html");
 
         return app;
     }

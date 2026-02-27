@@ -1,0 +1,40 @@
+# ---------------------------
+# 1️⃣ Build Angular
+# ---------------------------
+FROM node:20 AS client-build
+WORKDIR /angular-client
+
+COPY angular-client/package*.json ./
+RUN npm install
+
+COPY angular-client/ .
+RUN npm run build -- --configuration production
+
+
+# ---------------------------
+# 2️⃣ Build .NET Application
+# ---------------------------
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /server
+
+COPY server/*.csproj ./
+RUN dotnet restore
+
+COPY server/ .
+RUN dotnet publish -c Release -o /app/publish
+
+
+# ---------------------------
+# 3️⃣ Runtime Image
+# ---------------------------
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
+WORKDIR /app
+
+# Copy backend
+COPY --from=build /app/publish .
+
+# Copy Angular dist into wwwroot
+COPY --from=client-build /angular-client/dist/angular-client/browser /app/wwwroot
+
+EXPOSE 8080
+ENTRYPOINT ["dotnet", "server.dll"]
