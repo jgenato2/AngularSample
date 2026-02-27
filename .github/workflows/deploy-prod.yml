@@ -59,5 +59,7 @@ jobs:
           kubectl apply -f AdminTool/k8s/namespace.yaml
           kubectl apply -f AdminTool/k8s/deployment.yaml
           kubectl apply -f AdminTool/k8s/service.yaml
+          kubectl apply -f AdminTool/k8s/cluster-issuer.yaml || true
+          kubectl apply -f AdminTool/k8s/ingress.yaml
           kubectl -n admintool set image deployment/admintool admintool=${{ env.IMAGE_NAME }}:${{ github.sha }}
           kubectl -n admintool rollout status deployment/admintool --timeout=180s

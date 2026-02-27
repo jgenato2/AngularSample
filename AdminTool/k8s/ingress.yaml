@@ -1,0 +1,37 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: admintool
+  namespace: admintool
+  # Requires ingress-nginx and cert-manager to be installed in target cluster.
+  # Update ClusterIssuer email in cluster-issuer.yaml before production use.
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - julius-mark-genato-ii.com
+        - www.julius-mark-genato-ii.com
+      secretName: admintool-tls
+  rules:
+    - host: julius-mark-genato-ii.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: admintool
+                port:
+                  number: 8080
+    - host: www.julius-mark-genato-ii.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: admintool
+                port:
+                  number: 8080
