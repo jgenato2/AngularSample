@@ -30,6 +30,10 @@ builder.Services
 
 var app = builder.Build();
 
+var startupLogger = app.Services.GetRequiredService<ILoggerFactory>().CreateLogger("Startup");
+startupLogger.LogInformation("API is now starting.");
+app.Lifetime.ApplicationStarted.Register(() => startupLogger.LogInformation("API has started."));
+
 app.InitializeData();
 app.UsePresentation();
 

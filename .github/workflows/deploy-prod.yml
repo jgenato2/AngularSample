@@ -1,0 +1,63 @@
+name: Deploy Production
+
+on:
+  push:
+    branches:
+      - main
+      - release/**
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/admintool
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./AdminTool
+          file: ./AdminTool/dockerfile
+          push: true
+          tags: |
+            ${{ env.IMAGE_NAME }}:${{ github.sha }}
+            ${{ env.IMAGE_NAME }}:latest
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v4
+
+      - name: Configure kubeconfig
+        shell: bash
+        run: |
+          mkdir -p "$HOME/.kube"
+          if echo "${{ secrets.KUBE_CONFIG_PROD }}" | base64 -d > "$HOME/.kube/config" 2>/dev/null; then
+            echo "Decoded base64 kubeconfig"
+          else
+            echo "${{ secrets.KUBE_CONFIG_PROD }}" > "$HOME/.kube/config"
+            echo "Used raw kubeconfig"
+          fi
+
+      - name: Deploy manifests
+        run: |
+          kubectl apply -f AdminTool/k8s/namespace.yaml
+          kubectl apply -f AdminTool/k8s/deployment.yaml
+          kubectl apply -f AdminTool/k8s/service.yaml
+          kubectl -n admintool set image deployment/admintool admintool=${{ env.IMAGE_NAME }}:${{ github.sha }}
+          kubectl -n admintool rollout status deployment/admintool --timeout=180s

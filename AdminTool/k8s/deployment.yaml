@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: admintool
+  namespace: admintool
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: admintool
+  template:
+    metadata:
+      labels:
+        app: admintool
+    spec:
+      containers:
+        - name: admintool
+          image: admintool-app:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          env:
+            - name: ASPNETCORE_URLS
+              value: http://+:8080
+            - name: ASPNETCORE_ENVIRONMENT
+              value: Development
+          volumeMounts:
+            - name: data-protection
+              mountPath: /root/.aspnet/DataProtection-Keys
+      volumes:
+        - name: data-protection
+          emptyDir: {}
