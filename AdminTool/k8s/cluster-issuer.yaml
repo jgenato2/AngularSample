@@ -5,10 +5,20 @@ metadata:
 spec:
   acme:
     server: https://acme-v02.api.letsencrypt.org/directory
-    email: your-email@julius-mark-genato-ii.com
+    email: jgenato2@gmail.com
     privateKeySecretRef:
       name: letsencrypt-prod
     solvers:
-      - http01:
-          ingress:
-            class: nginx
+      - dns01:
+          webhook:
+            groupName: acme.godaddy.com
+            solverName: godaddy
+            config:
+              authAPIKey:
+                name: godaddy-api-secret
+                key: key
+              authAPISecret:
+                name: godaddy-api-secret
+                key: secret
+              ttl: 600
+              timeout: 120
