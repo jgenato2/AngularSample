@@ -6,11 +6,8 @@ public static class WebApplicationExtensions
 {
     public static WebApplication UsePresentation(this WebApplication app)
     {
-        if (app.Environment.IsDevelopment())
-        {
-            app.UseSwagger();
-            app.UseSwaggerUI();
-        }
+        app.UseSwagger();
+        app.UseSwaggerUI();
 
         app.UseCors("client");
         app.UseAuthentication();

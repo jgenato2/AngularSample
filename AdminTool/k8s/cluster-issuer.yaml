@@ -14,11 +14,12 @@ spec:
             groupName: acme.godaddy.com
             solverName: godaddy
             config:
-              authAPIKey:
+              apiKeySecretRef:
                 name: godaddy-api-secret
-                key: key
-              authAPISecret:
-                name: godaddy-api-secret
-                key: secret
+                key: token
+              production: true
               ttl: 600
               timeout: 120
+              propagationTimeout: 300
+              pollingInterval: 15
+              sequenceInterval: 30
