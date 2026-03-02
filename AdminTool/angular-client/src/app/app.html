@@ -1,18 +1,35 @@
 <nav class="navbar topbar navbar-expand">
   <div class="container-fluid">
-    <div class="brand navbar-brand">
-      <span class="brand-mark"></span>
-      <span style="color: white;">AdminTool</span>
+    <div class="left-cluster">
+      <div class="menu-inline" *ngIf="auth.isAuthenticated()">
+        <button class="menu-toggle" type="button" (click)="toggleMenu()" [attr.aria-expanded]="menuOpen">
+          ☰
+        </button>
+
+        <div class="menu-panel" *ngIf="menuOpen">
+          <a class="menu-link menu-brand" routerLink="/users" (click)="closeMenu()">
+            <span class="brand-mark"></span>
+            <span>Care Coverage Manager</span>
+          </a>
+          <a class="menu-link" routerLink="/users" (click)="closeMenu()">Users</a>
+          <a class="menu-link" routerLink="/insurance" (click)="closeMenu()">Insurance</a>
+        </div>
+      </div>
+
+      <div class="brand navbar-brand">
+        <span style="color: white;">Care Coverage Manager</span>
+      </div>
     </div>
     <div class="ms-auto d-flex gap-2 align-items-center">
-      <a class="btn btn-link" routerLink="/users" *ngIf="auth.isAuthenticated()">Users</a>
-      <button class="btn btn-outline-primary" (click)="logout()" *ngIf="auth.isAuthenticated()">
+      <button class="btn btn-outline-primary" type="button" (click)="logout()" *ngIf="auth.isAuthenticated()">
         Logout
       </button>
       <a class="btn btn-primary" routerLink="/login" *ngIf="!auth.isAuthenticated()">Login</a>
     </div>
   </div>
 </nav>
+
+<div class="menu-backdrop" *ngIf="menuOpen" (click)="closeMenu()"></div>
 
 <main class="app-shell">
   <router-outlet></router-outlet>

@@ -24,7 +24,7 @@
   </div>
 
   <div class="card grid-card">
-    <div class="card-body grid-shell">
+    <div class="card-body grid-shell" #gridShell>
       <ag-grid-angular
         class="ag-theme-quartz"
         [theme]="'legacy'"
@@ -32,7 +32,10 @@
         [rowData]="users"
         [columnDefs]="columnDefs"
         [defaultColDef]="defaultColDef"
-        [rowHeight]="54"
+        [rowHeight]="30"
+        [headerHeight]="30"
+        [alwaysShowHorizontalScroll]="true"
+        [suppressHorizontalScroll]="false"
         (gridReady)="onGridReady($event)"
         (rowClicked)="openDetail($event.data)"
       ></ag-grid-angular>

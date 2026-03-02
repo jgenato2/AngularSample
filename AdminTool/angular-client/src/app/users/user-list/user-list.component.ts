@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnDestroy, OnInit } from "@angular/core";
+import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { CommonModule, DatePipe } from "@angular/common";
 import { NavigationEnd, Router } from "@angular/router";
 import { HttpErrorResponse } from "@angular/common/http";
@@ -25,7 +25,7 @@ import {
   templateUrl: "./user-list.component.html",
   styleUrl: "./user-list.component.scss",
 })
-export class UserListComponent implements OnInit, OnDestroy {
+export class UserListComponent implements OnInit, OnDestroy, AfterViewInit {
   users: UserItem[] = [];
   loading = false;
   alertMessage: string | null = null;
@@ -35,14 +35,23 @@ export class UserListComponent implements OnInit, OnDestroy {
   createDialogData: UserDialogData = { mode: "create", isAdmin: true };
   private readonly subscriptions = new Subscription();
   private gridApi: GridApi | null = null;
+  @ViewChild("gridShell") private gridShellRef?: ElementRef<HTMLElement>;
+  private readonly wheelHandler = (event: WheelEvent) => this.handleGridWheel(event);
 
   columnDefs: ColDef<UserItem>[] = [
-    { field: "name", headerName: "Name", flex: 1 },
-    { field: "email", headerName: "Email", flex: 1.2 },
+    { field: "id", headerName: "ID", width: 260, minWidth: 240 },
+    { field: "name", headerName: "Name", width: 190, minWidth: 170 },
+    { field: "email", headerName: "Email", width: 260, minWidth: 220 },
     { field: "role", headerName: "Role", width: 120 },
     {
       field: "createdAt",
       headerName: "Created",
+      width: 160,
+      valueFormatter: (params) => this.datePipe.transform(params.value, "MMM d, y") ?? "",
+    },
+    {
+      field: "updatedAt",
+      headerName: "Updated",
       width: 160,
       valueFormatter: (params) => this.datePipe.transform(params.value, "MMM d, y") ?? "",
     },
@@ -76,8 +85,13 @@ export class UserListComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    this.gridShellRef?.nativeElement.removeEventListener("wheel", this.wheelHandler);
     this.subscriptions.unsubscribe();
     this.cleanupModalArtifacts();
+  }
+
+  ngAfterViewInit() {
+    this.gridShellRef?.nativeElement.addEventListener("wheel", this.wheelHandler, { passive: false });
   }
 
   load() {
@@ -146,6 +160,26 @@ export class UserListComponent implements OnInit, OnDestroy {
   onGridReady(event: GridReadyEvent) {
     this.gridApi = event.api;
     this.gridApi.setGridOption("rowData", this.users);
+  }
+
+  private handleGridWheel(event: WheelEvent) {
+    const gridShell = event.currentTarget as HTMLElement | null;
+    if (!gridShell) {
+      return;
+    }
+
+    const horizontalViewport = gridShell.querySelector(".ag-body-horizontal-scroll-viewport") as HTMLElement | null;
+    if (!horizontalViewport) {
+      return;
+    }
+
+    if (horizontalViewport.scrollWidth <= horizontalViewport.clientWidth) {
+      return;
+    }
+
+    const delta = Math.abs(event.deltaX) > 0 ? event.deltaX : event.deltaY;
+    horizontalViewport.scrollLeft += delta;
+    event.preventDefault();
   }
 
   private setAlert(message: string, type: "danger" | "success" = "danger") {

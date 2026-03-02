@@ -10,10 +10,21 @@ import { AuthService } from "./core/auth.service";
   styleUrl: "./app.scss",
 })
 export class App {
+  menuOpen = false;
+
   constructor(public readonly auth: AuthService, private readonly router: Router) {}
+
+  toggleMenu() {
+    this.menuOpen = !this.menuOpen;
+  }
+
+  closeMenu() {
+    this.menuOpen = false;
+  }
 
   logout() {
     this.auth.logout();
+    this.menuOpen = false;
     this.router.navigateByUrl("/login");
   }
 }

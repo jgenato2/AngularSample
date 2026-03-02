@@ -1,0 +1,98 @@
+<section class="page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Healthcare module</p>
+      <h1>Insurance Plans</h1>
+      <p class="sub">Sample insurance records for healthcare workflows.</p>
+    </div>
+    <div class="actions">
+      <button class="btn btn-outline-secondary" (click)="load()">Refresh</button>
+      <button class="btn btn-primary" *ngIf="auth.isAdmin()" type="button" data-bs-toggle="collapse" data-bs-target="#create-plan-form" aria-expanded="false">
+        Add plan
+      </button>
+    </div>
+  </header>
+
+  <div *ngIf="alertMessage" class="alert" [ngClass]="'alert-' + alertType" role="alert">
+    {{ alertMessage }}
+  </div>
+
+  <div id="create-plan-form" class="collapse" *ngIf="auth.isAdmin()">
+    <div class="card form-card">
+      <div class="card-body">
+        <form class="form-grid" (ngSubmit)="createPlan()" #createForm="ngForm">
+          <div>
+            <label class="form-label">Policy ID</label>
+            <input class="form-control" name="policyId" [(ngModel)]="createModel.policyId" required />
+          </div>
+          <div>
+            <label class="form-label">Member name</label>
+            <input class="form-control" name="memberName" [(ngModel)]="createModel.memberName" required />
+          </div>
+          <div>
+            <label class="form-label">Provider</label>
+            <input class="form-control" name="provider" [(ngModel)]="createModel.provider" required />
+          </div>
+          <div>
+            <label class="form-label">Plan type</label>
+            <input class="form-control" name="planType" [(ngModel)]="createModel.planType" required />
+          </div>
+          <div>
+            <label class="form-label">Status</label>
+            <input class="form-control" name="status" [(ngModel)]="createModel.status" required />
+          </div>
+          <div>
+            <label class="form-label">Monthly premium</label>
+            <input type="number" class="form-control" name="monthlyPremium" [(ngModel)]="createModel.monthlyPremium" min="0" required />
+          </div>
+          <div>
+            <label class="form-label">Deductible</label>
+            <input type="number" class="form-control" name="deductible" [(ngModel)]="createModel.deductible" min="0" required />
+          </div>
+          <div>
+            <label class="form-label">Out-of-pocket max</label>
+            <input type="number" class="form-control" name="outOfPocketMax" [(ngModel)]="createModel.outOfPocketMax" min="0" required />
+          </div>
+          <div>
+            <label class="form-label">Effective date</label>
+            <input type="date" class="form-control" name="effectiveDate" [(ngModel)]="createModel.effectiveDate" required />
+          </div>
+          <div>
+            <label class="form-label">Renewal date</label>
+            <input type="date" class="form-control" name="renewalDate" [(ngModel)]="createModel.renewalDate" required />
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-primary" type="submit" [disabled]="createForm.invalid || creating">
+              {{ creating ? "Creating..." : "Create plan" }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="card grid-card">
+    <div class="card-body grid-shell" #gridShell>
+      <ag-grid-angular
+        class="ag-theme-quartz"
+        [theme]="'legacy'"
+        [modules]="modules"
+        [rowData]="plans"
+        [columnDefs]="columnDefs"
+        [defaultColDef]="defaultColDef"
+        [rowHeight]="30"
+        [headerHeight]="30"
+        [alwaysShowHorizontalScroll]="true"
+        [suppressHorizontalScroll]="false"
+        (gridReady)="onGridReady($event)"
+        (rowClicked)="openDetail($event.data)"
+      ></ag-grid-angular>
+      <div class="loading" *ngIf="loading">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <span>Loading insurance plans...</span>
+      </div>
+    </div>
+  </div>
+</section>
