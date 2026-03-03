@@ -1,11 +1,22 @@
 import { ChangeDetectorRef, Component, OnDestroy, OnInit } from "@angular/core";
-import { CommonModule, CurrencyPipe, DatePipe, DecimalPipe } from "@angular/common";
+import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { HttpErrorResponse } from "@angular/common/http";
 import { ActivatedRoute, Router, RouterLink } from "@angular/router";
 import { finalize, forkJoin } from "rxjs";
 import { AuthService } from "../../core/auth.service";
-import { InsuranceFinancialAnalyticsItem, InsurancePlanItem, InsuranceService, InsuranceStatusWorkflowItem } from "../insurance.service";
+import { InsuranceFacade } from "../../features/insurance/application/insurance.facade";
+import { InsuranceAuditLogItem, InsuranceFinancialAnalyticsItem, InsurancePlanItem, InsuranceStatusWorkflowItem } from "../../features/insurance/domain/insurance.models";
+import { ClaimsFacade } from "../../features/claims/application/claims.facade";
+import { ClaimItem } from "../../features/claims/domain/claim.models";
+import { CoverageCardComponent } from "./components/coverage-card/coverage-card.component";
+import { FinancialCardComponent } from "./components/financial-card/financial-card.component";
+import { TimelineCardComponent } from "./components/timeline-card/timeline-card.component";
+import { RiskModelCardComponent } from "./components/risk-model-card/risk-model-card.component";
+import { BaselineProjectionCardComponent } from "./components/baseline-projection-card/baseline-projection-card.component";
+import { StressTestCardComponent } from "./components/stress-test-card/stress-test-card.component";
+import { AlgorithmNotesCardComponent } from "./components/algorithm-notes-card/algorithm-notes-card.component";
+import { AuditLogSectionComponent } from "./components/audit-log-section/audit-log-section.component";
 
 const DEFAULT_STATUS_WORKFLOW: Record<string, string[]> = {
   "New": ["Underwriting", "Cancelled"],
@@ -23,16 +34,30 @@ const DEFAULT_STATUS_WORKFLOW: Record<string, string[]> = {
 @Component({
   selector: "app-insurance-detail",
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
-  providers: [CurrencyPipe, DatePipe, DecimalPipe],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterLink,
+    CoverageCardComponent,
+    FinancialCardComponent,
+    TimelineCardComponent,
+    RiskModelCardComponent,
+    BaselineProjectionCardComponent,
+    StressTestCardComponent,
+    AlgorithmNotesCardComponent,
+    AuditLogSectionComponent,
+  ],
   templateUrl: "./insurance-detail.component.html",
   styleUrl: "./insurance-detail.component.scss",
 })
 export class InsuranceDetailComponent implements OnInit, OnDestroy {
   statusWorkflow: Record<string, string[]> = { ...DEFAULT_STATUS_WORKFLOW };
   plan: InsurancePlanItem | null = null;
+  memberClaimId: string | null = null;
   financial: InsuranceFinancialAnalyticsItem | null = null;
-  activeTab: "details" | "financial" = "details";
+  auditLogs: InsuranceAuditLogItem[] = [];
+  auditLoading = false;
+  activeTab: "details" | "financial" | "audit" = "details";
   showStatusModal = false;
   formModel = {
     memberName: "",
@@ -44,6 +69,7 @@ export class InsuranceDetailComponent implements OnInit, OnDestroy {
     outOfPocketMax: 0,
     effectiveDate: "",
     renewalDate: "",
+    comments: "",
   };
   loading = false;
   saving = false;
@@ -53,13 +79,11 @@ export class InsuranceDetailComponent implements OnInit, OnDestroy {
 
   constructor(
     private readonly route: ActivatedRoute,
-    private readonly insuranceService: InsuranceService,
+    private readonly insuranceFacade: InsuranceFacade,
+    private readonly claimsFacade: ClaimsFacade,
     private readonly router: Router,
     public readonly auth: AuthService,
     private readonly cdr: ChangeDetectorRef,
-    public readonly datePipe: DatePipe,
-    public readonly currencyPipe: CurrencyPipe,
-    public readonly decimalPipe: DecimalPipe,
   ) {}
 
   ngOnInit() {
@@ -75,7 +99,7 @@ export class InsuranceDetailComponent implements OnInit, OnDestroy {
     return this.auth.isAdmin();
   }
 
-  switchTab(tab: "details" | "financial") {
+  switchTab(tab: "details" | "financial" | "audit") {
     this.activeTab = tab;
   }
 
@@ -88,6 +112,10 @@ export class InsuranceDetailComponent implements OnInit, OnDestroy {
   }
 
   closeStatusModal() {
+    if (this.saving) {
+      return;
+    }
+
     this.showStatusModal = false;
   }
 
@@ -138,64 +166,6 @@ export class InsuranceDetailComponent implements OnInit, OnDestroy {
     }
   }
 
-  formatCurrency(value: number | null | undefined, digits: string = "1.2-2") {
-    const amount = value ?? 0;
-    const formatted = this.currencyPipe.transform(Math.abs(amount), "USD", "symbol", digits) ?? "$0.00";
-    return amount < 0 ? `(${formatted})` : formatted;
-  }
-
-  formatPercent(value: number | null | undefined, digits: string = "1.1-1") {
-    const amount = value ?? 0;
-    const formatted = this.decimalPipe.transform(Math.abs(amount), digits) ?? "0.0";
-    return amount < 0 ? `(${formatted}%)` : `${formatted}%`;
-  }
-
-  signedValueClass(value: number | null | undefined) {
-    return (value ?? 0) < 0 ? "text-danger" : "";
-  }
-
-  policyStatusClass(status: string | null | undefined) {
-    const value = (status ?? "").trim().toLowerCase();
-    switch (value) {
-      case "new":
-        return "text-secondary";
-      case "underwriting":
-        return "text-info";
-      case "pending activation":
-        return "text-primary";
-      case "active":
-      case "renewed":
-        return "text-success";
-      case "grace period":
-      case "pending renewal":
-        return "text-warning";
-      case "suspended":
-        return "text-dark";
-      case "cancelled":
-      case "expired":
-        return "text-danger";
-      default:
-        return "text-body-secondary";
-    }
-  }
-
-  riskBandClass(riskBand: string | null | undefined) {
-    const value = (riskBand ?? "").toLowerCase();
-    if (value === "low") {
-      return "text-success";
-    }
-
-    if (value === "moderate") {
-      return "text-warning";
-    }
-
-    if (value === "high") {
-      return "text-danger";
-    }
-
-    return "text-body-secondary";
-  }
-
   load() {
     const policyId = this.route.snapshot.paramMap.get("policyId");
     if (!policyId) {
@@ -205,8 +175,10 @@ export class InsuranceDetailComponent implements OnInit, OnDestroy {
 
     this.loading = true;
     forkJoin({
-      plan: this.insuranceService.getByPolicyId(policyId),
-      financial: this.insuranceService.getFinancialAnalytics(policyId),
+      plan: this.insuranceFacade.getByPolicyId(policyId),
+      claims: this.claimsFacade.list(),
+      financial: this.insuranceFacade.getFinancialAnalytics(policyId),
+      auditLogs: this.insuranceFacade.getAuditLogs(policyId),
     })
       .pipe(finalize(() => {
         this.loading = false;
@@ -214,9 +186,11 @@ export class InsuranceDetailComponent implements OnInit, OnDestroy {
       }))
       .subscribe({
         next: (result) => {
-          this.plan = result.plan.item;
-          this.financial = result.financial.item;
-          this.patchForm(result.plan.item);
+          this.plan = result.plan;
+          this.memberClaimId = this.resolveClaimId(result.plan.policyId, result.claims);
+          this.financial = result.financial;
+          this.auditLogs = result.auditLogs;
+          this.patchForm(result.plan);
           this.cdr.markForCheck();
         },
         error: (error: HttpErrorResponse) => {
@@ -237,7 +211,7 @@ export class InsuranceDetailComponent implements OnInit, OnDestroy {
     }
 
     this.saving = true;
-    this.insuranceService
+    this.insuranceFacade
       .update(this.plan.policyId, {
         memberName: this.formModel.memberName,
         provider: this.formModel.provider,
@@ -248,16 +222,18 @@ export class InsuranceDetailComponent implements OnInit, OnDestroy {
         outOfPocketMax: this.formModel.outOfPocketMax,
         effectiveDate: this.formModel.effectiveDate,
         renewalDate: this.formModel.renewalDate,
+        comments: this.formModel.comments,
       })
       .pipe(finalize(() => {
         this.saving = false;
         this.cdr.markForCheck();
       }))
       .subscribe({
-        next: (response) => {
-          this.plan = response.item;
-          this.patchForm(response.item);
-          this.reloadFinancialAnalytics(response.item.policyId);
+        next: (plan) => {
+          this.plan = plan;
+          this.patchForm(plan);
+          this.reloadFinancialAnalytics(plan.policyId);
+          this.reloadAuditLogs(plan.policyId);
           this.setAlert("Insurance plan updated.", "success");
         },
         error: () => this.setAlert("Failed to update insurance plan."),
@@ -273,7 +249,7 @@ export class InsuranceDetailComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.insuranceService.remove(this.plan.policyId).subscribe({
+    this.insuranceFacade.remove(this.plan.policyId).subscribe({
       next: () => this.router.navigateByUrl("/insurance"),
       error: () => this.setAlert("Failed to delete insurance plan."),
     });
@@ -290,20 +266,41 @@ export class InsuranceDetailComponent implements OnInit, OnDestroy {
       outOfPocketMax: item.outOfPocketMax,
       effectiveDate: item.effectiveDate?.slice(0, 10) ?? "",
       renewalDate: item.renewalDate?.slice(0, 10) ?? "",
+      comments: item.comments ?? "",
     };
   }
 
+  private resolveClaimId(policyId: string, claims: ClaimItem[]) {
+    const match = claims.find((claim) => claim.policyId?.toLowerCase() === policyId.toLowerCase());
+    return match?.claimId ?? null;
+  }
+
   private reloadFinancialAnalytics(policyId: string) {
-    this.insuranceService.getFinancialAnalytics(policyId).subscribe({
-      next: (response) => {
-        this.financial = response.item;
+    this.insuranceFacade.getFinancialAnalytics(policyId).subscribe({
+      next: (financial) => {
+        this.financial = financial;
         this.cdr.markForCheck();
       },
     });
   }
 
+  private reloadAuditLogs(policyId: string) {
+    this.auditLoading = true;
+    this.insuranceFacade.getAuditLogs(policyId)
+      .pipe(finalize(() => {
+        this.auditLoading = false;
+        this.cdr.markForCheck();
+      }))
+      .subscribe({
+        next: (auditLogs) => {
+          this.auditLogs = auditLogs;
+          this.cdr.markForCheck();
+        },
+      });
+  }
+
   private loadStatusWorkflow() {
-    this.insuranceService.getStatusWorkflow().subscribe({
+    this.insuranceFacade.getStatusWorkflow().subscribe({
       next: (response) => {
         this.statusWorkflow = this.toStatusWorkflowMap(response.workflow);
         this.cdr.markForCheck();

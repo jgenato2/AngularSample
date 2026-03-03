@@ -1,7 +1,10 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using Server.Application.Abstractions;
 using Server.Application.Models;
+using Server.Presentation.Auditing;
 using Server.Presentation.Authorization;
 using Server.Presentation.Contracts;
 using Server.Presentation.Mappings;
@@ -13,11 +16,36 @@ namespace Server.Presentation.Controllers;
 [Route("api/users")]
 public class UsersController(IUsersApplicationService usersService) : ApiControllerBase
 {
+    private static readonly TimeSpan ReadAuditThrottle = TimeSpan.FromMinutes(2);
+    private const int ListAuditMaxItems = 100;
+    private const string AuditScope = "users";
+    private const string ListAuditEntityId = "_LIST_";
+
     [HttpGet]
     [AdminOnly]
     public IActionResult List()
     {
+        AddReadAuditLog(GetActor());
         return Ok(new { items = usersService.List().Select(user => user.ToResponse()) });
+    }
+
+    [HttpGet("audit-logs/list-access")]
+    [AdminOnly]
+    public IActionResult GetListAccessAuditLogs()
+    {
+        var items = AuditLogStore
+            .Query(AuditScope, ListAuditEntityId, ListAuditMaxItems)
+            .Select(entry => new UserAuditLogResponse(
+                entry.Id,
+                entry.Action,
+                entry.Field,
+                entry.OldValue,
+                entry.NewValue,
+                entry.PerformedBy,
+                entry.OccurredAtUtc))
+            .ToList();
+
+        return Ok(new { items });
     }
 
     [HttpPost]
@@ -59,5 +87,35 @@ public class UsersController(IUsersApplicationService usersService) : ApiControl
     {
         var result = usersService.Delete(id);
         return FromResult(result, _ => Ok(new { ok = true }));
+    }
+
+    private void AddReadAuditLog(string actor)
+    {
+        AuditLogStore.AddReadWithThrottle(AuditScope, ListAuditEntityId, "UserList", actor, ReadAuditThrottle);
+    }
+
+    private string GetActor()
+    {
+        var userName = User.FindFirstValue(JwtRegisteredClaimNames.Name);
+        var email = User.FindFirstValue(JwtRegisteredClaimNames.Email);
+        var subject = User.FindFirstValue(JwtRegisteredClaimNames.Sub)
+            ?? User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (!string.IsNullOrWhiteSpace(userName) && !string.IsNullOrWhiteSpace(email))
+        {
+            return $"{userName} ({email})";
+        }
+
+        if (!string.IsNullOrWhiteSpace(email))
+        {
+            return email;
+        }
+
+        if (!string.IsNullOrWhiteSpace(userName))
+        {
+            return userName;
+        }
+
+        return subject ?? "system";
     }
 }

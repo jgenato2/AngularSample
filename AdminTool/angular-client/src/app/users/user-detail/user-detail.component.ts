@@ -2,7 +2,8 @@ import { ChangeDetectorRef, Component, OnDestroy, OnInit } from "@angular/core";
 import { CommonModule, DatePipe } from "@angular/common";
 import { ActivatedRoute, Router, RouterLink } from "@angular/router";
 import { AuthService } from "../../core/auth.service";
-import { UsersService, UserItem } from "../users.service";
+import { UsersFacade } from "../../features/users/application/users.facade";
+import { UserItem } from "../../features/users/domain/user.models";
 import { HttpErrorResponse } from "@angular/common/http";
 import { finalize } from "rxjs";
 import { Modal } from "bootstrap";
@@ -34,7 +35,7 @@ export class UserDetailComponent implements OnInit, OnDestroy {
 
   constructor(
     private readonly route: ActivatedRoute,
-    private readonly usersService: UsersService,
+    private readonly usersFacade: UsersFacade,
     private readonly router: Router,
     public readonly auth: AuthService,
     public readonly datePipe: DatePipe,
@@ -61,15 +62,15 @@ export class UserDetailComponent implements OnInit, OnDestroy {
     }
 
     this.loading = true;
-    this.usersService
+    this.usersFacade
       .getById(id)
       .pipe(finalize(() => {
         this.loading = false;
         this.cdr.markForCheck();
       }))
       .subscribe({
-        next: (response) => {
-          this.user = response.item;
+        next: (user) => {
+          this.user = user;
           this.cdr.markForCheck();
         },
         error: (error: HttpErrorResponse) => {
@@ -105,7 +106,7 @@ export class UserDetailComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.usersService
+    this.usersFacade
       .update(this.user.id, {
         name: result.name,
         email: result.email,
@@ -113,9 +114,9 @@ export class UserDetailComponent implements OnInit, OnDestroy {
         password: result.password || undefined,
       })
       .subscribe({
-        next: (response) => {
+        next: (user) => {
           queueMicrotask(() => {
-            this.user = response.item;
+            this.user = user;
             this.cdr.detectChanges();
           });
           this.setAlert("User updated.", "success");
@@ -135,7 +136,7 @@ export class UserDetailComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.usersService.remove(this.user.id).subscribe({
+    this.usersFacade.remove(this.user.id).subscribe({
       next: () => {
         this.setAlert("User deleted.", "success");
         this.router.navigateByUrl("/users");

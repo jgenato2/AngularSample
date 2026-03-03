@@ -1,0 +1,22 @@
+.list-audit-shell {
+  padding: 0.85rem;
+}
+
+.audit-title {
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 0.62rem;
+  color: var(--text-muted);
+}
+
+.inline-loading {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  font-size: 0.82rem;
+}
+
+.empty-audit {
+  color: var(--text-muted);
+  font-size: 0.82rem;
+}

@@ -1,0 +1,39 @@
+<div class="card detail-card audit-card">
+  <p class="label">Audit Log</p>
+
+  <div class="loading" *ngIf="loading">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <span>Loading audit logs...</span>
+  </div>
+
+  <ng-container *ngIf="!loading">
+    <div class="empty-state" *ngIf="!items.length">No audit logs available.</div>
+
+    <div class="audit-table-wrapper" *ngIf="items.length">
+      <table class="table table-sm align-middle audit-table mb-0">
+        <thead>
+          <tr>
+            <th>Time (UTC)</th>
+            <th>Actor</th>
+            <th>Action</th>
+            <th>Field</th>
+            <th>Old</th>
+            <th>New</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of items">
+            <td>{{ datePipe.transform(item.occurredAtUtc, 'MMM d, y, h:mm a') }}</td>
+            <td>{{ item.performedBy }}</td>
+            <td>{{ item.action }}</td>
+            <td>{{ item.field }}</td>
+            <td>{{ item.oldValue || '-' }}</td>
+            <td>{{ item.newValue || '-' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </ng-container>
+</div>

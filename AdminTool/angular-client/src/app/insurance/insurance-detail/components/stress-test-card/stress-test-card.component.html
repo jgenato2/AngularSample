@@ -1,0 +1,27 @@
+<div class="card detail-card metric-card">
+  <p class="label">Stress Test (+12% Claims Inflation)</p>
+  <div class="metric-row">
+    <span>Stress Claims Cost</span>
+    <strong [ngClass]="signedValueClass(financial?.stressScenarioCost)">{{ formatCurrency(financial?.stressScenarioCost) }}</strong>
+  </div>
+  <div class="metric-row">
+    <span>Stress Margin</span>
+    <strong [ngClass]="signedValueClass(financial?.stressScenarioMargin)">{{ formatCurrency(financial?.stressScenarioMargin) }}</strong>
+  </div>
+  <div class="metric-row">
+    <span>Stress Impact</span>
+    <strong [ngClass]="signedValueClass(financial?.stressImpact)">{{ formatCurrency(financial?.stressImpact) }}</strong>
+  </div>
+  <div class="metric-row">
+    <span>Volatility Buffer</span>
+    <strong [ngClass]="signedValueClass(financial?.volatilityBuffer)">{{ formatCurrency(financial?.volatilityBuffer) }}</strong>
+  </div>
+  <div class="metric-row">
+    <span>Capital-at-Risk (95%)</span>
+    <strong [ngClass]="signedValueClass(financial?.capitalAtRisk95)">{{ formatCurrency(financial?.capitalAtRisk95) }}</strong>
+  </div>
+  <div class="metric-row">
+    <span>Tail Risk Ratio</span>
+    <strong [ngClass]="signedValueClass(financial?.tailRiskRatio)">{{ formatPercent(financial?.tailRiskRatio) }}</strong>
+  </div>
+</div>

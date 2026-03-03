@@ -1,0 +1,27 @@
+<div class="card detail-card metric-card">
+  <p class="label">Risk Model</p>
+  <div class="metric-row">
+    <span>Risk Score</span>
+    <strong>{{ financial?.riskScore ?? '-' }}</strong>
+  </div>
+  <div class="metric-row">
+    <span>Risk Band</span>
+    <strong [ngClass]="riskBandClass(financial?.riskBand)">{{ financial?.riskBand ?? '-' }}</strong>
+  </div>
+  <div class="metric-row">
+    <span>Projected Loss Ratio</span>
+    <strong [ngClass]="signedValueClass(financial?.projectedLossRatio)">{{ formatPercent(financial?.projectedLossRatio) }}</strong>
+  </div>
+  <div class="metric-row">
+    <span>Premium Adequacy</span>
+    <strong [ngClass]="signedValueClass(financial?.premiumAdequacyRatio)">{{ formatPercent(financial?.premiumAdequacyRatio) }}</strong>
+  </div>
+  <div class="metric-row">
+    <span>Deductible Leverage</span>
+    <strong [ngClass]="signedValueClass(financial?.deductibleLeverageIndex)">{{ formatPercent(financial?.deductibleLeverageIndex) }}</strong>
+  </div>
+  <div class="metric-row">
+    <span>Stability Index</span>
+    <strong [ngClass]="signedValueClass(financial?.stabilityIndex)">{{ decimalPipe.transform(financial?.stabilityIndex ?? 0, '1.1-1') }}</strong>
+  </div>
+</div>

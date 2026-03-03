@@ -7,14 +7,16 @@ import { AgGridModule } from "ag-grid-angular";
 import { AllCommunityModule, ColDef, GridApi, GridReadyEvent } from "ag-grid-community";
 import { finalize } from "rxjs";
 import { AuthService } from "../../core/auth.service";
-import { InsurancePlanItem, InsuranceService } from "../insurance.service";
+import { InsuranceFacade } from "../../features/insurance/application/insurance.facade";
+import { InsuranceAuditLogItem, InsurancePlanItem } from "../../features/insurance/domain/insurance.models";
+import { AuditLogListComponent } from "../../shared/audit-log-list/audit-log-list.component";
 
 const DEFAULT_CREATE_STATUS_OPTIONS = ["New"];
 
 @Component({
   selector: "app-insurance-list",
   standalone: true,
-  imports: [CommonModule, FormsModule, AgGridModule],
+  imports: [CommonModule, FormsModule, AgGridModule, AuditLogListComponent],
   providers: [CurrencyPipe, DatePipe],
   templateUrl: "./insurance-list.component.html",
   styleUrl: "./insurance-list.component.scss",
@@ -22,7 +24,9 @@ const DEFAULT_CREATE_STATUS_OPTIONS = ["New"];
 export class InsuranceListComponent implements OnInit, OnDestroy, AfterViewInit {
   createStatusOptions = [...DEFAULT_CREATE_STATUS_OPTIONS];
   plans: InsurancePlanItem[] = [];
+  listAccessAuditLogs: InsuranceAuditLogItem[] = [];
   loading = false;
+  listAuditLoading = false;
   creating = false;
   alertMessage: string | null = null;
   alertType: "danger" | "success" = "danger";
@@ -45,7 +49,7 @@ export class InsuranceListComponent implements OnInit, OnDestroy, AfterViewInit 
   };
 
   constructor(
-    private readonly insuranceService: InsuranceService,
+    private readonly insuranceFacade: InsuranceFacade,
     public readonly auth: AuthService,
     private readonly router: Router,
     private readonly cdr: ChangeDetectorRef,
@@ -56,6 +60,9 @@ export class InsuranceListComponent implements OnInit, OnDestroy, AfterViewInit 
   ngOnInit() {
     this.loadStatusWorkflow();
     this.load();
+    if (this.auth.isAdmin()) {
+      this.loadListAccessAuditLogs();
+    }
   }
 
   ngAfterViewInit() {
@@ -130,15 +137,15 @@ export class InsuranceListComponent implements OnInit, OnDestroy, AfterViewInit 
     this.alertMessage = null;
     this.cdr.markForCheck();
 
-    this.insuranceService
+    this.insuranceFacade
       .listPlans()
       .pipe(finalize(() => {
         this.loading = false;
         this.cdr.markForCheck();
       }))
       .subscribe({
-        next: (response) => {
-          this.plans = [...(response.items ?? [])];
+        next: (plans) => {
+          this.plans = [...plans];
           if (this.gridApi) {
             this.gridApi.setGridOption("rowData", this.plans);
           }
@@ -154,6 +161,10 @@ export class InsuranceListComponent implements OnInit, OnDestroy, AfterViewInit 
           this.cdr.markForCheck();
         },
       });
+
+    if (this.auth.isAdmin()) {
+      this.loadListAccessAuditLogs();
+    }
   }
 
 
@@ -163,7 +174,7 @@ export class InsuranceListComponent implements OnInit, OnDestroy, AfterViewInit 
   }
 
   private loadStatusWorkflow() {
-    this.insuranceService.getStatusWorkflow().subscribe({
+    this.insuranceFacade.getStatusWorkflow().subscribe({
       next: (response) => {
         this.createStatusOptions = [...(response.createStatuses?.length ? response.createStatuses : DEFAULT_CREATE_STATUS_OPTIONS)];
         if (!this.createStatusOptions.includes(this.createModel.status)) {
@@ -181,6 +192,31 @@ export class InsuranceListComponent implements OnInit, OnDestroy, AfterViewInit 
         this.cdr.markForCheck();
       },
     });
+  }
+
+  private loadListAccessAuditLogs() {
+    this.listAuditLoading = true;
+    this.insuranceFacade
+      .getListAccessAuditLogs()
+      .pipe(finalize(() => {
+        this.listAuditLoading = false;
+        this.cdr.markForCheck();
+      }))
+      .subscribe({
+        next: (items) => {
+          this.listAccessAuditLogs = [...items];
+          this.cdr.markForCheck();
+        },
+        error: (error: HttpErrorResponse) => {
+          if (error.status === 401) {
+            this.auth.logout();
+            this.router.navigateByUrl("/login");
+            return;
+          }
+          this.listAccessAuditLogs = [];
+          this.cdr.markForCheck();
+        },
+      });
   }
 
   private formatAccountingCurrency(value: unknown, digits: string) {
@@ -244,7 +280,7 @@ export class InsuranceListComponent implements OnInit, OnDestroy, AfterViewInit 
     }
 
     this.creating = true;
-    this.insuranceService
+    this.insuranceFacade
       .create({
         policyId: this.createModel.policyId,
         memberName: this.createModel.memberName,

@@ -10,4 +10,5 @@ public record HealthInsurancePlanResponse(
     decimal OutOfPocketMax,
     string Status,
     DateTime EffectiveDate,
-    DateTime RenewalDate);
+    DateTime RenewalDate,
+    string? Comments);

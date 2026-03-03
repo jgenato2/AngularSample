@@ -1,0 +1,32 @@
+.detail-card {
+  border-radius: 24px;
+  padding: 1rem;
+}
+
+.metric-card {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.label {
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 0.62rem;
+  color: var(--text-muted);
+  margin: 0 0 0.3rem;
+}
+
+.metric-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-size: 0.82rem;
+}
+
+.metric-row span {
+  color: var(--text-muted);
+}
+
+.metric-row strong {
+  text-align: right;
+}

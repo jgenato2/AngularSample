@@ -14,7 +14,8 @@ public record CreateHealthInsurancePlanRequest(
 	decimal outOfPocketMax,
 	string status,
 	DateTime effectiveDate,
-	DateTime renewalDate);
+	DateTime renewalDate,
+	string? comments);
 public record UpdateHealthInsurancePlanRequest(
 	string? memberName,
 	string? provider,
@@ -24,4 +25,30 @@ public record UpdateHealthInsurancePlanRequest(
 	decimal? outOfPocketMax,
 	string? status,
 	DateTime? effectiveDate,
-	DateTime? renewalDate);
+	DateTime? renewalDate,
+	string? comments);
+public record CreateClaimRequest(
+	string claimId,
+	string policyId,
+	string memberName,
+	string provider,
+	string claimType,
+	string serviceCategory,
+	string diagnosisCode,
+	DateTime submittedAt,
+	DateTime serviceDate,
+	decimal claimAmount,
+	string status,
+	string? notes);
+public record UpdateClaimRequest(
+	string? policyId,
+	string? memberName,
+	string? provider,
+	string? claimType,
+	string? serviceCategory,
+	string? diagnosisCode,
+	DateTime? submittedAt,
+	DateTime? serviceDate,
+	decimal? claimAmount,
+	string? status,
+	string? notes);

@@ -1,0 +1,28 @@
+<div class="card detail-card snapshot-card">
+  <p class="label">Coverage</p>
+  <div class="snapshot-item">
+    <span>Policy ID</span>
+    <strong>{{ plan.policyId }}</strong>
+  </div>
+  <div class="snapshot-item">
+    <span>Member</span>
+    <strong *ngIf="memberClaimId; else plainMember">
+      <a class="member-link" [routerLink]="['/claims', memberClaimId]">{{ plan.memberName }}</a>
+    </strong>
+    <ng-template #plainMember>
+      <strong>{{ plan.memberName }}</strong>
+    </ng-template>
+  </div>
+  <div class="snapshot-item">
+    <span>Provider</span>
+    <strong>{{ plan.provider }}</strong>
+  </div>
+  <div class="snapshot-item">
+    <span>Plan</span>
+    <strong>{{ plan.planType }}</strong>
+  </div>
+  <div class="snapshot-item">
+    <span>Status</span>
+    <strong [ngClass]="policyStatusClass(plan.status)">{{ plan.status }}</strong>
+  </div>
+</div>

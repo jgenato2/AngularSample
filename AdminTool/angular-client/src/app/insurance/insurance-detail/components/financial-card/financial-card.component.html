@@ -1,0 +1,19 @@
+<div class="card detail-card snapshot-card">
+  <p class="label">Financial</p>
+  <div class="snapshot-item">
+    <span>Monthly Premium</span>
+    <strong>{{ currencyPipe.transform(plan.monthlyPremium, 'USD', 'symbol', '1.2-2') }}</strong>
+  </div>
+  <div class="snapshot-item">
+    <span>Annual Premium</span>
+    <strong>{{ currencyPipe.transform(plan.monthlyPremium * 12, 'USD', 'symbol', '1.2-2') }}</strong>
+  </div>
+  <div class="snapshot-item">
+    <span>Deductible</span>
+    <strong>{{ currencyPipe.transform(plan.deductible, 'USD', 'symbol', '1.0-0') }}</strong>
+  </div>
+  <div class="snapshot-item">
+    <span>Out-of-pocket Max</span>
+    <strong>{{ currencyPipe.transform(plan.outOfPocketMax, 'USD', 'symbol', '1.0-0') }}</strong>
+  </div>
+</div>

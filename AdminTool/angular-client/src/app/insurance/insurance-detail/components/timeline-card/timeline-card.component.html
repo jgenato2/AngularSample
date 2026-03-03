@@ -1,0 +1,11 @@
+<div class="card detail-card snapshot-card">
+  <p class="label">Timeline</p>
+  <div class="snapshot-item">
+    <span>Effective Date</span>
+    <strong>{{ datePipe.transform(plan.effectiveDate, 'MMM d, y') }}</strong>
+  </div>
+  <div class="snapshot-item">
+    <span>Renewal Date</span>
+    <strong>{{ datePipe.transform(plan.renewalDate, 'MMM d, y') }}</strong>
+  </div>
+</div>

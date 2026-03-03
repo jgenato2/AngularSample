@@ -1,0 +1,139 @@
+<section class="page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Healthcare module</p>
+      <h1>Claims</h1>
+    </div>
+    <div class="actions">
+      <input
+        class="form-control policy-search"
+        type="text"
+        placeholder="Search Policy ID"
+        list="policy-id-options"
+        [ngModel]="policyIdSearch"
+        (ngModelChange)="onPolicyIdSearchChange($event)"
+      />
+      <button class="btn btn-outline-secondary" type="button" (click)="openInsuranceFromSearch()" [disabled]="!policyIdSearch">Open</button>
+      <button class="btn btn-outline-secondary" type="button" (click)="clearPolicyIdSearch()" [disabled]="!policyIdSearch">Clear</button>
+      <button class="btn btn-outline-secondary" (click)="load()" [disabled]="loading">Refresh</button>
+      <button class="btn btn-primary add-claim-btn" *ngIf="auth.isAdmin()" type="button" data-bs-toggle="collapse" data-bs-target="#create-claim-form" aria-expanded="false">
+        Add claim
+      </button>
+    </div>
+  </header>
+
+  <div *ngIf="alertMessage" class="alert" [ngClass]="'alert-' + alertType" role="alert">
+    {{ alertMessage }}
+  </div>
+
+  <div id="create-claim-form" class="collapse" *ngIf="auth.isAdmin()">
+    <div class="card form-card">
+      <div class="card-body">
+        <form class="form-grid" (ngSubmit)="create()" #createForm="ngForm">
+          <div>
+            <label class="form-label">Claim ID</label>
+            <input class="form-control" name="claimId" [(ngModel)]="createModel.claimId" required />
+          </div>
+          <div>
+            <label class="form-label">Policy ID</label>
+            <input class="form-control" list="policy-id-options" name="policyId" [(ngModel)]="createModel.policyId" required />
+            <a class="policy-link" [routerLink]="['/insurance', createModel.policyId]" *ngIf="createModel.policyId">Open insurance detail</a>
+          </div>
+          <div>
+            <label class="form-label">Member Name</label>
+            <input class="form-control" name="memberName" [(ngModel)]="createModel.memberName" required />
+          </div>
+          <div>
+            <label class="form-label">Provider</label>
+            <input class="form-control" name="provider" [(ngModel)]="createModel.provider" required />
+          </div>
+          <div>
+            <label class="form-label">Claim Type</label>
+            <select class="form-select status-select" name="claimType" [(ngModel)]="createModel.claimType" required>
+              <option value="Outpatient">Outpatient</option>
+              <option value="Inpatient">Inpatient</option>
+              <option value="Emergency">Emergency</option>
+              <option value="Pharmacy">Pharmacy</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label">Service Category</label>
+            <input class="form-control" name="serviceCategory" [(ngModel)]="createModel.serviceCategory" required />
+          </div>
+          <div>
+            <label class="form-label">Diagnosis Code</label>
+            <input class="form-control" name="diagnosisCode" [(ngModel)]="createModel.diagnosisCode" required />
+          </div>
+          <div>
+            <label class="form-label">Submitted At</label>
+            <input type="date" class="form-control" name="submittedAt" [(ngModel)]="createModel.submittedAt" required />
+          </div>
+          <div>
+            <label class="form-label">Service Date</label>
+            <input type="date" class="form-control" name="serviceDate" [(ngModel)]="createModel.serviceDate" required />
+          </div>
+          <div>
+            <label class="form-label">Amount</label>
+            <div class="input-group money-input-group">
+              <span class="input-group-text">$</span>
+              <input type="number" class="form-control money-input" name="claimAmount" [(ngModel)]="createModel.claimAmount" min="0" step="0.01" inputmode="decimal" required />
+            </div>
+          </div>
+          <div>
+            <label class="form-label">Status</label>
+            <select class="form-select status-select" name="status" [(ngModel)]="createModel.status" required>
+              <option *ngFor="let status of createStatusOptions" [value]="status">{{ status }}</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label">Notes</label>
+            <input class="form-control" name="notes" [(ngModel)]="createModel.notes" />
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-primary" type="submit" [disabled]="createForm.invalid || creating">
+              {{ creating ? "Creating..." : "Create claim" }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="card grid-card">
+    <div class="card-body grid-shell" #gridShell>
+      <ag-grid-angular
+        class="ag-theme-quartz"
+        [theme]="'legacy'"
+        [modules]="modules"
+        [rowData]="claims"
+        [columnDefs]="columnDefs"
+        [defaultColDef]="defaultColDef"
+        [rowHeight]="30"
+        [headerHeight]="30"
+        [alwaysShowHorizontalScroll]="true"
+        [suppressHorizontalScroll]="false"
+        (gridReady)="onGridReady($event)"
+        (cellClicked)="onCellClicked($event)"
+        (rowClicked)="openDetail($event.data)"
+      ></ag-grid-angular>
+      <div class="loading" *ngIf="loading">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <span>Loading claims...</span>
+      </div>
+    </div>
+  </div>
+
+  <datalist id="policy-id-options">
+    <option *ngFor="let policyId of policyIdOptions" [value]="policyId"></option>
+  </datalist>
+
+  <app-audit-log-list
+    *ngIf="auth.isAdmin()"
+    title="List Access Audit"
+    [loading]="listAuditLoading"
+    [items]="listAccessAuditLogs"
+    emptyMessage="No list access audit entries available."
+  ></app-audit-log-list>
+</section>

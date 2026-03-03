@@ -1,5 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using Server.Presentation.Auditing;
 using Server.Presentation.Authorization;
 using Server.Presentation.Contracts;
 
@@ -28,6 +31,11 @@ public class HealthInsuranceController : ControllerBase
         };
     private static readonly HashSet<string> AllowedInitialStatuses = ["New"];
     private static readonly object PlansLock = new();
+    private static readonly TimeSpan ReadAuditThrottle = TimeSpan.FromMinutes(2);
+    private const string ListAuditPolicyId = "_LIST_";
+    private const int ListAuditMaxItems = 100;
+    private const string AuditScope = "insurance";
+    private static bool AuditSeeded;
     private static readonly List<HealthInsurancePlanResponse> Plans =
     [
         new(
@@ -40,7 +48,8 @@ public class HealthInsuranceController : ControllerBase
             6500m,
             "Active",
             new DateTime(2026, 1, 1),
-            new DateTime(2026, 12, 31)),
+            new DateTime(2026, 12, 31),
+            "Family coverage with annual wellness incentives."),
         new(
             "HC-2026-0002",
             "Jared Cruz",
@@ -51,7 +60,8 @@ public class HealthInsuranceController : ControllerBase
             4500m,
             "Active",
             new DateTime(2026, 2, 1),
-            new DateTime(2027, 1, 31)),
+            new DateTime(2027, 1, 31),
+            "Primary care-centric plan with referral requirement."),
         new(
             "HC-2026-0003",
             "Elena Rivera",
@@ -62,13 +72,15 @@ public class HealthInsuranceController : ControllerBase
             3200m,
             "Pending Renewal",
             new DateTime(2025, 4, 15),
-            new DateTime(2026, 4, 14)),
+            new DateTime(2026, 4, 14),
+            "Renewal pending member confirmation."),
     ];
 
     public HealthInsuranceController(IConfiguration configuration)
     {
         analyticsConfig = configuration.GetSection("HealthInsuranceAnalytics").Get<HealthInsuranceAnalyticsConfig>()
             ?? new HealthInsuranceAnalyticsConfig();
+        EnsureAuditSeeded();
     }
 
     [HttpGet("plans")]
@@ -76,6 +88,7 @@ public class HealthInsuranceController : ControllerBase
     {
         lock (PlansLock)
         {
+            AddReadAuditLog(ListAuditPolicyId, "PlanList", GetActor());
             var items = Plans.OrderBy(plan => plan.PolicyId).ToList();
             return Ok(new { items });
         }
@@ -92,6 +105,8 @@ public class HealthInsuranceController : ControllerBase
                 return NotFound(new { message = "Insurance plan not found." });
             }
 
+            AddReadAuditLog(item.PolicyId, "Plan", GetActor());
+
             return Ok(new { item });
         }
     }
@@ -107,8 +122,44 @@ public class HealthInsuranceController : ControllerBase
                 return NotFound(new { message = "Insurance plan not found." });
             }
 
+            AddReadAuditLog(item.PolicyId, "FinancialAnalytics", GetActor());
             var analytics = BuildFinancialAnalytics(item);
             return Ok(new { item = analytics });
+        }
+    }
+
+    [HttpGet("plans/{policyId}/audit-logs")]
+    public IActionResult GetAuditLogs(string policyId)
+    {
+        lock (PlansLock)
+        {
+            var exists = Plans.Any(plan => plan.PolicyId.Equals(policyId, StringComparison.OrdinalIgnoreCase));
+            if (!exists)
+            {
+                return NotFound(new { message = "Insurance plan not found." });
+            }
+
+            var items = AuditLogStore
+                .Query(AuditScope, policyId)
+                .Select(ToInsuranceAuditLogResponse)
+                .ToList();
+
+            return Ok(new { items });
+        }
+    }
+
+    [HttpGet("audit-logs/list-access")]
+    [AdminOnly]
+    public IActionResult GetListAccessAuditLogs()
+    {
+        lock (PlansLock)
+        {
+            var items = AuditLogStore
+                .Query(AuditScope, ListAuditPolicyId, ListAuditMaxItems)
+                .Select(ToInsuranceAuditLogResponse)
+                .ToList();
+
+            return Ok(new { items });
         }
     }
 
@@ -163,9 +214,16 @@ public class HealthInsuranceController : ControllerBase
                 request.outOfPocketMax,
                 normalizedStatus,
                 request.effectiveDate,
-                request.renewalDate);
+                request.renewalDate,
+                request.comments);
 
             Plans.Add(item);
+            var actor = GetActor();
+            AddAuditLog(item.PolicyId, "Created", "Plan", null, $"{item.PlanType} ({item.Status})", actor);
+            if (!string.IsNullOrWhiteSpace(item.Comments))
+            {
+                AddAuditLog(item.PolicyId, "Updated", "Comments", null, item.Comments, actor);
+            }
             return Created($"/api/health-insurance/plans/{item.PolicyId}", new { item });
         }
     }
@@ -214,9 +272,12 @@ public class HealthInsuranceController : ControllerBase
                 Status = nextStatus ?? current.Status,
                 EffectiveDate = request.effectiveDate ?? current.EffectiveDate,
                 RenewalDate = request.renewalDate ?? current.RenewalDate,
+                Comments = request.comments ?? current.Comments,
             };
 
             Plans[index] = updated;
+            var updateActor = GetActor();
+            AddChangeAuditLogs(current, updated, updateActor);
             return Ok(new { item = updated });
         }
     }
@@ -233,9 +294,149 @@ public class HealthInsuranceController : ControllerBase
                 return NotFound(new { message = "Insurance plan not found." });
             }
 
+            var current = Plans[index];
+            AddAuditLog(current.PolicyId, "Deleted", "Plan", $"{current.PlanType} ({current.Status})", null, GetActor());
             Plans.RemoveAt(index);
             return Ok(new { ok = true });
         }
+    }
+
+    private static void AddAuditLog(
+        string policyId,
+        string action,
+        string field,
+        string? oldValue,
+        string? newValue,
+        string actor)
+    {
+        AuditLogStore.Add(
+            AuditScope,
+            policyId,
+            action,
+            field,
+            oldValue,
+            newValue,
+            actor);
+    }
+
+    private static void AddReadAuditLog(string policyId, string field, string actor)
+    {
+        AuditLogStore.AddReadWithThrottle(AuditScope, policyId, field, actor, ReadAuditThrottle);
+    }
+
+    private static HealthInsuranceAuditLogResponse ToInsuranceAuditLogResponse(AuditLogEntry entry)
+        => new(
+            entry.Id,
+            entry.EntityId,
+            entry.Action,
+            entry.Field,
+            entry.OldValue,
+            entry.NewValue,
+            entry.PerformedBy,
+            entry.OccurredAtUtc);
+
+    private static void EnsureAuditSeeded()
+    {
+        if (AuditSeeded)
+        {
+            return;
+        }
+
+        lock (PlansLock)
+        {
+            if (AuditSeeded)
+            {
+                return;
+            }
+
+            AuditLogStore.Add(AuditScope, "HC-2026-0001", "Created", "Plan", null, "Family PPO (Active)", "system-seed", DateTime.UtcNow.AddDays(-45));
+            AuditLogStore.Add(AuditScope, "HC-2026-0002", "Created", "Plan", null, "Individual HMO (Active)", "system-seed", DateTime.UtcNow.AddDays(-30));
+            AuditLogStore.Add(AuditScope, "HC-2026-0003", "Created", "Plan", null, "Senior Advantage (Pending Renewal)", "system-seed", DateTime.UtcNow.AddDays(-20));
+
+            AuditSeeded = true;
+        }
+    }
+
+    private static string FormatDate(DateTime value) => value.ToString("yyyy-MM-dd");
+
+    private static string FormatDecimal(decimal value) => value.ToString("0.##");
+
+    private void AddChangeAuditLogs(HealthInsurancePlanResponse current, HealthInsurancePlanResponse updated, string actor)
+    {
+        if (!string.Equals(current.MemberName, updated.MemberName, StringComparison.Ordinal))
+        {
+            AddAuditLog(updated.PolicyId, "Updated", "MemberName", current.MemberName, updated.MemberName, actor);
+        }
+
+        if (!string.Equals(current.Provider, updated.Provider, StringComparison.Ordinal))
+        {
+            AddAuditLog(updated.PolicyId, "Updated", "Provider", current.Provider, updated.Provider, actor);
+        }
+
+        if (!string.Equals(current.PlanType, updated.PlanType, StringComparison.Ordinal))
+        {
+            AddAuditLog(updated.PolicyId, "Updated", "PlanType", current.PlanType, updated.PlanType, actor);
+        }
+
+        if (current.MonthlyPremium != updated.MonthlyPremium)
+        {
+            AddAuditLog(updated.PolicyId, "Updated", "MonthlyPremium", FormatDecimal(current.MonthlyPremium), FormatDecimal(updated.MonthlyPremium), actor);
+        }
+
+        if (current.Deductible != updated.Deductible)
+        {
+            AddAuditLog(updated.PolicyId, "Updated", "Deductible", FormatDecimal(current.Deductible), FormatDecimal(updated.Deductible), actor);
+        }
+
+        if (current.OutOfPocketMax != updated.OutOfPocketMax)
+        {
+            AddAuditLog(updated.PolicyId, "Updated", "OutOfPocketMax", FormatDecimal(current.OutOfPocketMax), FormatDecimal(updated.OutOfPocketMax), actor);
+        }
+
+        if (!string.Equals(current.Status, updated.Status, StringComparison.Ordinal))
+        {
+            AddAuditLog(updated.PolicyId, "Updated", "Status", current.Status, updated.Status, actor);
+        }
+
+        if (current.EffectiveDate.Date != updated.EffectiveDate.Date)
+        {
+            AddAuditLog(updated.PolicyId, "Updated", "EffectiveDate", FormatDate(current.EffectiveDate), FormatDate(updated.EffectiveDate), actor);
+        }
+
+        if (current.RenewalDate.Date != updated.RenewalDate.Date)
+        {
+            AddAuditLog(updated.PolicyId, "Updated", "RenewalDate", FormatDate(current.RenewalDate), FormatDate(updated.RenewalDate), actor);
+        }
+
+        if (!string.Equals(current.Comments, updated.Comments, StringComparison.Ordinal))
+        {
+            AddAuditLog(updated.PolicyId, "Updated", "Comments", current.Comments, updated.Comments, actor);
+        }
+    }
+
+    private string GetActor()
+    {
+        var userName = User.FindFirstValue(JwtRegisteredClaimNames.Name);
+        var email = User.FindFirstValue(JwtRegisteredClaimNames.Email);
+        var subject = User.FindFirstValue(JwtRegisteredClaimNames.Sub)
+            ?? User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (!string.IsNullOrWhiteSpace(userName) && !string.IsNullOrWhiteSpace(email))
+        {
+            return $"{userName} ({email})";
+        }
+
+        if (!string.IsNullOrWhiteSpace(email))
+        {
+            return email;
+        }
+
+        if (!string.IsNullOrWhiteSpace(userName))
+        {
+            return userName;
+        }
+
+        return subject ?? "system";
     }
 
     private HealthInsuranceFinancialAnalyticsResponse BuildFinancialAnalytics(HealthInsurancePlanResponse plan)

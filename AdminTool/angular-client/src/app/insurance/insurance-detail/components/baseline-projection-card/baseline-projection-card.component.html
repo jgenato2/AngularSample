@@ -1,0 +1,27 @@
+<div class="card detail-card metric-card">
+  <p class="label">Baseline Projection</p>
+  <div class="metric-row">
+    <span>Annual Premium</span>
+    <strong [ngClass]="signedValueClass(financial?.annualPremium)">{{ formatCurrency(financial?.annualPremium) }}</strong>
+  </div>
+  <div class="metric-row">
+    <span>Projected Claims Cost</span>
+    <strong [ngClass]="signedValueClass(financial?.projectedClaimsCost)">{{ formatCurrency(financial?.projectedClaimsCost) }}</strong>
+  </div>
+  <div class="metric-row">
+    <span>Trend-adjusted Claims</span>
+    <strong [ngClass]="signedValueClass(financial?.trendAdjustedClaimsCost)">{{ formatCurrency(financial?.trendAdjustedClaimsCost) }}</strong>
+  </div>
+  <div class="metric-row">
+    <span>Reserve Requirement</span>
+    <strong [ngClass]="signedValueClass(financial?.reserveRequirement)">{{ formatCurrency(financial?.reserveRequirement) }}</strong>
+  </div>
+  <div class="metric-row">
+    <span>Combined Capital Need</span>
+    <strong [ngClass]="signedValueClass(financial?.combinedCapitalNeed)">{{ formatCurrency(financial?.combinedCapitalNeed) }}</strong>
+  </div>
+  <div class="metric-row">
+    <span>Solvency Margin</span>
+    <strong [ngClass]="signedValueClass(financial?.solvencyMargin)">{{ formatCurrency(financial?.solvencyMargin) }}</strong>
+  </div>
+</div>

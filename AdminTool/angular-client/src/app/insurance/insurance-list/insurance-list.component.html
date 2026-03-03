@@ -105,4 +105,12 @@
       </div>
     </div>
   </div>
+
+  <app-audit-log-list
+    *ngIf="auth.isAdmin()"
+    title="List Access Audit"
+    [loading]="listAuditLoading"
+    [items]="listAccessAuditLogs"
+    emptyMessage="No list access audit entries available."
+  ></app-audit-log-list>
 </section>

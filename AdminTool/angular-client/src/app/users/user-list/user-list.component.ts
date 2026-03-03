@@ -5,9 +5,11 @@ import { HttpErrorResponse } from "@angular/common/http";
 import { AgGridModule } from "ag-grid-angular";
 import { AllCommunityModule, ColDef, GridApi, GridReadyEvent } from "ag-grid-community";
 import { AuthService } from "../../core/auth.service";
-import { UsersService, UserItem } from "../users.service";
+import { UsersFacade } from "../../features/users/application/users.facade";
+import { UserAuditLogItem, UserItem } from "../../features/users/domain/user.models";
 import { filter, finalize, Subscription } from "rxjs";
 import { Modal } from "bootstrap";
+import { AuditLogListComponent } from "../../shared/audit-log-list/audit-log-list.component";
 import {
   UserFormDialogComponent,
   UserDialogData,
@@ -19,6 +21,7 @@ import {
   imports: [
     CommonModule,
     AgGridModule,
+    AuditLogListComponent,
     UserFormDialogComponent,
   ],
   providers: [DatePipe],
@@ -27,6 +30,8 @@ import {
 })
 export class UserListComponent implements OnInit, OnDestroy, AfterViewInit {
   users: UserItem[] = [];
+  listAccessAuditLogs: UserAuditLogItem[] = [];
+  listAuditLoading = false;
   loading = false;
   alertMessage: string | null = null;
   alertType: "danger" | "success" = "danger";
@@ -65,15 +70,18 @@ export class UserListComponent implements OnInit, OnDestroy, AfterViewInit {
   };
 
   constructor(
-    private readonly usersService: UsersService,
+    private readonly usersFacade: UsersFacade,
     private readonly router: Router,
     public readonly auth: AuthService,
-    private readonly datePipe: DatePipe,
+    public readonly datePipe: DatePipe,
     private readonly cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
     this.load();
+    if (this.auth.isAdmin()) {
+      this.loadListAccessAuditLogs();
+    }
     this.subscriptions.add(
       this.router.events
         .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))
@@ -98,15 +106,15 @@ export class UserListComponent implements OnInit, OnDestroy, AfterViewInit {
 
   load() {
     this.loading = true;
-    this.usersService
+    this.usersFacade
       .list()
       .pipe(finalize(() => {
         this.loading = false;
         this.cdr.markForCheck();
       }))
       .subscribe({
-        next: (response) => {
-          this.users = [...response.items];
+        next: (users) => {
+          this.users = [...users];
           if (this.gridApi) {
             this.gridApi.setGridOption("rowData", this.users);
           }
@@ -121,6 +129,10 @@ export class UserListComponent implements OnInit, OnDestroy, AfterViewInit {
           this.setAlert("Failed to load users.");
         },
       });
+
+    if (this.auth.isAdmin()) {
+      this.loadListAccessAuditLogs();
+    }
   }
 
   openDetail(user?: UserItem | null) {
@@ -140,7 +152,7 @@ export class UserListComponent implements OnInit, OnDestroy, AfterViewInit {
     role: "admin" | "user";
     password: string;
   }) {
-    this.usersService
+    this.usersFacade
       .create({
         name: result.name,
         email: result.email,
@@ -182,6 +194,31 @@ export class UserListComponent implements OnInit, OnDestroy, AfterViewInit {
     const delta = Math.abs(event.deltaX) > 0 ? event.deltaX : event.deltaY;
     horizontalViewport.scrollLeft += delta;
     event.preventDefault();
+  }
+
+  private loadListAccessAuditLogs() {
+    this.listAuditLoading = true;
+    this.usersFacade
+      .getListAccessAuditLogs()
+      .pipe(finalize(() => {
+        this.listAuditLoading = false;
+        this.cdr.markForCheck();
+      }))
+      .subscribe({
+        next: (items) => {
+          this.listAccessAuditLogs = [...items];
+          this.cdr.markForCheck();
+        },
+        error: (error: HttpErrorResponse) => {
+          if (error.status === 401) {
+            this.auth.logout();
+            this.router.navigateByUrl("/login");
+            return;
+          }
+          this.listAccessAuditLogs = [];
+          this.cdr.markForCheck();
+        },
+      });
   }
 
   private setAlert(message: string, type: "danger" | "success" = "danger") {

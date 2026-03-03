@@ -42,65 +42,21 @@
       >
         Financial Algorithm
       </button>
+      <button
+        class="tab-btn"
+        type="button"
+        [class.active]="activeTab === 'audit'"
+        (click)="switchTab('audit')"
+      >
+        Audit Log
+      </button>
     </div>
 
     <ng-container *ngIf="activeTab === 'details'">
       <div class="snapshot-grid">
-        <div class="card detail-card snapshot-card">
-          <p class="label">Coverage</p>
-          <div class="snapshot-item">
-            <span>Policy ID</span>
-            <strong>{{ plan.policyId }}</strong>
-          </div>
-          <div class="snapshot-item">
-            <span>Member</span>
-            <strong>{{ plan.memberName }}</strong>
-          </div>
-          <div class="snapshot-item">
-            <span>Provider</span>
-            <strong>{{ plan.provider }}</strong>
-          </div>
-          <div class="snapshot-item">
-            <span>Plan</span>
-            <strong>{{ plan.planType }}</strong>
-          </div>
-          <div class="snapshot-item">
-            <span>Status</span>
-            <strong [ngClass]="policyStatusClass(plan.status)">{{ plan.status }}</strong>
-          </div>
-        </div>
-
-        <div class="card detail-card snapshot-card">
-          <p class="label">Financial</p>
-          <div class="snapshot-item">
-            <span>Monthly Premium</span>
-            <strong>{{ currencyPipe.transform(plan.monthlyPremium, 'USD', 'symbol', '1.2-2') }}</strong>
-          </div>
-          <div class="snapshot-item">
-            <span>Annual Premium</span>
-            <strong>{{ currencyPipe.transform(plan.monthlyPremium * 12, 'USD', 'symbol', '1.2-2') }}</strong>
-          </div>
-          <div class="snapshot-item">
-            <span>Deductible</span>
-            <strong>{{ currencyPipe.transform(plan.deductible, 'USD', 'symbol', '1.0-0') }}</strong>
-          </div>
-          <div class="snapshot-item">
-            <span>Out-of-pocket Max</span>
-            <strong>{{ currencyPipe.transform(plan.outOfPocketMax, 'USD', 'symbol', '1.0-0') }}</strong>
-          </div>
-        </div>
-
-        <div class="card detail-card snapshot-card">
-          <p class="label">Timeline</p>
-          <div class="snapshot-item">
-            <span>Effective Date</span>
-            <strong>{{ datePipe.transform(plan.effectiveDate, 'MMM d, y') }}</strong>
-          </div>
-          <div class="snapshot-item">
-            <span>Renewal Date</span>
-            <strong>{{ datePipe.transform(plan.renewalDate, 'MMM d, y') }}</strong>
-          </div>
-        </div>
+        <app-coverage-card [plan]="plan" [memberClaimId]="memberClaimId"></app-coverage-card>
+        <app-financial-card [plan]="plan"></app-financial-card>
+        <app-timeline-card [plan]="plan"></app-timeline-card>
       </div>
 
       <div class="card detail-card">
@@ -167,6 +123,18 @@
             <input type="date" class="form-control" name="renewalDate" [(ngModel)]="formModel.renewalDate" [disabled]="!canManage" required />
           </div>
 
+          <div class="full-row">
+            <label class="form-label">Comments</label>
+            <textarea
+              class="form-control"
+              name="comments"
+              rows="3"
+              [(ngModel)]="formModel.comments"
+              [disabled]="!canManage"
+              placeholder="Add policy notes or remarks"
+            ></textarea>
+          </div>
+
           <div class="full-row actions" *ngIf="canManage">
             <button class="btn btn-primary" type="submit" [disabled]="detailForm.invalid || saving">
               {{ saving ? "Saving..." : "Save" }}
@@ -198,100 +166,16 @@
 
     <ng-container *ngIf="activeTab === 'financial'">
       <div class="algorithm-grid">
-        <div class="card detail-card metric-card">
-          <p class="label">Risk Model</p>
-          <div class="metric-row">
-            <span>Risk Score</span>
-            <strong>{{ financial?.riskScore ?? '-' }}</strong>
-          </div>
-          <div class="metric-row">
-            <span>Risk Band</span>
-            <strong [ngClass]="riskBandClass(financial?.riskBand)">{{ financial?.riskBand ?? '-' }}</strong>
-          </div>
-          <div class="metric-row">
-            <span>Projected Loss Ratio</span>
-            <strong [ngClass]="signedValueClass(financial?.projectedLossRatio)">{{ formatPercent(financial?.projectedLossRatio) }}</strong>
-          </div>
-          <div class="metric-row">
-            <span>Premium Adequacy</span>
-            <strong [ngClass]="signedValueClass(financial?.premiumAdequacyRatio)">{{ formatPercent(financial?.premiumAdequacyRatio) }}</strong>
-          </div>
-          <div class="metric-row">
-            <span>Deductible Leverage</span>
-            <strong [ngClass]="signedValueClass(financial?.deductibleLeverageIndex)">{{ formatPercent(financial?.deductibleLeverageIndex) }}</strong>
-          </div>
-          <div class="metric-row">
-            <span>Stability Index</span>
-            <strong [ngClass]="signedValueClass(financial?.stabilityIndex)">{{ decimalPipe.transform(financial?.stabilityIndex ?? 0, '1.1-1') }}</strong>
-          </div>
-        </div>
-
-        <div class="card detail-card metric-card">
-          <p class="label">Baseline Projection</p>
-          <div class="metric-row">
-            <span>Annual Premium</span>
-            <strong [ngClass]="signedValueClass(financial?.annualPremium)">{{ formatCurrency(financial?.annualPremium) }}</strong>
-          </div>
-          <div class="metric-row">
-            <span>Projected Claims Cost</span>
-            <strong [ngClass]="signedValueClass(financial?.projectedClaimsCost)">{{ formatCurrency(financial?.projectedClaimsCost) }}</strong>
-          </div>
-          <div class="metric-row">
-            <span>Trend-adjusted Claims</span>
-            <strong [ngClass]="signedValueClass(financial?.trendAdjustedClaimsCost)">{{ formatCurrency(financial?.trendAdjustedClaimsCost) }}</strong>
-          </div>
-          <div class="metric-row">
-            <span>Reserve Requirement</span>
-            <strong [ngClass]="signedValueClass(financial?.reserveRequirement)">{{ formatCurrency(financial?.reserveRequirement) }}</strong>
-          </div>
-          <div class="metric-row">
-            <span>Combined Capital Need</span>
-            <strong [ngClass]="signedValueClass(financial?.combinedCapitalNeed)">{{ formatCurrency(financial?.combinedCapitalNeed) }}</strong>
-          </div>
-          <div class="metric-row">
-            <span>Solvency Margin</span>
-            <strong [ngClass]="signedValueClass(financial?.solvencyMargin)">{{ formatCurrency(financial?.solvencyMargin) }}</strong>
-          </div>
-        </div>
-
-        <div class="card detail-card metric-card">
-          <p class="label">Stress Test (+12% Claims Inflation)</p>
-          <div class="metric-row">
-            <span>Stress Claims Cost</span>
-            <strong [ngClass]="signedValueClass(financial?.stressScenarioCost)">{{ formatCurrency(financial?.stressScenarioCost) }}</strong>
-          </div>
-          <div class="metric-row">
-            <span>Stress Margin</span>
-            <strong [ngClass]="signedValueClass(financial?.stressScenarioMargin)">{{ formatCurrency(financial?.stressScenarioMargin) }}</strong>
-          </div>
-          <div class="metric-row">
-            <span>Stress Impact</span>
-            <strong [ngClass]="signedValueClass(financial?.stressImpact)">{{ formatCurrency(financial?.stressImpact) }}</strong>
-          </div>
-          <div class="metric-row">
-            <span>Volatility Buffer</span>
-            <strong [ngClass]="signedValueClass(financial?.volatilityBuffer)">{{ formatCurrency(financial?.volatilityBuffer) }}</strong>
-          </div>
-          <div class="metric-row">
-            <span>Capital-at-Risk (95%)</span>
-            <strong [ngClass]="signedValueClass(financial?.capitalAtRisk95)">{{ formatCurrency(financial?.capitalAtRisk95) }}</strong>
-          </div>
-          <div class="metric-row">
-            <span>Tail Risk Ratio</span>
-            <strong [ngClass]="signedValueClass(financial?.tailRiskRatio)">{{ formatPercent(financial?.tailRiskRatio) }}</strong>
-          </div>
-        </div>
+        <app-risk-model-card [financial]="financial"></app-risk-model-card>
+        <app-baseline-projection-card [financial]="financial"></app-baseline-projection-card>
+        <app-stress-test-card [financial]="financial"></app-stress-test-card>
       </div>
 
-      <div class="card detail-card assumptions-card">
-        <p class="label">Algorithm Notes</p>
-        <ul>
-          <li>Projected claims use premium, plan type, status, and deductible ratio adjustments.</li>
-          <li>Reserve requirement is the higher of 18% projected claims or a minimum floor.</li>
-          <li>Tail risk uses trend-adjusted claims and volatility buffer to approximate 95% capital-at-risk.</li>
-          <li>Stability index combines adequacy, tail-risk burden, and stress margin sensitivity.</li>
-        </ul>
-      </div>
+      <app-algorithm-notes-card></app-algorithm-notes-card>
+    </ng-container>
+
+    <ng-container *ngIf="activeTab === 'audit'">
+      <app-audit-log-section [items]="auditLogs" [loading]="auditLoading"></app-audit-log-section>
     </ng-container>
   </section>
 </ng-template>

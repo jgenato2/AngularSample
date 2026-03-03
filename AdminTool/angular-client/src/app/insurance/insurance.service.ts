@@ -1,75 +1,13 @@
 import { Injectable } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
-
-export interface InsurancePlanItem {
-  policyId: string;
-  memberName: string;
-  provider: string;
-  planType: string;
-  monthlyPremium: number;
-  deductible: number;
-  outOfPocketMax: number;
-  status: string;
-  effectiveDate: string;
-  renewalDate: string;
-}
-
-export interface InsuranceFinancialAnalyticsItem {
-  annualPremium: number;
-  deductibleRatio: number;
-  deductibleLeverageIndex: number;
-  projectedClaimsCost: number;
-  projectedLossRatio: number;
-  premiumAdequacyRatio: number;
-  trendAdjustedClaimsCost: number;
-  volatilityBuffer: number;
-  capitalAtRisk95: number;
-  tailRiskRatio: number;
-  reserveRequirement: number;
-  combinedCapitalNeed: number;
-  solvencyMargin: number;
-  stressScenarioCost: number;
-  stressImpact: number;
-  stressScenarioMargin: number;
-  stabilityIndex: number;
-  riskScore: number;
-  riskBand: string;
-}
-
-export interface InsuranceStatusWorkflowItem {
-  status: string;
-  next: string[];
-}
-
-export interface InsuranceStatusWorkflowResponse {
-  createStatuses: string[];
-  workflow: InsuranceStatusWorkflowItem[];
-}
-
-export interface CreateInsurancePlanPayload {
-  policyId: string;
-  memberName: string;
-  provider: string;
-  planType: string;
-  monthlyPremium: number;
-  deductible: number;
-  outOfPocketMax: number;
-  status: string;
-  effectiveDate: string;
-  renewalDate: string;
-}
-
-export interface UpdateInsurancePlanPayload {
-  memberName?: string;
-  provider?: string;
-  planType?: string;
-  monthlyPremium?: number;
-  deductible?: number;
-  outOfPocketMax?: number;
-  status?: string;
-  effectiveDate?: string;
-  renewalDate?: string;
-}
+import {
+  InsuranceAuditLogItem,
+  CreateInsurancePlanPayload,
+  InsuranceFinancialAnalyticsItem,
+  InsurancePlanItem,
+  InsuranceStatusWorkflowResponse,
+  UpdateInsurancePlanPayload,
+} from "../features/insurance/domain/insurance.models";
 
 interface PlanListResponse {
   items: InsurancePlanItem[];
@@ -81,6 +19,10 @@ interface PlanItemResponse {
 
 interface FinancialAnalyticsResponse {
   item: InsuranceFinancialAnalyticsItem;
+}
+
+interface AuditLogListResponse {
+  items: InsuranceAuditLogItem[];
 }
 
 @Injectable({ providedIn: "root" })
@@ -99,6 +41,14 @@ export class InsuranceService {
 
   getFinancialAnalytics(policyId: string) {
     return this.http.get<FinancialAnalyticsResponse>(`${this.baseUrl}/plans/${policyId}/financial-analytics`);
+  }
+
+  getAuditLogs(policyId: string) {
+    return this.http.get<AuditLogListResponse>(`${this.baseUrl}/plans/${policyId}/audit-logs`);
+  }
+
+  getListAccessAuditLogs() {
+    return this.http.get<AuditLogListResponse>(`${this.baseUrl}/audit-logs/list-access`);
   }
 
   getStatusWorkflow() {

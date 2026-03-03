@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, inject } from "@angular/core";
 import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
 import { CommonModule } from "@angular/common";
-import { UserItem } from "../users.service";
+import { UserItem } from "../../features/users/domain/user.models";
 import {
   emailValidators,
   optionalPasswordValidators,
