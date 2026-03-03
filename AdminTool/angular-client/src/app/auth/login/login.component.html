@@ -1,11 +1,6 @@
 <div class="auth-shell">
   <div class="card auth-card">
     <div class="card-body">
-      <div class="auth-header">
-        <p class="eyebrow">AdminTool</p>
-        <h1>Secure sign-in</h1>
-        <p class="sub">Use the seeded admin account or your own credentials.</p>
-      </div>
       <div *ngIf="alertMessage" class="alert" [ngClass]="'alert-' + alertType" role="alert">
         {{ alertMessage }}
       </div>
@@ -38,15 +33,6 @@
         <span>Seed admin:</span>
         <strong>admin@local.com</strong> / <strong>Admin123!</strong>
       </div>
-    </div>
-  </div>
-  <div class="auth-panel">
-    <h2>User module control</h2>
-    <p>Manage profiles, roles, and secure CRUD flows in one place.</p>
-    <div class="tag-row">
-      <span class="tag">JWT</span>
-      <span class="tag">Role-based</span>
-      <span class="tag">AG Grid</span>
     </div>
   </div>
 </div>

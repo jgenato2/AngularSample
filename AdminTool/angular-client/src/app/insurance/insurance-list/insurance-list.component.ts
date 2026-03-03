@@ -9,6 +9,8 @@ import { finalize } from "rxjs";
 import { AuthService } from "../../core/auth.service";
 import { InsurancePlanItem, InsuranceService } from "../insurance.service";
 
+const DEFAULT_CREATE_STATUS_OPTIONS = ["New"];
+
 @Component({
   selector: "app-insurance-list",
   standalone: true,
@@ -18,6 +20,7 @@ import { InsurancePlanItem, InsuranceService } from "../insurance.service";
   styleUrl: "./insurance-list.component.scss",
 })
 export class InsuranceListComponent implements OnInit, OnDestroy, AfterViewInit {
+  createStatusOptions = [...DEFAULT_CREATE_STATUS_OPTIONS];
   plans: InsurancePlanItem[] = [];
   loading = false;
   creating = false;
@@ -27,12 +30,13 @@ export class InsuranceListComponent implements OnInit, OnDestroy, AfterViewInit 
   private gridApi: GridApi | null = null;
   @ViewChild("gridShell") private gridShellRef?: ElementRef<HTMLElement>;
   private readonly wheelHandler = (event: WheelEvent) => this.handleGridWheel(event);
+  private alertTimerId: ReturnType<typeof setTimeout> | null = null;
   createModel = {
     policyId: "",
     memberName: "",
     provider: "",
     planType: "",
-    status: "Active",
+    status: "New",
     monthlyPremium: 0,
     deductible: 0,
     outOfPocketMax: 0,
@@ -50,6 +54,7 @@ export class InsuranceListComponent implements OnInit, OnDestroy, AfterViewInit 
   ) {}
 
   ngOnInit() {
+    this.loadStatusWorkflow();
     this.load();
   }
 
@@ -59,6 +64,7 @@ export class InsuranceListComponent implements OnInit, OnDestroy, AfterViewInit 
 
   ngOnDestroy() {
     this.gridShellRef?.nativeElement.removeEventListener("wheel", this.wheelHandler);
+    this.clearAlertTimer();
   }
 
   columnDefs: ColDef<InsurancePlanItem>[] = [
@@ -66,27 +72,36 @@ export class InsuranceListComponent implements OnInit, OnDestroy, AfterViewInit 
     { field: "memberName", headerName: "Member", width: 210, minWidth: 180 },
     { field: "provider", headerName: "Provider", width: 210, minWidth: 180 },
     { field: "planType", headerName: "Plan", width: 170, minWidth: 150 },
-    { field: "status", headerName: "Status", width: 170, minWidth: 150 },
+    {
+      field: "status",
+      headerName: "Status",
+      width: 170,
+      minWidth: 150,
+      cellClass: (params) => this.statusCellClass(params.value),
+    },
     {
       field: "monthlyPremium",
       headerName: "Premium",
       width: 150,
       minWidth: 140,
-      valueFormatter: (params) => this.currencyPipe.transform(params.value, "USD", "symbol", "1.2-2") ?? "",
+      valueFormatter: (params) => this.formatAccountingCurrency(params.value, "1.2-2"),
+      cellClass: (params) => this.negativeValueClass(params.value),
     },
     {
       field: "deductible",
       headerName: "Deductible",
       width: 150,
       minWidth: 140,
-      valueFormatter: (params) => this.currencyPipe.transform(params.value, "USD", "symbol", "1.0-0") ?? "",
+      valueFormatter: (params) => this.formatAccountingCurrency(params.value, "1.0-0"),
+      cellClass: (params) => this.negativeValueClass(params.value),
     },
     {
       field: "outOfPocketMax",
       headerName: "Out-of-pocket Max",
       width: 190,
       minWidth: 170,
-      valueFormatter: (params) => this.currencyPipe.transform(params.value, "USD", "symbol", "1.0-0") ?? "",
+      valueFormatter: (params) => this.formatAccountingCurrency(params.value, "1.0-0"),
+      cellClass: (params) => this.negativeValueClass(params.value),
     },
     {
       field: "effectiveDate",
@@ -147,6 +162,55 @@ export class InsuranceListComponent implements OnInit, OnDestroy, AfterViewInit 
     this.gridApi.setGridOption("rowData", this.plans);
   }
 
+  private loadStatusWorkflow() {
+    this.insuranceService.getStatusWorkflow().subscribe({
+      next: (response) => {
+        this.createStatusOptions = [...(response.createStatuses?.length ? response.createStatuses : DEFAULT_CREATE_STATUS_OPTIONS)];
+        if (!this.createStatusOptions.includes(this.createModel.status)) {
+          this.createModel.status = this.createStatusOptions[0] ?? "Draft";
+        }
+        this.cdr.markForCheck();
+      },
+      error: (error: HttpErrorResponse) => {
+        if (error.status === 401) {
+          this.auth.logout();
+          this.router.navigateByUrl("/login");
+          return;
+        }
+        this.createStatusOptions = [...DEFAULT_CREATE_STATUS_OPTIONS];
+        this.cdr.markForCheck();
+      },
+    });
+  }
+
+  private formatAccountingCurrency(value: unknown, digits: string) {
+    const amount = typeof value === "number" ? value : Number(value ?? 0);
+    const formatted = this.currencyPipe.transform(Math.abs(amount), "USD", "symbol", digits) ?? "$0";
+    return amount < 0 ? `(${formatted})` : formatted;
+  }
+
+  private negativeValueClass(value: unknown) {
+    const amount = typeof value === "number" ? value : Number(value ?? 0);
+    return amount < 0 ? "text-danger" : "";
+  }
+
+  private statusCellClass(value: unknown) {
+    const status = String(value ?? "").toLowerCase();
+    if (status.includes("active")) {
+      return "text-success";
+    }
+
+    if (status.includes("pending")) {
+      return "text-warning";
+    }
+
+    if (status.includes("expired")) {
+      return "text-danger";
+    }
+
+    return "text-body-secondary";
+  }
+
   private handleGridWheel(event: WheelEvent) {
     const gridShell = event.currentTarget as HTMLElement | null;
     if (!gridShell) {
@@ -205,7 +269,7 @@ export class InsuranceListComponent implements OnInit, OnDestroy, AfterViewInit 
             memberName: "",
             provider: "",
             planType: "",
-            status: "Active",
+            status: "New",
             monthlyPremium: 0,
             deductible: 0,
             outOfPocketMax: 0,
@@ -227,7 +291,21 @@ export class InsuranceListComponent implements OnInit, OnDestroy, AfterViewInit 
   }
 
   private setAlert(message: string, type: "danger" | "success" = "danger") {
+    this.clearAlertTimer();
     this.alertMessage = message;
     this.alertType = type;
+    this.alertTimerId = setTimeout(() => {
+      this.alertMessage = null;
+      this.cdr.markForCheck();
+    }, 4000);
+  }
+
+  private clearAlertTimer() {
+    if (!this.alertTimerId) {
+      return;
+    }
+
+    clearTimeout(this.alertTimerId);
+    this.alertTimerId = null;
   }
 }

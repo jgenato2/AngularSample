@@ -14,6 +14,10 @@ export class App {
 
   constructor(public readonly auth: AuthService, private readonly router: Router) {}
 
+  get isLoginPage() {
+    return this.router.url.startsWith("/login");
+  }
+
   toggleMenu() {
     this.menuOpen = !this.menuOpen;
   }

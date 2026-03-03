@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnInit } from "@angular/core";
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from "@angular/core";
 import { CommonModule, DatePipe } from "@angular/common";
 import { ActivatedRoute, Router, RouterLink } from "@angular/router";
 import { AuthService } from "../../core/auth.service";
@@ -23,13 +23,14 @@ import {
   templateUrl: "./user-detail.component.html",
   styleUrl: "./user-detail.component.scss",
 })
-export class UserDetailComponent implements OnInit {
+export class UserDetailComponent implements OnInit, OnDestroy {
   user: UserItem | null = null;
   loading = false;
   alertMessage: string | null = null;
   alertType: "danger" | "success" = "danger";
   editModalId = "edit-user-modal";
   editDialogData: UserDialogData = { mode: "edit", isAdmin: false };
+  private alertTimerId: ReturnType<typeof setTimeout> | null = null;
 
   constructor(
     private readonly route: ActivatedRoute,
@@ -42,6 +43,10 @@ export class UserDetailComponent implements OnInit {
 
   ngOnInit() {
     this.load();
+  }
+
+  ngOnDestroy() {
+    this.clearAlertTimer();
   }
 
   get canEdit() {
@@ -142,8 +147,22 @@ export class UserDetailComponent implements OnInit {
   }
 
   private setAlert(message: string, type: "danger" | "success" = "danger") {
+    this.clearAlertTimer();
     this.alertMessage = message;
     this.alertType = type;
+    this.alertTimerId = setTimeout(() => {
+      this.alertMessage = null;
+      this.cdr.markForCheck();
+    }, 4000);
+  }
+
+  private clearAlertTimer() {
+    if (!this.alertTimerId) {
+      return;
+    }
+
+    clearTimeout(this.alertTimerId);
+    this.alertTimerId = null;
   }
 
   private hideModal(id: string) {

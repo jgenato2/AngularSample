@@ -35,6 +35,7 @@ export class UserListComponent implements OnInit, OnDestroy, AfterViewInit {
   createDialogData: UserDialogData = { mode: "create", isAdmin: true };
   private readonly subscriptions = new Subscription();
   private gridApi: GridApi | null = null;
+  private alertTimerId: ReturnType<typeof setTimeout> | null = null;
   @ViewChild("gridShell") private gridShellRef?: ElementRef<HTMLElement>;
   private readonly wheelHandler = (event: WheelEvent) => this.handleGridWheel(event);
 
@@ -87,6 +88,7 @@ export class UserListComponent implements OnInit, OnDestroy, AfterViewInit {
   ngOnDestroy() {
     this.gridShellRef?.nativeElement.removeEventListener("wheel", this.wheelHandler);
     this.subscriptions.unsubscribe();
+    this.clearAlertTimer();
     this.cleanupModalArtifacts();
   }
 
@@ -183,8 +185,22 @@ export class UserListComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   private setAlert(message: string, type: "danger" | "success" = "danger") {
+    this.clearAlertTimer();
     this.alertMessage = message;
     this.alertType = type;
+    this.alertTimerId = setTimeout(() => {
+      this.alertMessage = null;
+      this.cdr.markForCheck();
+    }, 4000);
+  }
+
+  private clearAlertTimer() {
+    if (!this.alertTimerId) {
+      return;
+    }
+
+    clearTimeout(this.alertTimerId);
+    this.alertTimerId = null;
   }
 
   private hideModal(id: string) {

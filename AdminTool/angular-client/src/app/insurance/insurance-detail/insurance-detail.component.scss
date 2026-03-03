@@ -36,9 +36,152 @@ h1 {
   align-items: center;
 }
 
+.status-trigger {
+  width: 100%;
+  text-align: left;
+  border: none;
+  font-size: 0.85rem;
+}
+
+.status-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: color-mix(in srgb, var(--bs-body-color) 35%, transparent);
+  z-index: 1050;
+}
+
+.status-modal {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: min(560px, calc(100vw - 2rem));
+  background: var(--bs-body-bg);
+  border-radius: 16px;
+  padding: 0.85rem;
+  box-shadow: var(--bs-box-shadow-lg);
+  z-index: 1060;
+}
+
+.status-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.65rem;
+}
+
+.status-modal-header h2 {
+  margin: 0;
+  font-size: 1rem;
+  font-family: "Fraunces", serif;
+}
+
+.status-modal-body {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 0.5rem;
+}
+
+.status-choice {
+  border: none;
+  text-align: left;
+  font-size: 0.82rem;
+}
+
+.tab-strip {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.tab-btn {
+  border: 1px solid rgba(14, 42, 72, 0.16);
+  background: rgba(255, 255, 255, 0.8);
+  color: #0b2a44;
+  border-radius: 999px;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.78rem;
+}
+
+.tab-btn.active {
+  background: rgba(12, 40, 68, 0.12);
+  border-color: rgba(12, 40, 68, 0.35);
+  font-weight: 600;
+}
+
 .detail-card {
   border-radius: 24px;
   padding: 1rem;
+}
+
+.snapshot-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.65rem;
+}
+
+.snapshot-card {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.label {
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 0.62rem;
+  color: var(--text-muted);
+  margin: 0 0 0.3rem;
+}
+
+.snapshot-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-size: 0.8rem;
+}
+
+.snapshot-item span {
+  color: var(--text-muted);
+}
+
+.snapshot-item strong {
+  text-align: right;
+  font-weight: 600;
+}
+
+.algorithm-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.65rem;
+}
+
+.metric-card {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.metric-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-size: 0.82rem;
+}
+
+.metric-row span {
+  color: var(--text-muted);
+}
+
+.metric-row strong {
+  text-align: right;
+}
+
+.assumptions-card ul {
+  margin: 0;
+  padding-left: 1rem;
+  font-size: 0.8rem;
+}
+
+.assumptions-card li + li {
+  margin-top: 0.25rem;
 }
 
 .form-grid {
@@ -55,6 +198,20 @@ h1 {
 .form-control,
 .btn {
   font-size: 0.85rem;
+}
+
+.money-input-group .input-group-text {
+  min-width: 2rem;
+  justify-content: center;
+  padding: 0.375rem 0.6rem;
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+.money-input {
+  text-align: right;
+  font-size: 0.85rem;
+  line-height: 1.5;
 }
 
 .full-row {

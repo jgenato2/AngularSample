@@ -1,13 +1,14 @@
 .auth-shell {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 1rem;
+  display: flex;
+  justify-content: center;
   align-items: center;
-  padding: 1rem 0.5rem;
+  min-height: calc(100vh - 3rem);
+  padding: 1rem;
   font-size: 0.9rem;
 }
 
 .auth-card {
+  width: min(460px, 100%);
   padding: 1rem;
   border-radius: 24px;
   backdrop-filter: blur(8px);
@@ -55,31 +56,4 @@ form {
   margin-top: 0.65rem;
   font-size: 0.78rem;
   color: var(--text-muted);
-}
-
-.auth-panel {
-  padding: 1rem;
-  border-radius: 28px;
-  background: linear-gradient(135deg, rgba(8, 34, 59, 0.9), rgba(19, 70, 108, 0.85));
-  color: #f2f6fb;
-  box-shadow: 0 24px 48px rgba(8, 20, 40, 0.35);
-}
-
-.auth-panel h2 {
-  margin-top: 0;
-  font-family: "Fraunces", serif;
-}
-
-.tag-row {
-  margin-top: 0.8rem;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.35rem;
-}
-
-.tag {
-  padding: 0.2rem 0.6rem;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  font-size: 0.72rem;
 }

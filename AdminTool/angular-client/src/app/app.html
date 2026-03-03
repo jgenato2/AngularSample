@@ -1,4 +1,4 @@
-<nav class="navbar topbar navbar-expand">
+<nav class="navbar topbar navbar-expand" *ngIf="!isLoginPage">
   <div class="container-fluid">
     <div class="left-cluster">
       <div class="menu-inline" *ngIf="auth.isAuthenticated()">
@@ -29,7 +29,7 @@
   </div>
 </nav>
 
-<div class="menu-backdrop" *ngIf="menuOpen" (click)="closeMenu()"></div>
+<div class="menu-backdrop" *ngIf="!isLoginPage && menuOpen" (click)="closeMenu()"></div>
 
 <main class="app-shell">
   <router-outlet></router-outlet>
