@@ -1,413 +1,124 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Server.Application.Abstractions;
+using Server.Application.Features.Claims.Commands;
+using Server.Application.Features.Claims.Queries;
+using Server.Application.Models;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using Server.Presentation.Auditing;
 using Server.Presentation.Authorization;
 using Server.Presentation.Contracts;
+using Server.Presentation.Mappings;
 
 namespace Server.Presentation.Controllers;
 
 [ApiController]
 [Authorize]
 [Route("api/claims")]
-public class ClaimsController : ControllerBase
+public class ClaimsController(ICqrsDispatcher cqrsDispatcher) : ApiControllerBase
 {
-    private static readonly StringComparer StatusComparer = StringComparer.OrdinalIgnoreCase;
-    private static readonly IReadOnlyDictionary<string, string[]> StatusWorkflow =
-        new Dictionary<string, string[]>(StatusComparer)
-        {
-            ["Submitted"] = ["Under Review", "Rejected"],
-            ["Under Review"] = ["Approved", "Rejected"],
-            ["Approved"] = ["Approved"],
-            ["Rejected"] = ["Submitted"],
-        };
-    private static readonly HashSet<string> AllowedInitialStatuses = ["Submitted"];
-    private static readonly object ClaimsLock = new();
-    private static readonly TimeSpan ReadAuditThrottle = TimeSpan.FromMinutes(2);
-    private const string AuditScope = "claims";
-    private const string ListAuditClaimId = "_LIST_";
-    private const int ListAuditMaxItems = 100;
-    private static bool AuditSeeded;
-    private static readonly List<ClaimResponse> Claims =
-    [
-        new(
-            "CLM-2026-0001",
-            "HC-2026-0001",
-            "Maria Santos",
-            "Blue Horizon Health",
-            "Outpatient",
-            "Diagnostics",
-            "R51",
-            new DateTime(2026, 2, 11),
-            new DateTime(2026, 2, 10),
-            325.75m,
-            "Submitted",
-            "Outpatient diagnostics"),
-        new(
-            "CLM-2026-0002",
-            "HC-2026-0002",
-            "Jared Cruz",
-            "CarePlus Medical",
-            "Emergency",
-            "Emergency Room",
-            "S06.0X0A",
-            new DateTime(2026, 2, 17),
-            new DateTime(2026, 2, 16),
-            1420.00m,
-            "Under Review",
-            "Emergency room claim"),
-        new(
-            "CLM-2026-0003",
-            "HC-2026-0003",
-            "Elena Rivera",
-            "WellLife Assurance",
-            "Pharmacy",
-            "Prescription",
-            "E11.9",
-            new DateTime(2026, 1, 29),
-            new DateTime(2026, 1, 28),
-            88.40m,
-            "Approved",
-            "Prescription reimbursement"),
-    ];
-
-    public ClaimsController()
-    {
-        EnsureAuditSeeded();
-    }
-
     [HttpGet]
-    public IActionResult List()
+    public async Task<IActionResult> List(CancellationToken cancellationToken)
     {
-        lock (ClaimsLock)
-        {
-            AddReadAuditLog(ListAuditClaimId, "ClaimList", GetActor());
-            var items = Claims.OrderByDescending(claim => claim.ServiceDate).ThenBy(claim => claim.ClaimId).ToList();
-            return Ok(new { items });
-        }
+        var query = new ListClaimsQuery(GetActor());
+        var items = (await cqrsDispatcher.ExecuteQuery<ListClaimsQuery, IEnumerable<Domain.Entities.Claim>>(query, cancellationToken)).Select(item => item.ToResponse());
+        return Ok(new { items });
     }
 
     [HttpGet("audit-logs/list-access")]
     [AdminOnly]
-    public IActionResult GetListAccessAuditLogs()
+    public async Task<IActionResult> GetListAccessAuditLogs(CancellationToken cancellationToken)
     {
-        lock (ClaimsLock)
-        {
-            var items = AuditLogStore
-                .Query(AuditScope, ListAuditClaimId, ListAuditMaxItems)
-                .Select(ToClaimAuditLogResponse)
-                .ToList();
-
-            return Ok(new { items });
-        }
+        var query = new GetClaimsListAccessAuditLogsQuery();
+        var items = (await cqrsDispatcher.ExecuteQuery<GetClaimsListAccessAuditLogsQuery, IEnumerable<Domain.Entities.ClaimAuditLogEntry>>(query, cancellationToken))
+            .Select(entry => entry.ToResponse());
+        return Ok(new { items });
     }
 
     [HttpGet("{claimId}")]
-    public IActionResult GetById(string claimId)
+    public async Task<IActionResult> GetById(string claimId, CancellationToken cancellationToken)
     {
-        lock (ClaimsLock)
-        {
-            var item = Claims.FirstOrDefault(claim => claim.ClaimId.Equals(claimId, StringComparison.OrdinalIgnoreCase));
-            if (item is null)
-            {
-                return NotFound(new { message = "Claim not found." });
-            }
-
-            AddReadAuditLog(item.ClaimId, "Claim", GetActor());
-
-            return Ok(new { item });
-        }
+        var query = new GetClaimByIdQuery(claimId, GetActor());
+        var result = await cqrsDispatcher.ExecuteQuery<GetClaimByIdQuery, OperationResult<Domain.Entities.Claim>>(query, cancellationToken);
+        return FromResult(result, item => Ok(new { item = item.ToResponse() }));
     }
 
     [HttpGet("{claimId}/audit-logs")]
-    public IActionResult GetAuditLogs(string claimId)
+    public async Task<IActionResult> GetAuditLogs(string claimId, CancellationToken cancellationToken)
     {
-        lock (ClaimsLock)
-        {
-            var exists = Claims.Any(claim => claim.ClaimId.Equals(claimId, StringComparison.OrdinalIgnoreCase));
-            if (!exists)
-            {
-                return NotFound(new { message = "Claim not found." });
-            }
-
-            var items = AuditLogStore
-                .Query(AuditScope, claimId)
-                .Select(ToClaimAuditLogResponse)
-                .ToList();
-
-            return Ok(new { items });
-        }
+        var query = new GetClaimAuditLogsQuery(claimId);
+        var result = await cqrsDispatcher.ExecuteQuery<GetClaimAuditLogsQuery, OperationResult<IEnumerable<Domain.Entities.ClaimAuditLogEntry>>>(query, cancellationToken);
+        return FromResult(result, items => Ok(new { items = items.Select(entry => entry.ToResponse()) }));
     }
 
     [HttpGet("status-workflow")]
-    public IActionResult GetStatusWorkflow()
+    public async Task<IActionResult> GetStatusWorkflow(CancellationToken cancellationToken)
     {
-        var workflow = StatusWorkflow
-            .Select(entry => new
-            {
-                status = entry.Key,
-                next = entry.Value,
-            })
-            .ToList();
-
+        var query = new GetClaimStatusWorkflowQuery();
+        var statusWorkflow = await cqrsDispatcher.ExecuteQuery<GetClaimStatusWorkflowQuery, ClaimStatusWorkflowModel>(query, cancellationToken);
         return Ok(new
         {
-            createStatuses = AllowedInitialStatuses.OrderBy(status => status).ToArray(),
-            workflow,
+            createStatuses = statusWorkflow.CreateStatuses,
+            workflow = statusWorkflow.Workflow.Select(item => new { status = item.Status, next = item.Next }),
         });
     }
 
     [HttpPost]
     [AdminOnly]
-    public IActionResult Create([FromBody] CreateClaimRequest request)
+    public async Task<IActionResult> Create([FromBody] CreateClaimRequest request, CancellationToken cancellationToken)
     {
-        lock (ClaimsLock)
+        var candidate = new Domain.Entities.Claim
         {
-            var normalizedStatus = NormalizeStatus(request.status);
-            if (normalizedStatus is null)
-            {
-                return BadRequest(new { message = "Status is required." });
-            }
+            ClaimId = request.claimId,
+            PolicyId = request.policyId,
+            MemberName = request.memberName,
+            Provider = request.provider,
+            ClaimType = request.claimType,
+            ServiceCategory = request.serviceCategory,
+            DiagnosisCode = request.diagnosisCode,
+            SubmittedAt = request.submittedAt,
+            ServiceDate = request.serviceDate,
+            ClaimAmount = request.claimAmount,
+            Status = request.status,
+            Notes = request.notes,
+        };
 
-            if (!AllowedInitialStatuses.Contains(normalizedStatus))
-            {
-                return BadRequest(new { message = $"Status '{request.status}' is not allowed for claim creation." });
-            }
-
-            var duplicate = Claims.Any(claim => claim.ClaimId.Equals(request.claimId, StringComparison.OrdinalIgnoreCase));
-            if (duplicate)
-            {
-                return Conflict(new { message = "Claim ID already exists." });
-            }
-
-            var policyAlreadyAssigned = Claims.Any(claim => claim.PolicyId.Equals(request.policyId, StringComparison.OrdinalIgnoreCase));
-            if (policyAlreadyAssigned)
-            {
-                return Conflict(new { message = $"Policy ID '{request.policyId}' is already assigned to another claim." });
-            }
-
-            var item = new ClaimResponse(
-                request.claimId,
-                request.policyId,
-                request.memberName,
-                request.provider,
-                request.claimType,
-                request.serviceCategory,
-                request.diagnosisCode,
-                request.submittedAt,
-                request.serviceDate,
-                request.claimAmount,
-                normalizedStatus,
-                request.notes);
-
-            Claims.Add(item);
-            var actor = GetActor();
-            AddAuditLog(item.ClaimId, "Created", "Claim", null, $"{item.ClaimType} ({item.Status})", actor);
-            if (!string.IsNullOrWhiteSpace(item.Notes))
-            {
-                AddAuditLog(item.ClaimId, "Updated", "Notes", null, item.Notes, actor);
-            }
-            return Created($"/api/claims/{item.ClaimId}", new { item });
-        }
+        var command = new CreateClaimCommand(candidate, GetActor());
+        var result = await cqrsDispatcher.ExecuteCommand<CreateClaimCommand, OperationResult<Domain.Entities.Claim>>(command, cancellationToken);
+        return FromResult(result, item => Created($"/api/claims/{item.ClaimId}", new { item = item.ToResponse() }));
     }
 
     [HttpPut("{claimId}")]
     [AdminOnly]
-    public IActionResult Update(string claimId, [FromBody] UpdateClaimRequest request)
+    public async Task<IActionResult> Update(string claimId, [FromBody] UpdateClaimRequest request, CancellationToken cancellationToken)
     {
-        lock (ClaimsLock)
+        var updates = new ClaimUpdateModel
         {
-            var index = Claims.FindIndex(claim => claim.ClaimId.Equals(claimId, StringComparison.OrdinalIgnoreCase));
-            if (index < 0)
-            {
-                return NotFound(new { message = "Claim not found." });
-            }
+            PolicyId = request.policyId,
+            MemberName = request.memberName,
+            Provider = request.provider,
+            ClaimType = request.claimType,
+            ServiceCategory = request.serviceCategory,
+            DiagnosisCode = request.diagnosisCode,
+            SubmittedAt = request.submittedAt,
+            ServiceDate = request.serviceDate,
+            ClaimAmount = request.claimAmount,
+            Status = request.status,
+            Notes = request.notes,
+        };
 
-            var current = Claims[index];
-            var nextPolicyId = request.policyId ?? current.PolicyId;
-
-            var policyAlreadyAssigned = Claims.Any(claim =>
-                !claim.ClaimId.Equals(current.ClaimId, StringComparison.OrdinalIgnoreCase)
-                && claim.PolicyId.Equals(nextPolicyId, StringComparison.OrdinalIgnoreCase));
-            if (policyAlreadyAssigned)
-            {
-                return Conflict(new { message = $"Policy ID '{nextPolicyId}' is already assigned to another claim." });
-            }
-
-            var nextStatus = current.Status;
-            if (!string.IsNullOrWhiteSpace(request.status))
-            {
-                var normalizedStatus = NormalizeStatus(request.status);
-                if (normalizedStatus is null)
-                {
-                    return BadRequest(new { message = "Status is required." });
-                }
-
-                if (!CanTransition(current.Status, normalizedStatus))
-                {
-                    return BadRequest(new { message = $"Status transition from '{current.Status}' to '{normalizedStatus}' is not allowed." });
-                }
-
-                nextStatus = normalizedStatus;
-            }
-
-            var updated = current with
-            {
-                PolicyId = nextPolicyId,
-                MemberName = request.memberName ?? current.MemberName,
-                Provider = request.provider ?? current.Provider,
-                ClaimType = request.claimType ?? current.ClaimType,
-                ServiceCategory = request.serviceCategory ?? current.ServiceCategory,
-                DiagnosisCode = request.diagnosisCode ?? current.DiagnosisCode,
-                SubmittedAt = request.submittedAt ?? current.SubmittedAt,
-                ServiceDate = request.serviceDate ?? current.ServiceDate,
-                ClaimAmount = request.claimAmount ?? current.ClaimAmount,
-                Status = nextStatus,
-                Notes = request.notes ?? current.Notes,
-            };
-
-            Claims[index] = updated;
-            AddChangeAuditLogs(current, updated, GetActor());
-            return Ok(new { item = updated });
-        }
+        var command = new UpdateClaimCommand(claimId, updates, GetActor());
+        var result = await cqrsDispatcher.ExecuteCommand<UpdateClaimCommand, OperationResult<Domain.Entities.Claim>>(command, cancellationToken);
+        return FromResult(result, item => Ok(new { item = item.ToResponse() }));
     }
 
     [HttpDelete("{claimId}")]
     [AdminOnly]
-    public IActionResult Delete(string claimId)
+    public async Task<IActionResult> Delete(string claimId, CancellationToken cancellationToken)
     {
-        lock (ClaimsLock)
-        {
-            var index = Claims.FindIndex(claim => claim.ClaimId.Equals(claimId, StringComparison.OrdinalIgnoreCase));
-            if (index < 0)
-            {
-                return NotFound(new { message = "Claim not found." });
-            }
-
-            var current = Claims[index];
-            AddAuditLog(current.ClaimId, "Deleted", "Claim", $"{current.ClaimType} ({current.Status})", null, GetActor());
-            Claims.RemoveAt(index);
-            return Ok(new { ok = true });
-        }
-    }
-
-    private static void AddAuditLog(
-        string claimId,
-        string action,
-        string field,
-        string? oldValue,
-        string? newValue,
-        string actor)
-    {
-        AuditLogStore.Add(
-            AuditScope,
-            claimId,
-            action,
-            field,
-            oldValue,
-            newValue,
-            actor);
-    }
-
-    private static void AddReadAuditLog(string claimId, string field, string actor)
-    {
-        AuditLogStore.AddReadWithThrottle(AuditScope, claimId, field, actor, ReadAuditThrottle);
-    }
-
-    private static ClaimAuditLogResponse ToClaimAuditLogResponse(AuditLogEntry entry)
-        => new(
-            entry.Id,
-            entry.EntityId,
-            entry.Action,
-            entry.Field,
-            entry.OldValue,
-            entry.NewValue,
-            entry.PerformedBy,
-            entry.OccurredAtUtc);
-
-    private static void EnsureAuditSeeded()
-    {
-        if (AuditSeeded)
-        {
-            return;
-        }
-
-        lock (ClaimsLock)
-        {
-            if (AuditSeeded)
-            {
-                return;
-            }
-
-            AuditLogStore.Add(AuditScope, "CLM-2026-0001", "Created", "Claim", null, "Outpatient (Submitted)", "system-seed", DateTime.UtcNow.AddDays(-30));
-            AuditLogStore.Add(AuditScope, "CLM-2026-0002", "Created", "Claim", null, "Emergency (Under Review)", "system-seed", DateTime.UtcNow.AddDays(-20));
-            AuditLogStore.Add(AuditScope, "CLM-2026-0003", "Created", "Claim", null, "Pharmacy (Approved)", "system-seed", DateTime.UtcNow.AddDays(-10));
-
-            AuditSeeded = true;
-        }
-    }
-
-    private static string FormatDate(DateTime value) => value.ToString("yyyy-MM-dd");
-
-    private static string FormatDecimal(decimal value) => value.ToString("0.##");
-
-    private void AddChangeAuditLogs(ClaimResponse current, ClaimResponse updated, string actor)
-    {
-        if (!string.Equals(current.PolicyId, updated.PolicyId, StringComparison.Ordinal))
-        {
-            AddAuditLog(updated.ClaimId, "Updated", "PolicyId", current.PolicyId, updated.PolicyId, actor);
-        }
-
-        if (!string.Equals(current.MemberName, updated.MemberName, StringComparison.Ordinal))
-        {
-            AddAuditLog(updated.ClaimId, "Updated", "MemberName", current.MemberName, updated.MemberName, actor);
-        }
-
-        if (!string.Equals(current.Provider, updated.Provider, StringComparison.Ordinal))
-        {
-            AddAuditLog(updated.ClaimId, "Updated", "Provider", current.Provider, updated.Provider, actor);
-        }
-
-        if (!string.Equals(current.ClaimType, updated.ClaimType, StringComparison.Ordinal))
-        {
-            AddAuditLog(updated.ClaimId, "Updated", "ClaimType", current.ClaimType, updated.ClaimType, actor);
-        }
-
-        if (!string.Equals(current.ServiceCategory, updated.ServiceCategory, StringComparison.Ordinal))
-        {
-            AddAuditLog(updated.ClaimId, "Updated", "ServiceCategory", current.ServiceCategory, updated.ServiceCategory, actor);
-        }
-
-        if (!string.Equals(current.DiagnosisCode, updated.DiagnosisCode, StringComparison.Ordinal))
-        {
-            AddAuditLog(updated.ClaimId, "Updated", "DiagnosisCode", current.DiagnosisCode, updated.DiagnosisCode, actor);
-        }
-
-        if (current.SubmittedAt.Date != updated.SubmittedAt.Date)
-        {
-            AddAuditLog(updated.ClaimId, "Updated", "SubmittedAt", FormatDate(current.SubmittedAt), FormatDate(updated.SubmittedAt), actor);
-        }
-
-        if (current.ServiceDate.Date != updated.ServiceDate.Date)
-        {
-            AddAuditLog(updated.ClaimId, "Updated", "ServiceDate", FormatDate(current.ServiceDate), FormatDate(updated.ServiceDate), actor);
-        }
-
-        if (current.ClaimAmount != updated.ClaimAmount)
-        {
-            AddAuditLog(updated.ClaimId, "Updated", "ClaimAmount", FormatDecimal(current.ClaimAmount), FormatDecimal(updated.ClaimAmount), actor);
-        }
-
-        if (!string.Equals(current.Status, updated.Status, StringComparison.Ordinal))
-        {
-            AddAuditLog(updated.ClaimId, "Updated", "Status", current.Status, updated.Status, actor);
-        }
-
-        if (!string.Equals(current.Notes, updated.Notes, StringComparison.Ordinal))
-        {
-            AddAuditLog(updated.ClaimId, "Updated", "Notes", current.Notes, updated.Notes, actor);
-        }
+        var command = new DeleteClaimCommand(claimId, GetActor());
+        var result = await cqrsDispatcher.ExecuteCommand<DeleteClaimCommand, OperationResult<bool>>(command, cancellationToken);
+        return FromResult(result, _ => Ok(new { ok = true }));
     }
 
     private string GetActor()
@@ -426,27 +137,5 @@ public class ClaimsController : ControllerBase
         }
 
         return "unknown";
-    }
-
-    private static string? NormalizeStatus(string? status)
-    {
-        if (string.IsNullOrWhiteSpace(status))
-        {
-            return null;
-        }
-
-        var trimmed = status.Trim();
-        var known = StatusWorkflow.Keys.FirstOrDefault(value => value.Equals(trimmed, StringComparison.OrdinalIgnoreCase));
-        return known;
-    }
-
-    private static bool CanTransition(string currentStatus, string nextStatus)
-    {
-        if (!StatusWorkflow.TryGetValue(currentStatus, out var transitions))
-        {
-            return false;
-        }
-
-        return transitions.Contains(nextStatus, StringComparer.OrdinalIgnoreCase);
     }
 }

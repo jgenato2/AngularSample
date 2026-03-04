@@ -15,7 +15,7 @@ public sealed class TokenService(IOptions<JwtSettings> options) : ITokenService
 
     public string CreateToken(User user)
     {
-        var claims = new List<Claim>
+        var claims = new List<System.Security.Claims.Claim>
         {
             new(JwtRegisteredClaimNames.Sub, user.Id),
             new(ClaimTypes.NameIdentifier, user.Id),

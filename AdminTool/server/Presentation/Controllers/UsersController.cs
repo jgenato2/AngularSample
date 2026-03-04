@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Server.Application.Features.Users.Commands;
+using Server.Application.Features.Users.Queries;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Server.Application.Abstractions;
@@ -14,27 +16,23 @@ namespace Server.Presentation.Controllers;
 [ApiController]
 [Authorize]
 [Route("api/users")]
-public class UsersController(IUsersApplicationService usersService) : ApiControllerBase
+public class UsersController(ICqrsDispatcher cqrsDispatcher) : ApiControllerBase
 {
-    private static readonly TimeSpan ReadAuditThrottle = TimeSpan.FromMinutes(2);
-    private const int ListAuditMaxItems = 100;
-    private const string AuditScope = "users";
-    private const string ListAuditEntityId = "_LIST_";
-
     [HttpGet]
     [AdminOnly]
-    public IActionResult List()
+    public async Task<IActionResult> List(CancellationToken cancellationToken)
     {
-        AddReadAuditLog(GetActor());
-        return Ok(new { items = usersService.List().Select(user => user.ToResponse()) });
+        var query = new ListUsersQuery(GetActor());
+        var items = await cqrsDispatcher.ExecuteQuery<ListUsersQuery, IEnumerable<Domain.Entities.User>>(query, cancellationToken);
+        return Ok(new { items = items.Select(user => user.ToResponse()) });
     }
 
     [HttpGet("audit-logs/list-access")]
     [AdminOnly]
-    public IActionResult GetListAccessAuditLogs()
+    public async Task<IActionResult> GetListAccessAuditLogs(CancellationToken cancellationToken)
     {
-        var items = AuditLogStore
-            .Query(AuditScope, ListAuditEntityId, ListAuditMaxItems)
+        var query = new GetUsersListAccessAuditLogsQuery();
+        var items = (await cqrsDispatcher.ExecuteQuery<GetUsersListAccessAuditLogsQuery, IEnumerable<AuditLogEntry>>(query, cancellationToken))
             .Select(entry => new UserAuditLogResponse(
                 entry.Id,
                 entry.Action,
@@ -50,24 +48,26 @@ public class UsersController(IUsersApplicationService usersService) : ApiControl
 
     [HttpPost]
     [AdminOnly]
-    public IActionResult Create([FromBody] CreateUserRequest request)
+    public async Task<IActionResult> Create([FromBody] CreateUserRequest request, CancellationToken cancellationToken)
     {
-        var result = usersService.Create(request.name, request.email, request.role, request.password);
+        var command = new CreateUserCommand(request.name, request.email, request.role, request.password);
+        var result = await cqrsDispatcher.ExecuteCommand<CreateUserCommand, OperationResult<Domain.Entities.User>>(command, cancellationToken);
         return FromResult(result, createdUser =>
             Created($"/api/users/{createdUser.Id}", new { item = createdUser.ToResponse() }));
     }
 
     [HttpGet("{id}")]
     [SelfOrAdmin]
-    public IActionResult GetById(string id)
+    public async Task<IActionResult> GetById(string id, CancellationToken cancellationToken)
     {
-        var result = usersService.GetById(id);
+        var query = new GetUserByIdQuery(id);
+        var result = await cqrsDispatcher.ExecuteQuery<GetUserByIdQuery, OperationResult<Domain.Entities.User>>(query, cancellationToken);
         return FromResult(result, user => Ok(new { item = user.ToResponse() }));
     }
 
     [HttpPut("{id}")]
     [SelfOrAdmin]
-    public IActionResult Update(string id, [FromBody] UpdateUserRequest request)
+    public async Task<IActionResult> Update(string id, [FromBody] UpdateUserRequest request, CancellationToken cancellationToken)
     {
         var updates = new UpdateUserModel
         {
@@ -77,21 +77,18 @@ public class UsersController(IUsersApplicationService usersService) : ApiControl
             Password = request.password,
         };
 
-        var result = usersService.Update(id, updates, User.IsInRole("admin"));
+        var command = new UpdateUserCommand(id, updates, User.IsInRole("admin"));
+        var result = await cqrsDispatcher.ExecuteCommand<UpdateUserCommand, OperationResult<Domain.Entities.User>>(command, cancellationToken);
         return FromResult(result, user => Ok(new { item = user.ToResponse() }));
     }
 
     [HttpDelete("{id}")]
     [AdminOnly]
-    public IActionResult Delete(string id)
+    public async Task<IActionResult> Delete(string id, CancellationToken cancellationToken)
     {
-        var result = usersService.Delete(id);
+        var command = new DeleteUserCommand(id);
+        var result = await cqrsDispatcher.ExecuteCommand<DeleteUserCommand, OperationResult<bool>>(command, cancellationToken);
         return FromResult(result, _ => Ok(new { ok = true }));
-    }
-
-    private void AddReadAuditLog(string actor)
-    {
-        AuditLogStore.AddReadWithThrottle(AuditScope, ListAuditEntityId, "UserList", actor, ReadAuditThrottle);
     }
 
     private string GetActor()

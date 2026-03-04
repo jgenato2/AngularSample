@@ -3,8 +3,16 @@
 @import "ag-grid-community/styles/ag-theme-quartz.css";
 
 :root {
+  --mcc-primary: #0f4c81;
+  --mcc-primary-rgb: 15, 76, 129;
+  --mcc-accent: #2ea3a7;
+  --mcc-surface: #ffffff;
+  --mcc-bg-soft: #f3f8fd;
+  --mcc-text: #0b2a44;
   --text-muted: #5b6b7b;
-  --surface: #ffffff;
+  --surface: var(--mcc-surface);
+  --bs-primary: var(--mcc-primary);
+  --bs-primary-rgb: var(--mcc-primary-rgb);
 }
 
 html {
@@ -13,10 +21,10 @@ html {
 
 body {
   color-scheme: light;
-  background: radial-gradient(circle at top, rgba(90, 170, 255, 0.25), transparent 40%),
-    radial-gradient(circle at 80% 20%, rgba(255, 214, 112, 0.35), transparent 45%),
-    linear-gradient(180deg, #f8fbff 0%, #eef4fb 100%);
-  color: #0b2a44;
+  background: radial-gradient(circle at top, color-mix(in srgb, var(--mcc-primary) 26%, transparent), transparent 44%),
+    radial-gradient(circle at 80% 20%, color-mix(in srgb, var(--mcc-accent) 24%, transparent), transparent 46%),
+    linear-gradient(180deg, #f8fbff 0%, var(--mcc-bg-soft) 100%);
+  color: var(--mcc-text);
   font-family: var(--bs-body-font-family);
   margin: 0;
   min-height: 100%;
@@ -29,10 +37,10 @@ a {
 
 .ag-theme-quartz {
   --ag-font-family: "Space Grotesk", sans-serif;
-  --ag-header-background-color: rgba(12, 40, 68, 0.08);
-  --ag-odd-row-background-color: rgba(12, 40, 68, 0.03);
+  --ag-header-background-color: color-mix(in srgb, var(--mcc-primary) 10%, transparent);
+  --ag-odd-row-background-color: color-mix(in srgb, var(--mcc-primary) 4%, transparent);
   --ag-borders: none;
-  --ag-row-hover-color: rgba(12, 40, 68, 0.08);
+  --ag-row-hover-color: color-mix(in srgb, var(--mcc-primary) 10%, transparent);
   border-radius: 18px;
   overflow: hidden;
 }

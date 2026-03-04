@@ -75,7 +75,7 @@ export class InsuranceListComponent implements OnInit, OnDestroy, AfterViewInit 
   }
 
   columnDefs: ColDef<InsurancePlanItem>[] = [
-    { field: "policyId", headerName: "Policy ID", width: 150, minWidth: 140 },
+    { field: "policyId", headerName: "Policy ID", width: 150, minWidth: 140, sort: "desc", sortIndex: 0 },
     { field: "memberName", headerName: "Member", width: 210, minWidth: 180 },
     { field: "provider", headerName: "Provider", width: 210, minWidth: 180 },
     { field: "planType", headerName: "Plan", width: 170, minWidth: 150 },
@@ -115,6 +115,8 @@ export class InsuranceListComponent implements OnInit, OnDestroy, AfterViewInit 
       headerName: "Effective",
       width: 150,
       minWidth: 130,
+      sort: "desc",
+      sortIndex: 1,
       valueFormatter: (params) => this.datePipe.transform(params.value, "MMM d, y") ?? "",
     },
     {

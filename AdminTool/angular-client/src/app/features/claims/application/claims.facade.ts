@@ -1,41 +1,56 @@
 import { Injectable } from "@angular/core";
-import { map } from "rxjs";
-import { ClaimsService } from "../../../claims/claims.service";
-import { ClaimAuditLogItem, ClaimItem, CreateClaimPayload, UpdateClaimPayload } from "../domain/claim.models";
+import { CreateClaimCommand } from "./commands/create-claim.command";
+import { DeleteClaimCommand } from "./commands/delete-claim.command";
+import { UpdateClaimCommand } from "./commands/update-claim.command";
+import { GetClaimAuditLogsQuery } from "./queries/get-claim-audit-logs.query";
+import { GetClaimByIdQuery } from "./queries/get-claim-by-id.query";
+import { GetClaimsListAccessAuditLogsQuery } from "./queries/get-claims-list-access-audit-logs.query";
+import { GetClaimStatusWorkflowQuery } from "./queries/get-claim-status-workflow.query";
+import { ListClaimsQuery } from "./queries/list-claims.query";
+import { CreateClaimPayload, UpdateClaimPayload } from "../domain/claim.models";
 
 @Injectable({ providedIn: "root" })
 export class ClaimsFacade {
-  constructor(private readonly claimsService: ClaimsService) {}
+  constructor(
+    private readonly listClaimsQuery: ListClaimsQuery,
+    private readonly getClaimByIdQuery: GetClaimByIdQuery,
+    private readonly getClaimStatusWorkflowQuery: GetClaimStatusWorkflowQuery,
+    private readonly getClaimAuditLogsQuery: GetClaimAuditLogsQuery,
+    private readonly getClaimsListAccessAuditLogsQuery: GetClaimsListAccessAuditLogsQuery,
+    private readonly createClaimCommand: CreateClaimCommand,
+    private readonly updateClaimCommand: UpdateClaimCommand,
+    private readonly deleteClaimCommand: DeleteClaimCommand
+  ) {}
 
   list() {
-    return this.claimsService.list().pipe(map((response) => response.items ?? []));
+    return this.listClaimsQuery.execute();
   }
 
   getById(claimId: string) {
-    return this.claimsService.getById(claimId).pipe(map((response) => response.item as ClaimItem));
+    return this.getClaimByIdQuery.execute(claimId);
   }
 
   getStatusWorkflow() {
-    return this.claimsService.getStatusWorkflow() as ReturnType<ClaimsService["getStatusWorkflow"]>;
+    return this.getClaimStatusWorkflowQuery.execute();
   }
 
   getAuditLogs(claimId: string) {
-    return this.claimsService.getAuditLogs(claimId).pipe(map((response) => (response.items ?? []) as ClaimAuditLogItem[]));
+    return this.getClaimAuditLogsQuery.execute(claimId);
   }
 
   getListAccessAuditLogs() {
-    return this.claimsService.getListAccessAuditLogs().pipe(map((response) => (response.items ?? []) as ClaimAuditLogItem[]));
+    return this.getClaimsListAccessAuditLogsQuery.execute();
   }
 
   create(payload: CreateClaimPayload) {
-    return this.claimsService.create(payload).pipe(map((response) => response.item as ClaimItem));
+    return this.createClaimCommand.execute(payload);
   }
 
   update(claimId: string, payload: UpdateClaimPayload) {
-    return this.claimsService.update(claimId, payload).pipe(map((response) => response.item as ClaimItem));
+    return this.updateClaimCommand.execute(claimId, payload);
   }
 
   remove(claimId: string) {
-    return this.claimsService.remove(claimId).pipe(map((response) => !!response.ok));
+    return this.deleteClaimCommand.execute(claimId);
   }
 }

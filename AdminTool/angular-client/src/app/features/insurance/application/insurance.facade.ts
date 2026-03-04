@@ -1,54 +1,65 @@
 import { Injectable } from "@angular/core";
-import { map } from "rxjs";
+import { CreateInsurancePlanCommand } from "./commands/create-insurance-plan.command";
+import { DeleteInsurancePlanCommand } from "./commands/delete-insurance-plan.command";
+import { UpdateInsurancePlanCommand } from "./commands/update-insurance-plan.command";
+import { GetInsuranceAuditLogsQuery } from "./queries/get-insurance-audit-logs.query";
+import { GetInsuranceFinancialAnalyticsQuery } from "./queries/get-insurance-financial-analytics.query";
+import { GetInsuranceListAccessAuditLogsQuery } from "./queries/get-insurance-list-access-audit-logs.query";
+import { GetInsurancePlanByPolicyIdQuery } from "./queries/get-insurance-plan-by-policy-id.query";
+import { GetInsuranceStatusWorkflowQuery } from "./queries/get-insurance-status-workflow.query";
+import { ListInsurancePlansQuery } from "./queries/list-insurance-plans.query";
 import {
-  InsuranceAuditLogItem,
   CreateInsurancePlanPayload,
-  InsuranceFinancialAnalyticsItem,
-  InsurancePlanItem,
-  InsuranceStatusWorkflowResponse,
   UpdateInsurancePlanPayload,
 } from "../domain/insurance.models";
-import { InsuranceService } from "../../../insurance/insurance.service";
 
 @Injectable({ providedIn: "root" })
 export class InsuranceFacade {
-  constructor(private readonly insuranceService: InsuranceService) {}
+  constructor(
+    private readonly listInsurancePlansQuery: ListInsurancePlansQuery,
+    private readonly getInsurancePlanByPolicyIdQuery: GetInsurancePlanByPolicyIdQuery,
+    private readonly getInsuranceFinancialAnalyticsQuery: GetInsuranceFinancialAnalyticsQuery,
+    private readonly getInsuranceAuditLogsQuery: GetInsuranceAuditLogsQuery,
+    private readonly getInsuranceListAccessAuditLogsQuery: GetInsuranceListAccessAuditLogsQuery,
+    private readonly getInsuranceStatusWorkflowQuery: GetInsuranceStatusWorkflowQuery,
+    private readonly createInsurancePlanCommand: CreateInsurancePlanCommand,
+    private readonly updateInsurancePlanCommand: UpdateInsurancePlanCommand,
+    private readonly deleteInsurancePlanCommand: DeleteInsurancePlanCommand
+  ) {}
 
   listPlans() {
-    return this.insuranceService.listPlans().pipe(map((response) => response.items ?? []));
+    return this.listInsurancePlansQuery.execute();
   }
 
   getByPolicyId(policyId: string) {
-    return this.insuranceService.getByPolicyId(policyId).pipe(map((response) => response.item as InsurancePlanItem));
+    return this.getInsurancePlanByPolicyIdQuery.execute(policyId);
   }
 
   getFinancialAnalytics(policyId: string) {
-    return this.insuranceService
-      .getFinancialAnalytics(policyId)
-      .pipe(map((response) => response.item as InsuranceFinancialAnalyticsItem));
+    return this.getInsuranceFinancialAnalyticsQuery.execute(policyId);
   }
 
   getAuditLogs(policyId: string) {
-    return this.insuranceService.getAuditLogs(policyId).pipe(map((response) => (response.items ?? []) as InsuranceAuditLogItem[]));
+    return this.getInsuranceAuditLogsQuery.execute(policyId);
   }
 
   getListAccessAuditLogs() {
-    return this.insuranceService.getListAccessAuditLogs().pipe(map((response) => (response.items ?? []) as InsuranceAuditLogItem[]));
+    return this.getInsuranceListAccessAuditLogsQuery.execute();
   }
 
   getStatusWorkflow() {
-    return this.insuranceService.getStatusWorkflow() as ReturnType<InsuranceService["getStatusWorkflow"]>;
+    return this.getInsuranceStatusWorkflowQuery.execute();
   }
 
   create(payload: CreateInsurancePlanPayload) {
-    return this.insuranceService.create(payload).pipe(map((response) => response.item as InsurancePlanItem));
+    return this.createInsurancePlanCommand.execute(payload);
   }
 
   update(policyId: string, payload: UpdateInsurancePlanPayload) {
-    return this.insuranceService.update(policyId, payload).pipe(map((response) => response.item as InsurancePlanItem));
+    return this.updateInsurancePlanCommand.execute(policyId, payload);
   }
 
   remove(policyId: string) {
-    return this.insuranceService.remove(policyId).pipe(map((response) => !!response.ok));
+    return this.deleteInsurancePlanCommand.execute(policyId);
   }
 }

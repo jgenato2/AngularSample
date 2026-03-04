@@ -69,6 +69,8 @@ public static class ServiceCollectionExtensions
 
         services.AddAuthorization();
         services.AddSingleton<IUserStore, UserStore>();
+        services.AddSingleton<IClaimsStore, ClaimsStore>();
+        services.AddSingleton<IClaimAuditLogStore, ClaimAuditLogStore>();
         services.AddSingleton<ITokenService, TokenService>();
 
         return services;

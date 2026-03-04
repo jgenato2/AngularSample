@@ -27,6 +27,33 @@ public sealed class UserStore : IUserStore
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow,
         });
+
+        SeedDemoUsers();
+    }
+
+    private void SeedDemoUsers()
+    {
+        if (_users.Count > 1)
+        {
+            return;
+        }
+
+        var now = DateTime.UtcNow;
+        for (var i = 2; i <= 180; i++)
+        {
+            _users.Add(new User
+            {
+                Id = _nextId.ToString(),
+                Name = $"User {i:000}",
+                Email = $"user{i:000}@local.com",
+                Role = i % 15 == 0 ? "admin" : "user",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin123!"),
+                CreatedAt = now.AddMinutes(-i),
+                UpdatedAt = now.AddMinutes(-i),
+            });
+
+            _nextId++;
+        }
     }
 
     public IEnumerable<User> List() => _users;

@@ -1,33 +1,44 @@
 import { Injectable } from "@angular/core";
-import { map } from "rxjs";
-import { UsersService } from "../../../users/users.service";
-import { CreateUserPayload, UpdateUserPayload, UserAuditLogItem, UserItem } from "../domain/user.models";
+import { CreateUserCommand } from "./commands/create-user.command";
+import { DeleteUserCommand } from "./commands/delete-user.command";
+import { UpdateUserCommand } from "./commands/update-user.command";
+import { GetUserByIdQuery } from "./queries/get-user-by-id.query";
+import { GetUsersListAccessAuditLogsQuery } from "./queries/get-users-list-access-audit-logs.query";
+import { ListUsersQuery } from "./queries/list-users.query";
+import { CreateUserPayload, UpdateUserPayload } from "../domain/user.models";
 
 @Injectable({ providedIn: "root" })
 export class UsersFacade {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly listUsersQuery: ListUsersQuery,
+    private readonly getUserByIdQuery: GetUserByIdQuery,
+    private readonly createUserCommand: CreateUserCommand,
+    private readonly updateUserCommand: UpdateUserCommand,
+    private readonly deleteUserCommand: DeleteUserCommand,
+    private readonly getUsersListAccessAuditLogsQuery: GetUsersListAccessAuditLogsQuery
+  ) {}
 
   list() {
-    return this.usersService.list().pipe(map((response) => response.items ?? []));
+    return this.listUsersQuery.execute();
   }
 
   getById(id: string) {
-    return this.usersService.getById(id).pipe(map((response) => response.item as UserItem));
+    return this.getUserByIdQuery.execute(id);
   }
 
   create(payload: CreateUserPayload) {
-    return this.usersService.create(payload).pipe(map((response) => response.item as UserItem));
+    return this.createUserCommand.execute(payload);
   }
 
   update(id: string, payload: UpdateUserPayload) {
-    return this.usersService.update(id, payload).pipe(map((response) => response.item as UserItem));
+    return this.updateUserCommand.execute(id, payload);
   }
 
   remove(id: string) {
-    return this.usersService.remove(id).pipe(map((response) => !!response.ok));
+    return this.deleteUserCommand.execute(id);
   }
 
   getListAccessAuditLogs() {
-    return this.usersService.getListAccessAuditLogs().pipe(map((response) => (response.items ?? []) as UserAuditLogItem[]));
+    return this.getUsersListAccessAuditLogsQuery.execute();
   }
 }

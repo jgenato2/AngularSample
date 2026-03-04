@@ -83,7 +83,7 @@ export class ClaimListComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   columnDefs: ColDef<ClaimItem>[] = [
-    { field: "claimId", headerName: "Claim ID", width: 150, minWidth: 140 },
+    { field: "claimId", headerName: "Claim ID", width: 150, minWidth: 140, sort: "desc", sortIndex: 0 },
     { field: "policyId", headerName: "Policy ID", width: 150, minWidth: 140 },
     { field: "memberName", headerName: "Member", width: 210, minWidth: 180 },
     { field: "provider", headerName: "Provider", width: 210, minWidth: 180 },
@@ -95,6 +95,8 @@ export class ClaimListComponent implements OnInit, OnDestroy, AfterViewInit {
       headerName: "Submitted",
       width: 150,
       minWidth: 130,
+      sort: "desc",
+      sortIndex: 1,
       valueFormatter: (params) => this.datePipe.transform(params.value, "MMM d, y") ?? "",
     },
     {

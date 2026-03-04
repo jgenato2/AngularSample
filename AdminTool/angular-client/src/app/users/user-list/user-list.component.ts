@@ -45,7 +45,7 @@ export class UserListComponent implements OnInit, OnDestroy, AfterViewInit {
   private readonly wheelHandler = (event: WheelEvent) => this.handleGridWheel(event);
 
   columnDefs: ColDef<UserItem>[] = [
-    { field: "id", headerName: "ID", width: 260, minWidth: 240 },
+    { field: "id", headerName: "ID", width: 260, minWidth: 240, sort: "desc", sortIndex: 1 },
     { field: "name", headerName: "Name", width: 190, minWidth: 170 },
     { field: "email", headerName: "Email", width: 260, minWidth: 220 },
     { field: "role", headerName: "Role", width: 120 },
@@ -53,6 +53,8 @@ export class UserListComponent implements OnInit, OnDestroy, AfterViewInit {
       field: "createdAt",
       headerName: "Created",
       width: 160,
+      sort: "desc",
+      sortIndex: 0,
       valueFormatter: (params) => this.datePipe.transform(params.value, "MMM d, y") ?? "",
     },
     {

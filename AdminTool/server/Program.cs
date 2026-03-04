@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using Server.Application.Abstractions;
 using Server.Application.DependencyInjection;
 using Server.Infrastructure.DependencyInjection;
 using Server.Presentation.DependencyInjection;
@@ -32,6 +33,14 @@ var app = builder.Build();
 
 var startupLogger = app.Services.GetRequiredService<ILoggerFactory>().CreateLogger("Startup");
 startupLogger.LogInformation("API is now starting.");
+
+using (var scope = app.Services.CreateScope())
+{
+    scope.ServiceProvider.GetRequiredService<IClaimsApplicationService>().Initialize();
+    scope.ServiceProvider.GetRequiredService<IHealthInsuranceApplicationService>().Initialize();
+}
+
+startupLogger.LogInformation("Domain seeds initialized.");
 app.Lifetime.ApplicationStarted.Register(() => startupLogger.LogInformation("API has started."));
 
 app.InitializeData();

@@ -1,6 +1,11 @@
 <div class="auth-shell">
   <div class="card auth-card">
     <div class="card-body">
+      <header class="auth-header">
+        <p class="eyebrow">MedCover Central</p>
+        <h1>Welcome back</h1>
+        <p class="sub">Sign in to continue to your dashboard.</p>
+      </header>
       <div *ngIf="alertMessage" class="alert" [ngClass]="'alert-' + alertType" role="alert">
         {{ alertMessage }}
       </div>
@@ -25,7 +30,7 @@
             autocomplete="current-password"
           />
         </div>
-        <button class="btn btn-primary w-100" type="submit" [disabled]="form.invalid || loading">
+        <button class="btn btn-primary w-100 sign-in-btn" type="submit" [disabled]="form.invalid || loading">
           {{ loading ? "Signing in..." : "Sign in" }}
         </button>
       </form>
