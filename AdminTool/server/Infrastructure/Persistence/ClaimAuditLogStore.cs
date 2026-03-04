@@ -81,6 +81,22 @@ public sealed class ClaimAuditLogStore : IClaimAuditLogStore
         }
     }
 
+    public IEnumerable<ClaimAuditLogEntry> QueryAll(int? take = null)
+    {
+        lock (Sync)
+        {
+            IEnumerable<ClaimAuditLogEntry> query = Entries
+                .OrderByDescending(entry => entry.OccurredAtUtc);
+
+            if (take is > 0)
+            {
+                query = query.Take(take.Value);
+            }
+
+            return query.Select(Clone).ToList();
+        }
+    }
+
     private static ClaimAuditLogEntry Clone(ClaimAuditLogEntry entry)
         => new()
         {

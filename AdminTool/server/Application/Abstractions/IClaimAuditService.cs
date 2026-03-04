@@ -12,4 +12,5 @@ public interface IClaimAuditService
     void AddChangeAuditLogs(Claim current, Claim updated, string actor);
     IEnumerable<ClaimAuditLogEntry> GetAuditLogs(string claimId);
     IEnumerable<ClaimAuditLogEntry> GetListAccessAuditLogs();
+    IEnumerable<ClaimAuditLogEntry> GetAllAuditLogs();
 }

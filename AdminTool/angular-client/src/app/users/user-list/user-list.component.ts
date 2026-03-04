@@ -1,48 +1,42 @@
-import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild } from "@angular/core";
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from "@angular/core";
 import { CommonModule, DatePipe } from "@angular/common";
 import { NavigationEnd, Router } from "@angular/router";
 import { HttpErrorResponse } from "@angular/common/http";
-import { AgGridModule } from "ag-grid-angular";
-import { AllCommunityModule, ColDef, GridApi, GridReadyEvent } from "ag-grid-community";
+import { ColDef } from "ag-grid-community";
 import { AuthService } from "../../core/auth.service";
 import { UsersFacade } from "../../features/users/application/users.facade";
 import { UserAuditLogItem, UserItem } from "../../features/users/domain/user.models";
 import { filter, finalize, Subscription } from "rxjs";
 import { Modal } from "bootstrap";
-import { AuditLogListComponent } from "../../shared/audit-log-list/audit-log-list.component";
+import { DataGridComponent } from "../../shared/data-grid/data-grid.component";
 import {
   UserFormDialogComponent,
   UserDialogData,
-} from "../user-form-dialog/user-form-dialog.component";
+} from "../../pages/users/user-form-dialog/user-form-dialog.component";
 
 @Component({
   selector: "app-user-list",
   standalone: true,
   imports: [
     CommonModule,
-    AgGridModule,
-    AuditLogListComponent,
+    DataGridComponent,
     UserFormDialogComponent,
   ],
   providers: [DatePipe],
-  templateUrl: "./user-list.component.html",
-  styleUrl: "./user-list.component.scss",
+  templateUrl: "../../pages/users/user-list/user-list.component.html",
+  styleUrl: "../../pages/users/user-list/user-list.component.scss",
 })
-export class UserListComponent implements OnInit, OnDestroy, AfterViewInit {
+export class UserListComponent implements OnInit, OnDestroy {
   users: UserItem[] = [];
   listAccessAuditLogs: UserAuditLogItem[] = [];
   listAuditLoading = false;
   loading = false;
   alertMessage: string | null = null;
   alertType: "danger" | "success" = "danger";
-  modules = [AllCommunityModule];
   createModalId = "create-user-modal";
   createDialogData: UserDialogData = { mode: "create", isAdmin: true };
   private readonly subscriptions = new Subscription();
-  private gridApi: GridApi | null = null;
   private alertTimerId: ReturnType<typeof setTimeout> | null = null;
-  @ViewChild("gridShell") private gridShellRef?: ElementRef<HTMLElement>;
-  private readonly wheelHandler = (event: WheelEvent) => this.handleGridWheel(event);
 
   columnDefs: ColDef<UserItem>[] = [
     { field: "id", headerName: "ID", width: 260, minWidth: 240, sort: "desc", sortIndex: 1 },
@@ -96,14 +90,9 @@ export class UserListComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   ngOnDestroy() {
-    this.gridShellRef?.nativeElement.removeEventListener("wheel", this.wheelHandler);
     this.subscriptions.unsubscribe();
     this.clearAlertTimer();
     this.cleanupModalArtifacts();
-  }
-
-  ngAfterViewInit() {
-    this.gridShellRef?.nativeElement.addEventListener("wheel", this.wheelHandler, { passive: false });
   }
 
   load() {
@@ -117,9 +106,6 @@ export class UserListComponent implements OnInit, OnDestroy, AfterViewInit {
       .subscribe({
         next: (users) => {
           this.users = [...users];
-          if (this.gridApi) {
-            this.gridApi.setGridOption("rowData", this.users);
-          }
           this.cdr.markForCheck();
         },
         error: (error: HttpErrorResponse) => {
@@ -171,31 +157,6 @@ export class UserListComponent implements OnInit, OnDestroy, AfterViewInit {
           this.setAlert("Failed to create user.");
         },
       });
-  }
-
-  onGridReady(event: GridReadyEvent) {
-    this.gridApi = event.api;
-    this.gridApi.setGridOption("rowData", this.users);
-  }
-
-  private handleGridWheel(event: WheelEvent) {
-    const gridShell = event.currentTarget as HTMLElement | null;
-    if (!gridShell) {
-      return;
-    }
-
-    const horizontalViewport = gridShell.querySelector(".ag-body-horizontal-scroll-viewport") as HTMLElement | null;
-    if (!horizontalViewport) {
-      return;
-    }
-
-    if (horizontalViewport.scrollWidth <= horizontalViewport.clientWidth) {
-      return;
-    }
-
-    const delta = Math.abs(event.deltaX) > 0 ? event.deltaX : event.deltaY;
-    horizontalViewport.scrollLeft += delta;
-    event.preventDefault();
   }
 
   private loadListAccessAuditLogs() {

@@ -1,13 +1,11 @@
-import { Injectable } from "@angular/core";
-import { map } from "rxjs";
-import { UsersService } from "../../../../users/users.service";
-import { UserItem } from "../../domain/user.models";
+import { Inject, Injectable } from "@angular/core";
+import { USER_REPOSITORY, UserRepository } from "../../domain/user.repository";
 
 @Injectable({ providedIn: "root" })
 export class GetUserByIdQuery {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(@Inject(USER_REPOSITORY) private readonly userRepository: UserRepository) {}
 
   execute(id: string) {
-    return this.usersService.getById(id).pipe(map((response) => response.item as UserItem));
+    return this.userRepository.getById(id);
   }
 }

@@ -50,12 +50,19 @@ public sealed class ClaimValidationService(IClaimsStore claimsStore, IClaimWorkf
                 return OperationResult<Claim>.Fail("Status is required.", ErrorType.Validation);
             }
 
-            if (!workflowService.CanTransition(current.Status, normalizedStatus))
+            if (string.Equals(current.Status, normalizedStatus, StringComparison.OrdinalIgnoreCase))
             {
-                return OperationResult<Claim>.Fail($"Status transition from '{current.Status}' to '{normalizedStatus}' is not allowed.", ErrorType.Validation);
+                nextStatus = current.Status;
             }
+            else
+            {
+                if (!workflowService.CanTransition(current.Status, normalizedStatus))
+                {
+                    return OperationResult<Claim>.Fail($"Status transition from '{current.Status}' to '{normalizedStatus}' is not allowed.", ErrorType.Validation);
+                }
 
-            nextStatus = normalizedStatus;
+                nextStatus = normalizedStatus;
+            }
         }
 
         var updated = new Claim

@@ -1,12 +1,11 @@
-import { Injectable } from "@angular/core";
-import { map } from "rxjs";
-import { UsersService } from "../../../../users/users.service";
+import { Inject, Injectable } from "@angular/core";
+import { USER_REPOSITORY, UserRepository } from "../../domain/user.repository";
 
 @Injectable({ providedIn: "root" })
 export class DeleteUserCommand {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(@Inject(USER_REPOSITORY) private readonly userRepository: UserRepository) {}
 
   execute(id: string) {
-    return this.usersService.remove(id).pipe(map((response) => !!response.ok));
+    return this.userRepository.remove(id);
   }
 }

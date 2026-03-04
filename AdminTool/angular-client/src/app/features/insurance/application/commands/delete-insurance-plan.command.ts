@@ -1,12 +1,11 @@
-import { Injectable } from "@angular/core";
-import { map } from "rxjs";
-import { InsuranceService } from "../../../../insurance/insurance.service";
+import { Inject, Injectable } from "@angular/core";
+import { INSURANCE_REPOSITORY, InsuranceRepository } from "../../domain/insurance.repository";
 
 @Injectable({ providedIn: "root" })
 export class DeleteInsurancePlanCommand {
-  constructor(private readonly insuranceService: InsuranceService) {}
+  constructor(@Inject(INSURANCE_REPOSITORY) private readonly insuranceRepository: InsuranceRepository) {}
 
   execute(policyId: string) {
-    return this.insuranceService.remove(policyId).pipe(map((response) => !!response.ok));
+    return this.insuranceRepository.remove(policyId);
   }
 }

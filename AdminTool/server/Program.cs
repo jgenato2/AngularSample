@@ -36,8 +36,11 @@ startupLogger.LogInformation("API is now starting.");
 
 using (var scope = app.Services.CreateScope())
 {
-    scope.ServiceProvider.GetRequiredService<IClaimsApplicationService>().Initialize();
-    scope.ServiceProvider.GetRequiredService<IHealthInsuranceApplicationService>().Initialize();
+    var initializers = scope.ServiceProvider.GetServices<IAppInitializer>();
+    foreach (var initializer in initializers)
+    {
+        initializer.Initialize();
+    }
 }
 
 startupLogger.LogInformation("Domain seeds initialized.");

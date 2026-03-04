@@ -9,5 +9,5 @@ public sealed class UpdateUserCommandHandler(IUsersApplicationService usersServi
     : ICommandHandler<UpdateUserCommand, OperationResult<User>>
 {
     public Task<OperationResult<User>> Handle(UpdateUserCommand command, CancellationToken cancellationToken = default)
-        => Task.FromResult(usersService.Update(command.Id, command.Updates, command.AllowRole));
+        => Task.FromResult(usersService.Update(command.Id, command.Updates, command.AllowRole, command.Actor));
 }

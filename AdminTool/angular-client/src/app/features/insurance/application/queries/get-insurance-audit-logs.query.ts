@@ -1,13 +1,11 @@
-import { Injectable } from "@angular/core";
-import { map } from "rxjs";
-import { InsuranceService } from "../../../../insurance/insurance.service";
-import { InsuranceAuditLogItem } from "../../domain/insurance.models";
+import { Inject, Injectable } from "@angular/core";
+import { INSURANCE_REPOSITORY, InsuranceRepository } from "../../domain/insurance.repository";
 
 @Injectable({ providedIn: "root" })
 export class GetInsuranceAuditLogsQuery {
-  constructor(private readonly insuranceService: InsuranceService) {}
+  constructor(@Inject(INSURANCE_REPOSITORY) private readonly insuranceRepository: InsuranceRepository) {}
 
   execute(policyId: string) {
-    return this.insuranceService.getAuditLogs(policyId).pipe(map((response) => (response.items ?? []) as InsuranceAuditLogItem[]));
+    return this.insuranceRepository.getAuditLogs(policyId);
   }
 }

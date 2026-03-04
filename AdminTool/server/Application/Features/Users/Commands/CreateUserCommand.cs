@@ -4,5 +4,5 @@ using Server.Domain.Entities;
 
 namespace Server.Application.Features.Users.Commands;
 
-public sealed record CreateUserCommand(string Name, string Email, string Role, string Password)
+public sealed record CreateUserCommand(string Name, string Email, string Role, string Password, string Actor)
     : ICommand<OperationResult<User>>;

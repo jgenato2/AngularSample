@@ -3,11 +3,11 @@ using Server.Domain.Entities;
 
 namespace Server.Application.Abstractions;
 
-public interface IClaimsApplicationService
+public interface IClaimsApplicationService : IAppInitializer
 {
-    void Initialize();
     IEnumerable<Claim> List(string actor);
     IEnumerable<ClaimAuditLogEntry> GetListAccessAuditLogs();
+    IEnumerable<ClaimAuditLogEntry> GetAllAuditLogs();
     OperationResult<Claim> GetById(string claimId, string actor);
     OperationResult<IEnumerable<ClaimAuditLogEntry>> GetAuditLogs(string claimId);
     ClaimStatusWorkflowModel GetStatusWorkflow();

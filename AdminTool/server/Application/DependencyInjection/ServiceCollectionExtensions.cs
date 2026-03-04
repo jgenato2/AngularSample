@@ -32,15 +32,18 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IClaimValidationService, ClaimValidationService>();
         services.AddScoped<IClaimAuditService, ClaimAuditService>();
         services.AddScoped<IClaimsApplicationService, ClaimsApplicationService>();
+        services.AddScoped<IAppInitializer>(sp => sp.GetRequiredService<IClaimsApplicationService>());
         services.AddScoped<IHealthInsuranceWorkflowService, HealthInsuranceWorkflowService>();
         services.AddScoped<IHealthInsuranceAnalyticsService, HealthInsuranceAnalyticsService>();
         services.AddScoped<IHealthInsuranceAuditService, HealthInsuranceAuditService>();
         services.AddScoped<IHealthInsuranceApplicationService, HealthInsuranceApplicationService>();
+        services.AddScoped<IAppInitializer>(sp => sp.GetRequiredService<IHealthInsuranceApplicationService>());
         services.AddScoped<ICommandHandler<RegisterCommand, OperationResult<AuthPayload>>, RegisterCommandHandler>();
         services.AddScoped<ICommandHandler<LoginCommand, OperationResult<AuthPayload>>, LoginCommandHandler>();
         services.AddScoped<IQueryHandler<ListClaimsQuery, IEnumerable<Claim>>, ListClaimsQueryHandler>();
         services.AddScoped<IQueryHandler<GetClaimByIdQuery, OperationResult<Claim>>, GetClaimByIdQueryHandler>();
         services.AddScoped<IQueryHandler<GetClaimAuditLogsQuery, OperationResult<IEnumerable<ClaimAuditLogEntry>>>, GetClaimAuditLogsQueryHandler>();
+        services.AddScoped<IQueryHandler<GetAllClaimsAuditLogsQuery, IEnumerable<ClaimAuditLogEntry>>, GetAllClaimsAuditLogsQueryHandler>();
         services.AddScoped<IQueryHandler<GetClaimsListAccessAuditLogsQuery, IEnumerable<ClaimAuditLogEntry>>, GetClaimsListAccessAuditLogsQueryHandler>();
         services.AddScoped<IQueryHandler<GetClaimStatusWorkflowQuery, ClaimStatusWorkflowModel>, GetClaimStatusWorkflowQueryHandler>();
         services.AddScoped<ICommandHandler<CreateClaimCommand, OperationResult<Claim>>, CreateClaimCommandHandler>();
@@ -48,6 +51,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ICommandHandler<DeleteClaimCommand, OperationResult<bool>>, DeleteClaimCommandHandler>();
         services.AddScoped<IQueryHandler<ListUsersQuery, IEnumerable<User>>, ListUsersQueryHandler>();
         services.AddScoped<IQueryHandler<GetUserByIdQuery, OperationResult<User>>, GetUserByIdQueryHandler>();
+        services.AddScoped<IQueryHandler<GetUserAuditLogsQuery, OperationResult<IEnumerable<AuditLogEntry>>>, GetUserAuditLogsQueryHandler>();
+        services.AddScoped<IQueryHandler<GetAllUsersAuditLogsQuery, IEnumerable<AuditLogEntry>>, GetAllUsersAuditLogsQueryHandler>();
         services.AddScoped<IQueryHandler<GetUsersListAccessAuditLogsQuery, IEnumerable<AuditLogEntry>>, GetUsersListAccessAuditLogsQueryHandler>();
         services.AddScoped<ICommandHandler<CreateUserCommand, OperationResult<User>>, CreateUserCommandHandler>();
         services.AddScoped<ICommandHandler<UpdateUserCommand, OperationResult<User>>, UpdateUserCommandHandler>();
@@ -56,6 +61,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IQueryHandler<GetHealthInsurancePlanByPolicyIdQuery, OperationResult<HealthInsurancePlanResponse>>, GetHealthInsurancePlanByPolicyIdQueryHandler>();
         services.AddScoped<IQueryHandler<GetHealthInsuranceFinancialAnalyticsQuery, OperationResult<HealthInsuranceFinancialAnalyticsResponse>>, GetHealthInsuranceFinancialAnalyticsQueryHandler>();
         services.AddScoped<IQueryHandler<GetHealthInsuranceAuditLogsQuery, OperationResult<IEnumerable<AuditLogEntry>>>, GetHealthInsuranceAuditLogsQueryHandler>();
+        services.AddScoped<IQueryHandler<GetAllHealthInsuranceAuditLogsQuery, IEnumerable<AuditLogEntry>>, GetAllHealthInsuranceAuditLogsQueryHandler>();
         services.AddScoped<IQueryHandler<GetHealthInsuranceListAccessAuditLogsQuery, IEnumerable<AuditLogEntry>>, GetHealthInsuranceListAccessAuditLogsQueryHandler>();
         services.AddScoped<IQueryHandler<GetHealthInsuranceStatusWorkflowQuery, InsuranceStatusWorkflowModel>, GetHealthInsuranceStatusWorkflowQueryHandler>();
         services.AddScoped<ICommandHandler<CreateHealthInsurancePlanCommand, OperationResult<HealthInsurancePlanResponse>>, CreateHealthInsurancePlanCommandHandler>();

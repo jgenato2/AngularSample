@@ -8,7 +8,7 @@ import { AuthService } from "../../core/auth.service";
 import { ClaimsFacade } from "../../features/claims/application/claims.facade";
 import { ClaimAuditLogItem, ClaimItem, ClaimStatusWorkflowItem } from "../../features/claims/domain/claim.models";
 import { InsuranceFacade } from "../../features/insurance/application/insurance.facade";
-import { AuditLogSectionComponent } from "../../insurance/insurance-detail/components/audit-log-section/audit-log-section.component";
+import { AuditLogSectionComponent } from "../../pages/insurance/insurance-detail/components/audit-log-section/audit-log-section.component";
 
 const DEFAULT_STATUS_WORKFLOW: Record<string, string[]> = {
   Submitted: ["Under Review", "Rejected"],
@@ -22,8 +22,8 @@ const DEFAULT_STATUS_WORKFLOW: Record<string, string[]> = {
   standalone: true,
   imports: [CommonModule, FormsModule, RouterLink, AuditLogSectionComponent],
   providers: [CurrencyPipe, DatePipe],
-  templateUrl: "./claim-detail.component.html",
-  styleUrl: "./claim-detail.component.scss",
+  templateUrl: "../../pages/claims/claim-detail/claim-detail.component.html",
+  styleUrl: "../../pages/claims/claim-detail/claim-detail.component.scss",
 })
 export class ClaimDetailComponent implements OnInit, OnDestroy {
   statusWorkflow: Record<string, string[]> = { ...DEFAULT_STATUS_WORKFLOW };

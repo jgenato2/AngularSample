@@ -27,6 +27,11 @@ public sealed class ClaimsApplicationService(
         return auditService.GetListAccessAuditLogs();
     }
 
+    public IEnumerable<ClaimAuditLogEntry> GetAllAuditLogs()
+    {
+        return auditService.GetAllAuditLogs();
+    }
+
     public OperationResult<Claim> GetById(string claimId, string actor)
     {
         var item = claimsStore.FindById(claimId);

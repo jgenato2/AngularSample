@@ -14,4 +14,5 @@ public interface IHealthInsuranceAuditService
     void AddChangeAuditLogs(HealthInsurancePlanResponse current, HealthInsurancePlanResponse updated, string actor);
     IEnumerable<AuditLogEntry> GetAuditLogs(string policyId);
     IEnumerable<AuditLogEntry> GetListAccessAuditLogs();
+    IEnumerable<AuditLogEntry> GetAllAuditLogs();
 }

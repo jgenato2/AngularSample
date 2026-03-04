@@ -8,5 +8,5 @@ public sealed class DeleteUserCommandHandler(IUsersApplicationService usersServi
     : ICommandHandler<DeleteUserCommand, OperationResult<bool>>
 {
     public Task<OperationResult<bool>> Handle(DeleteUserCommand command, CancellationToken cancellationToken = default)
-        => Task.FromResult(usersService.Delete(command.Id));
+        => Task.FromResult(usersService.Delete(command.Id, command.Actor));
 }

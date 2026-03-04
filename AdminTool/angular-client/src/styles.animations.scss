@@ -1,0 +1,91 @@
+.alert-enter {
+  animation: alert-enter 180ms ease-out;
+}
+
+.alert-leave {
+  animation: alert-leave 140ms ease-in;
+}
+
+.modal-backdrop-enter {
+  animation: modal-backdrop-enter 160ms ease-out;
+}
+
+.modal-backdrop-leave {
+  animation: modal-backdrop-leave 120ms ease-in;
+}
+
+.modal-panel-enter {
+  animation: modal-panel-enter 180ms ease-out;
+}
+
+.modal-panel-leave {
+  animation: modal-panel-leave 140ms ease-in;
+}
+
+@keyframes alert-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes alert-leave {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateY(-2px);
+  }
+}
+
+@keyframes modal-backdrop-enter {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modal-backdrop-leave {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes modal-panel-enter {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -49%);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+}
+
+@keyframes modal-panel-leave {
+  from {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+
+  to {
+    opacity: 0;
+    transform: translate(-50%, -49%);
+  }
+}

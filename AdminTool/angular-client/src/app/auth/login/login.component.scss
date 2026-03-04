@@ -10,7 +10,7 @@
 .auth-card {
   width: min(460px, 100%);
   padding: 1rem;
-  border-radius: 24px;
+  border-radius: var(--bs-card-border-radius);
   backdrop-filter: blur(8px);
   background: color-mix(in srgb, var(--surface) 82%, transparent);
   border: 1px solid color-mix(in srgb, var(--mcc-primary) 14%, transparent);

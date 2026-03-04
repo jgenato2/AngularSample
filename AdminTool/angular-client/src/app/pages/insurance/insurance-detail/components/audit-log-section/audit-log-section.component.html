@@ -1,0 +1,19 @@
+<div class="card detail-card audit-card grid-card">
+  <div class="card-body grid-shell">
+    <p class="label">Audit Log</p>
+
+    <app-data-grid
+      [columns]="columns"
+      [rows]="rows"
+    ></app-data-grid>
+
+    <div class="loading" *ngIf="loading">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+      <span>Loading audit logs...</span>
+    </div>
+
+    <div class="empty-state" *ngIf="!loading && !items.length">No audit logs available.</div>
+  </div>
+</div>

@@ -4,5 +4,5 @@ using Server.Domain.Entities;
 
 namespace Server.Application.Features.Users.Commands;
 
-public sealed record UpdateUserCommand(string Id, UpdateUserModel Updates, bool AllowRole)
+public sealed record UpdateUserCommand(string Id, UpdateUserModel Updates, bool AllowRole, string Actor)
     : ICommand<OperationResult<User>>;

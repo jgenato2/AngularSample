@@ -115,6 +115,9 @@ public sealed class HealthInsuranceAuditService : IHealthInsuranceAuditService
     public IEnumerable<AuditLogEntry> GetListAccessAuditLogs()
         => AuditLogStore.Query(AuditScope, ListAuditPolicyId, ListAuditMaxItems);
 
+    public IEnumerable<AuditLogEntry> GetAllAuditLogs()
+        => AuditLogStore.Query(AuditScope);
+
     private static string FormatDate(DateTime value) => value.ToString("yyyy-MM-dd");
 
     private static string FormatDecimal(decimal value) => value.ToString("0.##");

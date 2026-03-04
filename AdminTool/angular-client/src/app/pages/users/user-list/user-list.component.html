@@ -1,0 +1,54 @@
+<section class="page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">User module</p>
+      <h1>Accounts</h1>
+    </div>
+    <div class="actions">
+      <button class="btn btn-outline-secondary" (click)="load()">Refresh</button>
+      <button
+        class="btn btn-primary"
+        (click)="prepareCreate()"
+        data-bs-toggle="modal"
+        [attr.data-bs-target]="'#' + createModalId"
+        *ngIf="auth.isAdmin()"
+      >
+        Create user
+      </button>
+    </div>
+  </header>
+
+  <div
+    *ngIf="alertMessage"
+    class="alert"
+    [ngClass]="'alert-' + alertType"
+    animate.enter="alert-enter"
+    animate.leave="alert-leave"
+    role="alert"
+  >
+    {{ alertMessage }}
+  </div>
+
+  <div class="card grid-card">
+    <div class="card-body grid-shell">
+      <app-data-grid
+        [rows]="users"
+        [columnDefs]="columnDefs"
+        [defaultColDef]="defaultColDef"
+        (rowClicked)="openDetail($event.data)"
+      ></app-data-grid>
+      <div class="loading" *ngIf="loading">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <span>Loading users...</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<app-user-form-dialog
+  [modalId]="createModalId"
+  [data]="createDialogData"
+  (submitted)="handleCreateSubmit($event)"
+></app-user-form-dialog>

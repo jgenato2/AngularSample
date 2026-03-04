@@ -6,7 +6,14 @@
         <h1>Welcome back</h1>
         <p class="sub">Sign in to continue to your dashboard.</p>
       </header>
-      <div *ngIf="alertMessage" class="alert" [ngClass]="'alert-' + alertType" role="alert">
+      <div
+        *ngIf="alertMessage"
+        class="alert"
+        [ngClass]="'alert-' + alertType"
+        animate.enter="alert-enter"
+        animate.leave="alert-leave"
+        role="alert"
+      >
         {{ alertMessage }}
       </div>
       <form [formGroup]="form" (ngSubmit)="submit()">

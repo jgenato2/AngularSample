@@ -57,6 +57,9 @@ public sealed class ClaimAuditService(IClaimAuditLogStore auditLogStore) : IClai
     public IEnumerable<ClaimAuditLogEntry> GetListAccessAuditLogs()
         => auditLogStore.Query(ListAuditClaimId, ListAuditMaxItems);
 
+    public IEnumerable<ClaimAuditLogEntry> GetAllAuditLogs()
+        => auditLogStore.QueryAll();
+
     public void AddChangeAuditLogs(Claim current, Claim updated, string actor)
     {
         if (!string.Equals(current.PolicyId, updated.PolicyId, StringComparison.Ordinal))

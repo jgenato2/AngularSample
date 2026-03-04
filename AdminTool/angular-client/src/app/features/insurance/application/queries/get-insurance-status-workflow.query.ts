@@ -1,11 +1,11 @@
-import { Injectable } from "@angular/core";
-import { InsuranceService } from "../../../../insurance/insurance.service";
+import { Inject, Injectable } from "@angular/core";
+import { INSURANCE_REPOSITORY, InsuranceRepository } from "../../domain/insurance.repository";
 
 @Injectable({ providedIn: "root" })
 export class GetInsuranceStatusWorkflowQuery {
-  constructor(private readonly insuranceService: InsuranceService) {}
+  constructor(@Inject(INSURANCE_REPOSITORY) private readonly insuranceRepository: InsuranceRepository) {}
 
   execute() {
-    return this.insuranceService.getStatusWorkflow() as ReturnType<InsuranceService["getStatusWorkflow"]>;
+    return this.insuranceRepository.getStatusWorkflow();
   }
 }

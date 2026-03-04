@@ -1,0 +1,56 @@
+<div class="common-grid-shell" (wheel)="handleGridWheel($event)">
+  <ag-grid-angular
+    class="ag-theme-quartz"
+    [theme]="'legacy'"
+    [modules]="modules"
+    [rowData]="rows"
+    [columnDefs]="resolvedColumnDefs"
+    [defaultColDef]="resolvedDefaultColDef"
+    [pagination]="shouldPaginate"
+    [paginationPageSize]="effectivePageSize"
+    [paginationPageSizeSelector]="effectivePageSizeOptions"
+    [suppressPaginationPanel]="true"
+    [rowHeight]="rowHeight"
+    [headerHeight]="headerHeight"
+    [alwaysShowHorizontalScroll]="alwaysShowHorizontalScroll"
+    [suppressHorizontalScroll]="suppressHorizontalScroll"
+    (rowClicked)="rowClicked.emit($event)"
+    (cellClicked)="cellClicked.emit($event)"
+    (gridReady)="onGridReady($event)"
+    (paginationChanged)="onPaginationChanged($event)"
+  ></ag-grid-angular>
+</div>
+
+<div class="ag-paging-panel custom-paging" *ngIf="shouldPaginate" role="navigation" aria-label="Pagination">
+  <span class="ag-paging-row-summary-panel">
+    <span class="ag-paging-row-summary-panel-number">{{ startRow }}</span>
+    <span> to </span>
+    <span class="ag-paging-row-summary-panel-number">{{ endRow }}</span>
+    <span> of </span>
+    <span class="ag-paging-row-summary-panel-number">{{ rowCount }}</span>
+  </span>
+
+  <span class="ag-paging-page-summary-panel">
+    <button class="ag-button ag-paging-button" type="button" (click)="goToFirstPage()" [disabled]="!canGoPrevious" aria-label="First page">«</button>
+    <button class="ag-button ag-paging-button" type="button" (click)="goToPreviousPage()" [disabled]="!canGoPrevious" aria-label="Previous page">‹</button>
+
+    <span class="ag-paging-description">Page</span>
+    <input
+      class="ag-input-field-input ag-text-field-input page-input"
+      type="number"
+      min="1"
+      [max]="totalPages"
+      [value]="pageInput"
+      (input)="pageInput = $any($event.target).value"
+      (focus)="onPageInputFocus()"
+      (keydown.enter)="commitPageInput()"
+      (blur)="onPageInputBlur()"
+      aria-label="Page number"
+    />
+    <span class="ag-paging-description">of</span>
+    <span class="ag-paging-number">{{ totalPages }}</span>
+
+    <button class="ag-button ag-paging-button" type="button" (click)="goToNextPage()" [disabled]="!canGoNext" aria-label="Next page">›</button>
+    <button class="ag-button ag-paging-button" type="button" (click)="goToLastPage()" [disabled]="!canGoNext" aria-label="Last page">»</button>
+  </span>
+</div>

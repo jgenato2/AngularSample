@@ -50,7 +50,7 @@ public class UsersController(ICqrsDispatcher cqrsDispatcher) : ApiControllerBase
     [AdminOnly]
     public async Task<IActionResult> Create([FromBody] CreateUserRequest request, CancellationToken cancellationToken)
     {
-        var command = new CreateUserCommand(request.name, request.email, request.role, request.password);
+        var command = new CreateUserCommand(request.name, request.email, request.role, request.password, GetActor());
         var result = await cqrsDispatcher.ExecuteCommand<CreateUserCommand, OperationResult<Domain.Entities.User>>(command, cancellationToken);
         return FromResult(result, createdUser =>
             Created($"/api/users/{createdUser.Id}", new { item = createdUser.ToResponse() }));
@@ -65,6 +65,25 @@ public class UsersController(ICqrsDispatcher cqrsDispatcher) : ApiControllerBase
         return FromResult(result, user => Ok(new { item = user.ToResponse() }));
     }
 
+    [HttpGet("{id}/audit-logs")]
+    [SelfOrAdmin]
+    public async Task<IActionResult> GetAuditLogs(string id, CancellationToken cancellationToken)
+    {
+        var query = new GetUserAuditLogsQuery(id);
+        var result = await cqrsDispatcher.ExecuteQuery<GetUserAuditLogsQuery, OperationResult<IEnumerable<AuditLogEntry>>>(query, cancellationToken);
+        return FromResult(result, items => Ok(new
+        {
+            items = items.Select(entry => new UserAuditLogResponse(
+                entry.Id,
+                entry.Action,
+                entry.Field,
+                entry.OldValue,
+                entry.NewValue,
+                entry.PerformedBy,
+                entry.OccurredAtUtc)),
+        }));
+    }
+
     [HttpPut("{id}")]
     [SelfOrAdmin]
     public async Task<IActionResult> Update(string id, [FromBody] UpdateUserRequest request, CancellationToken cancellationToken)
@@ -77,7 +96,7 @@ public class UsersController(ICqrsDispatcher cqrsDispatcher) : ApiControllerBase
             Password = request.password,
         };
 
-        var command = new UpdateUserCommand(id, updates, User.IsInRole("admin"));
+        var command = new UpdateUserCommand(id, updates, User.IsInRole("admin"), GetActor());
         var result = await cqrsDispatcher.ExecuteCommand<UpdateUserCommand, OperationResult<Domain.Entities.User>>(command, cancellationToken);
         return FromResult(result, user => Ok(new { item = user.ToResponse() }));
     }
@@ -86,7 +105,7 @@ public class UsersController(ICqrsDispatcher cqrsDispatcher) : ApiControllerBase
     [AdminOnly]
     public async Task<IActionResult> Delete(string id, CancellationToken cancellationToken)
     {
-        var command = new DeleteUserCommand(id);
+        var command = new DeleteUserCommand(id, GetActor());
         var result = await cqrsDispatcher.ExecuteCommand<DeleteUserCommand, OperationResult<bool>>(command, cancellationToken);
         return FromResult(result, _ => Ok(new { ok = true }));
     }

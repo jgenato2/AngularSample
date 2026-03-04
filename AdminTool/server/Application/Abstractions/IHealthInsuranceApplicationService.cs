@@ -4,14 +4,14 @@ using Server.Presentation.Contracts;
 
 namespace Server.Application.Abstractions;
 
-public interface IHealthInsuranceApplicationService
+public interface IHealthInsuranceApplicationService : IAppInitializer
 {
-    void Initialize();
     IEnumerable<HealthInsurancePlanResponse> ListPlans(string actor);
     OperationResult<HealthInsurancePlanResponse> GetByPolicyId(string policyId, string actor);
     OperationResult<HealthInsuranceFinancialAnalyticsResponse> GetFinancialAnalytics(string policyId, string actor);
     OperationResult<IEnumerable<AuditLogEntry>> GetAuditLogs(string policyId);
     IEnumerable<AuditLogEntry> GetListAccessAuditLogs();
+    IEnumerable<AuditLogEntry> GetAllAuditLogs();
     InsuranceStatusWorkflowModel GetStatusWorkflow();
     OperationResult<HealthInsurancePlanResponse> Create(CreateHealthInsurancePlanRequest request, string actor);
     OperationResult<HealthInsurancePlanResponse> Update(string policyId, UpdateHealthInsurancePlanRequest request, string actor);

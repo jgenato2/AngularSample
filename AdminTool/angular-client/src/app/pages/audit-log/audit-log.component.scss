@@ -1,0 +1,97 @@
+.page {
+  display: grid;
+  gap: 1rem;
+  font-size: 0.9rem;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.3em;
+  font-size: 0.62rem;
+  margin: 0;
+}
+
+h1 {
+  margin: 0.2rem 0;
+  font-family: "Fraunces", serif;
+  font-size: 1.2rem;
+}
+
+.actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.btn {
+  font-size: 0.85rem;
+}
+
+.grid-card {
+  border-radius: var(--bs-card-border-radius);
+  overflow: hidden;
+}
+
+.grid-shell {
+  height: 460px;
+  padding: 0.75rem;
+  position: relative;
+}
+
+:host ::ng-deep .ag-theme-quartz {
+  --ag-font-size: 11px;
+  --ag-header-font-size: 10px;
+  --ag-list-item-height: 30px;
+  --ag-grid-size: 3px;
+  --ag-cell-horizontal-padding: 6px;
+  --ag-header-height: 30px;
+  --ag-row-height: 30px;
+}
+
+:host ::ng-deep .ag-theme-quartz .ag-header-cell-label {
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+:host ::ng-deep .ag-theme-quartz .ag-cell {
+  line-height: 1.2;
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  justify-content: center;
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.7);
+  font-size: 0.85rem;
+}
+
+.audit-pagination {
+  margin-top: 0.75rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.audit-pagination-summary {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+.audit-pagination-actions {
+  display: flex;
+  gap: 0.5rem;
+}

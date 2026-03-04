@@ -9,5 +9,5 @@ public sealed class CreateUserCommandHandler(IUsersApplicationService usersServi
     : ICommandHandler<CreateUserCommand, OperationResult<User>>
 {
     public Task<OperationResult<User>> Handle(CreateUserCommand command, CancellationToken cancellationToken = default)
-        => Task.FromResult(usersService.Create(command.Name, command.Email, command.Role, command.Password));
+        => Task.FromResult(usersService.Create(command.Name, command.Email, command.Role, command.Password, command.Actor));
 }

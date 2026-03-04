@@ -14,6 +14,7 @@
           <a class="menu-link" routerLink="/users" (click)="closeMenu()">Users</a>
           <a class="menu-link" routerLink="/insurance" (click)="closeMenu()">Insurance</a>
           <a class="menu-link" routerLink="/claims" (click)="closeMenu()">Claims</a>
+          <a class="menu-link" routerLink="/audit-logs" (click)="closeMenu()" *ngIf="auth.isAdmin()">Audit Logs</a>
         </div>
       </div>
 

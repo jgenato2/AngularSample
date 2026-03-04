@@ -1,44 +1,37 @@
-import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild } from "@angular/core";
+import { ChangeDetectorRef, Component, OnInit } from "@angular/core";
 import { CommonModule, CurrencyPipe, DatePipe } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { HttpErrorResponse } from "@angular/common/http";
 import { Router, RouterLink } from "@angular/router";
-import { AgGridModule } from "ag-grid-angular";
-import { AllCommunityModule, CellClickedEvent, ColDef, GridApi, GridReadyEvent } from "ag-grid-community";
+import { CellClickedEvent, ColDef } from "ag-grid-community";
 import { finalize } from "rxjs";
 import { AuthService } from "../../core/auth.service";
 import { ClaimsFacade } from "../../features/claims/application/claims.facade";
-import { ClaimAuditLogItem, ClaimItem, ClaimStatusWorkflowItem, CreateClaimPayload } from "../../features/claims/domain/claim.models";
+import { ClaimItem, ClaimStatusWorkflowItem, CreateClaimPayload } from "../../features/claims/domain/claim.models";
 import { InsuranceFacade } from "../../features/insurance/application/insurance.facade";
-import { AuditLogListComponent } from "../../shared/audit-log-list/audit-log-list.component";
+import { DataGridComponent } from "../../shared/data-grid/data-grid.component";
 
 const DEFAULT_CREATE_STATUS_OPTIONS = ["Submitted"];
 
 @Component({
   selector: "app-claim-list",
   standalone: true,
-  imports: [CommonModule, FormsModule, AgGridModule, RouterLink, AuditLogListComponent],
+  imports: [CommonModule, FormsModule, DataGridComponent, RouterLink],
   providers: [CurrencyPipe, DatePipe],
   templateUrl: "./claim-list.component.html",
   styleUrl: "./claim-list.component.scss",
 })
-export class ClaimListComponent implements OnInit, OnDestroy, AfterViewInit {
+export class ClaimListComponent implements OnInit {
   createStatusOptions = [...DEFAULT_CREATE_STATUS_OPTIONS];
   statusWorkflow: Record<string, string[]> = {};
   policyIdOptions: string[] = [];
   claims: ClaimItem[] = [];
   displayedClaims: ClaimItem[] = [];
-  listAccessAuditLogs: ClaimAuditLogItem[] = [];
   policyIdSearch = "";
   loading = false;
-  listAuditLoading = false;
   creating = false;
   alertMessage: string | null = null;
   alertType: "danger" | "success" = "danger";
-  modules = [AllCommunityModule];
-  private gridApi: GridApi | null = null;
-  @ViewChild("gridShell") private gridShellRef?: ElementRef<HTMLElement>;
-  private readonly wheelHandler = (event: WheelEvent) => this.handleGridWheel(event);
 
   createModel: CreateClaimPayload = {
     claimId: "",
@@ -69,18 +62,9 @@ export class ClaimListComponent implements OnInit, OnDestroy, AfterViewInit {
     this.loadPolicyIdOptions();
     this.loadStatusWorkflow();
     this.load();
-    if (this.auth.isAdmin()) {
-      this.loadListAccessAuditLogs();
-    }
   }
 
-  ngAfterViewInit() {
-    this.gridShellRef?.nativeElement.addEventListener("wheel", this.wheelHandler, { passive: false });
-  }
-
-  ngOnDestroy() {
-    this.gridShellRef?.nativeElement.removeEventListener("wheel", this.wheelHandler);
-  }
+  
 
   columnDefs: ColDef<ClaimItem>[] = [
     { field: "claimId", headerName: "Claim ID", width: 150, minWidth: 140, sort: "desc", sortIndex: 0 },
@@ -130,11 +114,6 @@ export class ClaimListComponent implements OnInit, OnDestroy, AfterViewInit {
     resizable: true,
   };
 
-  onGridReady(event: GridReadyEvent) {
-    this.gridApi = event.api;
-    this.gridApi.setGridOption("rowData", this.displayedClaims);
-  }
-
   load() {
     this.loading = true;
     this.alertMessage = null;
@@ -149,9 +128,6 @@ export class ClaimListComponent implements OnInit, OnDestroy, AfterViewInit {
         next: (items) => {
           this.claims = [...items];
           this.applyPolicyIdFilter();
-          if (this.gridApi) {
-            this.gridApi.setGridOption("rowData", this.displayedClaims);
-          }
           this.cdr.markForCheck();
         },
         error: (error: HttpErrorResponse) => {
@@ -164,10 +140,6 @@ export class ClaimListComponent implements OnInit, OnDestroy, AfterViewInit {
           this.cdr.markForCheck();
         },
       });
-
-    if (this.auth.isAdmin()) {
-      this.loadListAccessAuditLogs();
-    }
   }
 
   create() {
@@ -241,31 +213,6 @@ export class ClaimListComponent implements OnInit, OnDestroy, AfterViewInit {
     });
   }
 
-  private loadListAccessAuditLogs() {
-    this.listAuditLoading = true;
-    this.claimsFacade
-      .getListAccessAuditLogs()
-      .pipe(finalize(() => {
-        this.listAuditLoading = false;
-        this.cdr.markForCheck();
-      }))
-      .subscribe({
-        next: (items) => {
-          this.listAccessAuditLogs = [...items];
-          this.cdr.markForCheck();
-        },
-        error: (error: HttpErrorResponse) => {
-          if (error.status === 401) {
-            this.auth.logout();
-            this.router.navigateByUrl("/login");
-            return;
-          }
-          this.listAccessAuditLogs = [];
-          this.cdr.markForCheck();
-        },
-      });
-  }
-
   private toStatusWorkflowMap(items: ClaimStatusWorkflowItem[] | null | undefined) {
     const map: Record<string, string[]> = {};
     for (const item of items ?? []) {
@@ -315,26 +262,6 @@ export class ClaimListComponent implements OnInit, OnDestroy, AfterViewInit {
     return "text-body-secondary";
   }
 
-  private handleGridWheel(event: WheelEvent) {
-    const gridShell = event.currentTarget as HTMLElement | null;
-    if (!gridShell) {
-      return;
-    }
-
-    const horizontalViewport = gridShell.querySelector(".ag-body-horizontal-scroll-viewport") as HTMLElement | null;
-    if (!horizontalViewport) {
-      return;
-    }
-
-    if (horizontalViewport.scrollWidth <= horizontalViewport.clientWidth) {
-      return;
-    }
-
-    const delta = Math.abs(event.deltaX) > 0 ? event.deltaX : event.deltaY;
-    horizontalViewport.scrollLeft += delta;
-    event.preventDefault();
-  }
-
   openDetail(claim?: ClaimItem | null) {
     if (!claim) {
       return;
@@ -359,9 +286,6 @@ export class ClaimListComponent implements OnInit, OnDestroy, AfterViewInit {
   onPolicyIdSearchChange(value: string) {
     this.policyIdSearch = value;
     this.applyPolicyIdFilter();
-    if (this.gridApi) {
-      this.gridApi.setGridOption("rowData", this.displayedClaims);
-    }
     this.cdr.markForCheck();
   }
 

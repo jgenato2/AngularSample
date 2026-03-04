@@ -1,0 +1,53 @@
+<section class="page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Administration</p>
+      <h1>List Access Audit Logs</h1>
+    </div>
+    <div class="actions">
+      <button class="btn btn-outline-secondary" type="button" (click)="load(page)" [disabled]="loading">
+        Refresh
+      </button>
+    </div>
+  </header>
+
+  <div
+    *ngIf="alertMessage"
+    class="alert"
+    [ngClass]="'alert-' + alertType"
+    animate.enter="alert-enter"
+    animate.leave="alert-leave"
+    role="alert"
+  >
+    {{ alertMessage }}
+  </div>
+
+  <div class="alert alert-warning" *ngIf="!auth.isAdmin()" role="alert">
+    Admin access is required to view list access audit logs.
+  </div>
+
+  <div class="card grid-card" *ngIf="auth.isAdmin()">
+    <div class="card-body grid-shell">
+      <app-data-grid
+        [rows]="auditRows"
+        [columnDefs]="auditColumnDefs"
+        [pageSize]="25"
+      ></app-data-grid>
+      <div class="loading" *ngIf="loading">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <span>Loading audit logs...</span>
+      </div>
+      <div class="audit-pagination" *ngIf="auth.isAdmin() && !loading">
+        <div class="audit-pagination-summary">Page {{ page }} of {{ totalPages }} · {{ totalItems }} total</div>
+        <div class="audit-pagination-actions">
+          <button class="btn btn-outline-secondary btn-sm" type="button" (click)="goToFirstPage()" [disabled]="!canGoPrevious">First</button>
+          <button class="btn btn-outline-secondary btn-sm" type="button" (click)="goToPreviousPage()" [disabled]="!canGoPrevious">Previous</button>
+          <button class="btn btn-outline-secondary btn-sm" type="button" (click)="goToNextPage()" [disabled]="!canGoNext">Next</button>
+          <button class="btn btn-outline-secondary btn-sm" type="button" (click)="goToLastPage()" [disabled]="!canGoNext">Last</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

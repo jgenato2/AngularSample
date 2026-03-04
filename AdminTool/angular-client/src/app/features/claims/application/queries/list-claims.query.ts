@@ -1,12 +1,11 @@
-import { Injectable } from "@angular/core";
-import { map } from "rxjs";
-import { ClaimsService } from "../../../../claims/claims.service";
+import { Inject, Injectable } from "@angular/core";
+import { CLAIM_REPOSITORY, ClaimRepository } from "../../domain/claim.repository";
 
 @Injectable({ providedIn: "root" })
 export class ListClaimsQuery {
-  constructor(private readonly claimsService: ClaimsService) {}
+  constructor(@Inject(CLAIM_REPOSITORY) private readonly claimRepository: ClaimRepository) {}
 
   execute() {
-    return this.claimsService.list().pipe(map((response) => response.items ?? []));
+    return this.claimRepository.list();
   }
 }

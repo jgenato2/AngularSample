@@ -1,0 +1,124 @@
+.page {
+  display: grid;
+  gap: 1rem;
+  font-size: 0.9rem;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.3em;
+  font-size: 0.62rem;
+  margin: 0;
+}
+
+h1 {
+  margin: 0.2rem 0;
+  font-family: "Fraunces", serif;
+  font-size: 1.2rem;
+}
+
+.sub {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.form-card {
+  border-radius: var(--bs-card-border-radius);
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.65rem;
+}
+
+.form-label {
+  margin-bottom: 0.25rem;
+  font-size: 0.78rem;
+}
+
+.form-control,
+.btn {
+  font-size: 0.85rem;
+}
+
+.status-select {
+  appearance: auto;
+  -webkit-appearance: menulist;
+  -moz-appearance: menulist;
+  font-size: 0.85rem;
+}
+
+.money-input-group .input-group-text {
+  min-width: 2rem;
+  justify-content: center;
+  padding: 0.375rem 0.6rem;
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+.money-input {
+  text-align: right;
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+.form-actions {
+  grid-column: 1 / -1;
+}
+
+.grid-card {
+  border-radius: var(--bs-card-border-radius);
+  overflow: hidden;
+}
+
+.grid-shell {
+  height: 460px;
+  padding: 0.75rem;
+  position: relative;
+}
+
+:host ::ng-deep .ag-theme-quartz {
+  --ag-font-size: 11px;
+  --ag-header-font-size: 10px;
+  --ag-list-item-height: 30px;
+  --ag-grid-size: 3px;
+  --ag-cell-horizontal-padding: 6px;
+  --ag-header-height: 30px;
+  --ag-row-height: 30px;
+}
+
+:host ::ng-deep .ag-theme-quartz .ag-header-cell-label {
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+:host ::ng-deep .ag-theme-quartz .ag-cell {
+  line-height: 1.2;
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  justify-content: center;
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.7);
+  font-size: 0.85rem;
+}

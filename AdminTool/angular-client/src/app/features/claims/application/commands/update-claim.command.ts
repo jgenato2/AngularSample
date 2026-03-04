@@ -1,13 +1,12 @@
-import { Injectable } from "@angular/core";
-import { map } from "rxjs";
-import { ClaimsService } from "../../../../claims/claims.service";
-import { ClaimItem, UpdateClaimPayload } from "../../domain/claim.models";
+import { Inject, Injectable } from "@angular/core";
+import { UpdateClaimPayload } from "../../domain/claim.models";
+import { CLAIM_REPOSITORY, ClaimRepository } from "../../domain/claim.repository";
 
 @Injectable({ providedIn: "root" })
 export class UpdateClaimCommand {
-  constructor(private readonly claimsService: ClaimsService) {}
+  constructor(@Inject(CLAIM_REPOSITORY) private readonly claimRepository: ClaimRepository) {}
 
   execute(claimId: string, payload: UpdateClaimPayload) {
-    return this.claimsService.update(claimId, payload).pipe(map((response) => response.item as ClaimItem));
+    return this.claimRepository.update(claimId, payload);
   }
 }

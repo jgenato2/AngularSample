@@ -117,6 +117,14 @@ public sealed class HealthInsuranceApplicationService(
         }
     }
 
+    public IEnumerable<AuditLogEntry> GetAllAuditLogs()
+    {
+        lock (PlansLock)
+        {
+            return auditService.GetAllAuditLogs().ToList();
+        }
+    }
+
     public InsuranceStatusWorkflowModel GetStatusWorkflow()
         => workflowService.GetStatusWorkflow();
 
@@ -183,7 +191,11 @@ public sealed class HealthInsuranceApplicationService(
                     return OperationResult<HealthInsurancePlanResponse>.Fail("Invalid insurance status.", ErrorType.Validation);
                 }
 
-                if (!workflowService.CanTransition(current.Status, nextStatus))
+                if (string.Equals(current.Status, nextStatus, StringComparison.OrdinalIgnoreCase))
+                {
+                    nextStatus = current.Status;
+                }
+                else if (!workflowService.CanTransition(current.Status, nextStatus))
                 {
                     return OperationResult<HealthInsurancePlanResponse>.Fail(
                         $"Invalid status transition from '{current.Status}' to '{nextStatus}'.",

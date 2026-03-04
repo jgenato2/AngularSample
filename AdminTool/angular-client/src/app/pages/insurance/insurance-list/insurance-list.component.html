@@ -1,0 +1,107 @@
+<section class="page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Healthcare module</p>
+      <h1>Insurance Plans</h1>
+    </div>
+    <div class="actions">
+      <button class="btn btn-outline-secondary" (click)="load()">Refresh</button>
+      <button class="btn btn-primary" *ngIf="auth.isAdmin()" type="button" data-bs-toggle="collapse" data-bs-target="#create-plan-form" aria-expanded="false">
+        Add plan
+      </button>
+    </div>
+  </header>
+
+  <div
+    *ngIf="alertMessage"
+    class="alert"
+    [ngClass]="'alert-' + alertType"
+    animate.enter="alert-enter"
+    animate.leave="alert-leave"
+    role="alert"
+  >
+    {{ alertMessage }}
+  </div>
+
+  <div id="create-plan-form" class="collapse" *ngIf="auth.isAdmin()">
+    <div class="card form-card">
+      <div class="card-body">
+        <form class="form-grid" (ngSubmit)="createPlan()" #createForm="ngForm">
+          <div>
+            <label class="form-label">Policy ID</label>
+            <input class="form-control" name="policyId" [(ngModel)]="createModel.policyId" required />
+          </div>
+          <div>
+            <label class="form-label">Member name</label>
+            <input class="form-control" name="memberName" [(ngModel)]="createModel.memberName" required />
+          </div>
+          <div>
+            <label class="form-label">Provider</label>
+            <input class="form-control" name="provider" [(ngModel)]="createModel.provider" required />
+          </div>
+          <div>
+            <label class="form-label">Plan type</label>
+            <input class="form-control" name="planType" [(ngModel)]="createModel.planType" required />
+          </div>
+          <div>
+            <label class="form-label">Status</label>
+            <select class="form-select" name="status" [(ngModel)]="createModel.status" required>
+              <option *ngFor="let status of createStatusOptions" [value]="status">{{ status }}</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label">Monthly premium</label>
+            <div class="input-group money-input-group">
+              <span class="input-group-text">$</span>
+              <input type="number" class="form-control money-input" name="monthlyPremium" [(ngModel)]="createModel.monthlyPremium" min="0" step="0.01" inputmode="decimal" required />
+            </div>
+          </div>
+          <div>
+            <label class="form-label">Deductible</label>
+            <div class="input-group money-input-group">
+              <span class="input-group-text">$</span>
+              <input type="number" class="form-control money-input" name="deductible" [(ngModel)]="createModel.deductible" min="0" step="0.01" inputmode="decimal" required />
+            </div>
+          </div>
+          <div>
+            <label class="form-label">Out-of-pocket max</label>
+            <div class="input-group money-input-group">
+              <span class="input-group-text">$</span>
+              <input type="number" class="form-control money-input" name="outOfPocketMax" [(ngModel)]="createModel.outOfPocketMax" min="0" step="0.01" inputmode="decimal" required />
+            </div>
+          </div>
+          <div>
+            <label class="form-label">Effective date</label>
+            <input type="date" class="form-control" name="effectiveDate" [(ngModel)]="createModel.effectiveDate" required />
+          </div>
+          <div>
+            <label class="form-label">Renewal date</label>
+            <input type="date" class="form-control" name="renewalDate" [(ngModel)]="createModel.renewalDate" required />
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-primary" type="submit" [disabled]="createForm.invalid || creating">
+              {{ creating ? "Creating..." : "Create plan" }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="card grid-card">
+    <div class="card-body grid-shell">
+      <app-data-grid
+        [rows]="plans"
+        [columnDefs]="columnDefs"
+        [defaultColDef]="defaultColDef"
+        (rowClicked)="openDetail($event.data)"
+      ></app-data-grid>
+      <div class="loading" *ngIf="loading">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <span>Loading insurance plans...</span>
+      </div>
+    </div>
+  </div>
+</section>
