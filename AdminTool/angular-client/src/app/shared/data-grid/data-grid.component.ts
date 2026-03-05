@@ -9,7 +9,13 @@ import {
   GridReadyEvent,
   PaginationChangedEvent,
   RowClickedEvent,
+  SortChangedEvent,
 } from "ag-grid-community";
+
+export interface GridSortState {
+  field: string;
+  direction: "asc" | "desc";
+}
 
 export interface DataGridColumn {
   key: string;
@@ -31,6 +37,8 @@ export class DataGridComponent {
   private static readonly MAX_PAGE_SIZE = 50;
   private gridApi: GridApi | null = null;
   private isEditingPageInput = false;
+  private pendingSortEmitTimer: ReturnType<typeof setTimeout> | null = null;
+  private lastEmittedSortSignature = "";
 
   currentPage = 1;
   totalPages = 1;
@@ -46,10 +54,14 @@ export class DataGridComponent {
   @Input() headerHeight = 30;
   @Input() alwaysShowHorizontalScroll = true;
   @Input() suppressHorizontalScroll = false;
+  @Input() showSearch = true;
+  @Input() searchPlaceholder = "Search records";
+  @Input() externalSearchQuery: string | null = null;
 
   @Output() rowClicked = new EventEmitter<RowClickedEvent>();
   @Output() cellClicked = new EventEmitter<CellClickedEvent>();
   @Output() gridReady = new EventEmitter<GridReadyEvent>();
+  @Output() gridSortChange = new EventEmitter<GridSortState[]>();
 
   modules = [AllCommunityModule];
   readonly baseDefaultColDef: ColDef = {
@@ -65,6 +77,10 @@ export class DataGridComponent {
       ...this.baseDefaultColDef,
       ...(this.defaultColDef ?? {}),
     };
+  }
+
+  get activeSearchQuery() {
+    return this.externalSearchQuery ?? "";
   }
 
   get resolvedColumnDefs(): ColDef[] {
@@ -123,11 +139,90 @@ export class DataGridComponent {
   onGridReady(event: GridReadyEvent) {
     this.gridApi = event.api;
     this.syncPaginationState();
+    this.scheduleSortEmit(event.api);
     this.gridReady.emit(event);
+  }
+
+  onAgSortChanged(event: SortChangedEvent) {
+    this.scheduleSortEmit(event.api);
+  }
+
+  onGridMouseDown(event: MouseEvent) {
+    if (event.button !== 0) {
+      return;
+    }
+
+    const target = event.target as HTMLElement | null;
+    if (!target) {
+      return;
+    }
+
+    if (
+      target.closest(".ag-header-cell-menu-button") ||
+      target.closest(".ag-header-icon") ||
+      target.closest(".ag-filter") ||
+      target.closest(".ag-floating-filter") ||
+      target.closest(".ag-menu") ||
+      target.closest(".ag-popup")
+    ) {
+      return;
+    }
+
+    const headerText = target.closest(".ag-header-cell-text") as HTMLElement | null;
+    if (!headerText) {
+      return;
+    }
+
+    const headerCell = target?.closest(".ag-header-cell") as HTMLElement | null;
+    if (!headerCell) {
+      return;
+    }
+
+    const columnId = headerCell.getAttribute("col-id") ?? "unknown";
+    const clickedAt = new Date().toISOString();
+    console.log(`[DataGrid] headerMouseDown at ${clickedAt}`, { columnId });
+
+    if (this.gridApi) {
+      this.scheduleSortEmit(this.gridApi);
+    }
+  }
+
+  private scheduleSortEmit(api: GridApi) {
+    if (this.pendingSortEmitTimer) {
+      clearTimeout(this.pendingSortEmitTimer);
+    }
+
+    this.pendingSortEmitTimer = setTimeout(() => {
+      this.pendingSortEmitTimer = null;
+      this.emitCurrentSortState(api);
+    }, 0);
   }
 
   onPaginationChanged(_: PaginationChangedEvent) {
     this.syncPaginationState();
+  }
+
+  private emitCurrentSortState(api: GridApi) {
+    const sortedColumns = api
+      .getColumnState()
+      .filter((column) => !!column.sort)
+      .sort((left, right) => (left.sortIndex ?? 0) - (right.sortIndex ?? 0));
+
+    const sorts = sortedColumns
+      .filter((column) => !!column.colId && (column.sort === "asc" || column.sort === "desc"))
+      .map((column) => ({
+        field: column.colId as string,
+        direction: column.sort === "desc" ? "desc" as const : "asc" as const,
+      }));
+
+    const signature = sorts.map((item) => `${item.field}:${item.direction}`).join("|");
+    if (signature === this.lastEmittedSortSignature) {
+      return;
+    }
+
+    this.lastEmittedSortSignature = signature;
+    console.log(`[DataGrid] gridSortChange at ${new Date().toISOString()}`, { sorts });
+    this.gridSortChange.emit(sorts);
   }
 
   get canGoPrevious() {

@@ -1,0 +1,100 @@
+<section class="page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Provider module</p>
+      <h1>{{ provider?.provider || 'Provider Detail' }}</h1>
+    </div>
+    <div class="actions">
+      <button class="btn btn-outline-secondary" type="button" (click)="goBack()">Back</button>
+      <button class="btn btn-primary" type="button" [disabled]="!provider" (click)="viewPlans()">View plans</button>
+    </div>
+  </header>
+
+  <div
+    *ngIf="alertMessage"
+    class="alert"
+    [ngClass]="'alert-' + alertType"
+    animate.enter="alert-enter"
+    animate.leave="alert-leave"
+    role="alert"
+  >
+    {{ alertMessage }}
+  </div>
+
+  <div class="loading" *ngIf="loading">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <span>Loading provider details...</span>
+  </div>
+
+  <ng-container *ngIf="!loading && provider as item">
+    <app-summary-stats [items]="summaryItems"></app-summary-stats>
+
+    <div class="card detail-card">
+      <div class="detail-grid">
+        <div>
+          <p class="detail-label">Earliest effective date</p>
+          <p class="detail-value">{{ datePipe.transform(item.earliestEffectiveDate, "MMM d, y") }}</p>
+        </div>
+        <div>
+          <p class="detail-label">Latest effective date</p>
+          <p class="detail-value">{{ datePipe.transform(item.latestEffectiveDate, "MMM d, y") }}</p>
+        </div>
+        <div>
+          <p class="detail-label">Avg monthly premium</p>
+          <p class="detail-value">{{ item.averageMonthlyPremium | currency: 'USD':'symbol':'1.2-2' }}</p>
+        </div>
+        <div>
+          <p class="detail-label">Avg deductible</p>
+          <p class="detail-value">{{ item.averageDeductible | currency: 'USD':'symbol':'1.0-0' }}</p>
+        </div>
+        <div>
+          <p class="detail-label">Avg out-of-pocket max</p>
+          <p class="detail-value">{{ item.averageOutOfPocketMax | currency: 'USD':'symbol':'1.0-0' }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="detail-columns">
+      <div class="card detail-card">
+        <h2>Plan Types</h2>
+        <div class="chip-list" *ngIf="item.planTypes.length; else noPlanTypes">
+          <span class="chip" *ngFor="let planType of item.planTypes">{{ planType }}</span>
+        </div>
+        <ng-template #noPlanTypes>
+          <p class="empty">No plan types available.</p>
+        </ng-template>
+      </div>
+
+      <div class="card detail-card">
+        <h2>Members</h2>
+        <ul class="list" *ngIf="item.members.length; else noMembers">
+          <li *ngFor="let member of item.members">{{ member }}</li>
+        </ul>
+        <ng-template #noMembers>
+          <p class="empty">No members available.</p>
+        </ng-template>
+      </div>
+    </div>
+
+    <div class="card detail-card">
+      <h2>Note Section</h2>
+      <label class="form-label">Internal note</label>
+      <textarea
+        class="form-control"
+        rows="4"
+        [(ngModel)]="noteDraft"
+        placeholder="Add provider notes for your review"
+      ></textarea>
+
+      <h3 class="notes-heading">Recent plan notes</h3>
+      <ul class="list" *ngIf="item.recentNotes.length; else noRecentNotes">
+        <li *ngFor="let note of item.recentNotes">{{ note }}</li>
+      </ul>
+      <ng-template #noRecentNotes>
+        <p class="empty">No notes from plan comments.</p>
+      </ng-template>
+    </div>
+  </ng-container>
+</section>

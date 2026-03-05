@@ -27,8 +27,8 @@ export class InsuranceFacade {
     private readonly deleteInsurancePlanCommand: DeleteInsurancePlanCommand
   ) {}
 
-  listPlans() {
-    return this.listInsurancePlansQuery.execute();
+  listPlans(sort?: Array<{ field: string; direction: "asc" | "desc" }>) {
+    return this.listInsurancePlansQuery.execute(sort);
   }
 
   getByPolicyId(policyId: string) {

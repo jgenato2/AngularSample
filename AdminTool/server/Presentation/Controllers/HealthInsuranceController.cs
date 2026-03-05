@@ -18,10 +18,11 @@ namespace Server.Presentation.Controllers;
 public class HealthInsuranceController(ICqrsDispatcher cqrsDispatcher) : ApiControllerBase
 {
     [HttpGet("plans")]
-    public async Task<IActionResult> ListPlans(CancellationToken cancellationToken)
+    public async Task<IActionResult> ListPlans([FromQuery(Name = "sort")] string[]? sort, CancellationToken cancellationToken)
     {
         var query = new ListHealthInsurancePlansQuery(GetActor());
-        var items = await cqrsDispatcher.ExecuteQuery<ListHealthInsurancePlansQuery, IEnumerable<HealthInsurancePlanResponse>>(query, cancellationToken);
+        var plans = await cqrsDispatcher.ExecuteQuery<ListHealthInsurancePlansQuery, IEnumerable<HealthInsurancePlanResponse>>(query, cancellationToken);
+        var items = ApplySorting(plans, sort);
         return Ok(new { items });
     }
 
@@ -135,5 +136,83 @@ public class HealthInsuranceController(ICqrsDispatcher cqrsDispatcher) : ApiCont
         }
 
         return subject ?? "system";
+    }
+
+    private static IEnumerable<HealthInsurancePlanResponse> ApplySorting(
+        IEnumerable<HealthInsurancePlanResponse> items,
+        IEnumerable<string>? sortTokens)
+    {
+        var parsedSorts = ParseSorts(sortTokens).ToList();
+        if (parsedSorts.Count == 0)
+        {
+            return items;
+        }
+
+        IOrderedEnumerable<HealthInsurancePlanResponse>? ordered = null;
+        foreach (var sort in parsedSorts)
+        {
+            ordered = ApplySort(ordered ?? items, ordered is not null, sort.Field, sort.Descending);
+        }
+
+        return ordered ?? items;
+    }
+
+    private static IEnumerable<(string Field, bool Descending)> ParseSorts(IEnumerable<string>? sortTokens)
+    {
+        foreach (var token in sortTokens ?? Enumerable.Empty<string>())
+        {
+            if (string.IsNullOrWhiteSpace(token))
+            {
+                continue;
+            }
+
+            var parts = token.Split(':', 2, StringSplitOptions.TrimEntries);
+            var field = parts[0].Trim().ToLowerInvariant();
+            if (string.IsNullOrWhiteSpace(field))
+            {
+                continue;
+            }
+
+            var descending = parts.Length > 1 && string.Equals(parts[1], "desc", StringComparison.OrdinalIgnoreCase);
+            yield return (field, descending);
+        }
+    }
+
+    private static IOrderedEnumerable<HealthInsurancePlanResponse> ApplySort(
+        IEnumerable<HealthInsurancePlanResponse> source,
+        bool thenBy,
+        string field,
+        bool descending)
+    {
+        return field switch
+        {
+            "policyid" => OrderBy(source, thenBy, descending, item => item.PolicyId),
+            "membername" => OrderBy(source, thenBy, descending, item => item.MemberName),
+            "provider" => OrderBy(source, thenBy, descending, item => item.Provider),
+            "plantype" => OrderBy(source, thenBy, descending, item => item.PlanType),
+            "status" => OrderBy(source, thenBy, descending, item => item.Status),
+            "monthlypremium" => OrderBy(source, thenBy, descending, item => item.MonthlyPremium),
+            "deductible" => OrderBy(source, thenBy, descending, item => item.Deductible),
+            "outofpocketmax" => OrderBy(source, thenBy, descending, item => item.OutOfPocketMax),
+            "effectivedate" => OrderBy(source, thenBy, descending, item => item.EffectiveDate),
+            "renewaldate" => OrderBy(source, thenBy, descending, item => item.RenewalDate),
+            "comments" => OrderBy(source, thenBy, descending, item => item.Comments ?? string.Empty),
+            _ => thenBy ? (IOrderedEnumerable<HealthInsurancePlanResponse>)source : source.OrderBy(item => 0),
+        };
+    }
+
+    private static IOrderedEnumerable<HealthInsurancePlanResponse> OrderBy<TKey>(
+        IEnumerable<HealthInsurancePlanResponse> source,
+        bool thenBy,
+        bool descending,
+        Func<HealthInsurancePlanResponse, TKey> keySelector)
+    {
+        if (thenBy)
+        {
+            var ordered = (IOrderedEnumerable<HealthInsurancePlanResponse>)source;
+            return descending ? ordered.ThenByDescending(keySelector) : ordered.ThenBy(keySelector);
+        }
+
+        return descending ? source.OrderByDescending(keySelector) : source.OrderBy(keySelector);
     }
 }

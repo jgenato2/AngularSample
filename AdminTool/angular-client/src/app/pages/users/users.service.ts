@@ -1,5 +1,5 @@
 import { Injectable } from "@angular/core";
-import { HttpClient } from "@angular/common/http";
+import { HttpClient, HttpParams } from "@angular/common/http";
 import { CreateUserPayload, UpdateUserPayload, UserAuditLogItem, UserItem } from "../../features/users/domain/user.models";
 
 interface ListResponse {
@@ -20,8 +20,19 @@ export class UsersService {
 
   constructor(private readonly http: HttpClient) {}
 
-  list() {
-    return this.http.get<ListResponse>(`${this.baseUrl}/users`);
+  list(sort?: Array<{ field: string; direction: "asc" | "desc" }>, query?: string) {
+    let params = new HttpParams();
+
+    for (const item of sort ?? []) {
+      params = params.append("sort", `${item.field}:${item.direction}`);
+    }
+
+    const searchQuery = (query ?? "").trim();
+    if (searchQuery) {
+      params = params.set("query", searchQuery);
+    }
+
+    return this.http.get<ListResponse>(`${this.baseUrl}/users`, { params });
   }
 
   getById(id: string) {

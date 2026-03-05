@@ -6,6 +6,7 @@
     [rowData]="rows"
     [columnDefs]="resolvedColumnDefs"
     [defaultColDef]="resolvedDefaultColDef"
+    [quickFilterText]="activeSearchQuery"
     [pagination]="shouldPaginate"
     [paginationPageSize]="effectivePageSize"
     [paginationPageSizeSelector]="effectivePageSizeOptions"
@@ -18,6 +19,7 @@
     (cellClicked)="cellClicked.emit($event)"
     (gridReady)="onGridReady($event)"
     (paginationChanged)="onPaginationChanged($event)"
+    (sortChanged)="onAgSortChanged($event)"
   ></ag-grid-angular>
 </div>
 

@@ -15,7 +15,9 @@
   </div>
   <div class="snapshot-item">
     <span>Provider</span>
-    <strong>{{ plan.provider }}</strong>
+    <strong>
+      <a class="member-link" [routerLink]="['/providers', plan.provider]">{{ plan.provider }}</a>
+    </strong>
   </div>
   <div class="snapshot-item">
     <span>Plan</span>

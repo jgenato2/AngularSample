@@ -1,8 +1,8 @@
 import { ChangeDetectorRef, Component, OnDestroy, OnInit } from "@angular/core";
-import { CommonModule } from "@angular/common";
+import { CommonModule, Location } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { HttpErrorResponse } from "@angular/common/http";
-import { ActivatedRoute, Router, RouterLink } from "@angular/router";
+import { ActivatedRoute, Router } from "@angular/router";
 import { finalize, forkJoin } from "rxjs";
 import { AuthService } from "../../../core/auth.service";
 import { InsuranceFacade } from "../../../features/insurance/application/insurance.facade";
@@ -17,6 +17,7 @@ import { BaselineProjectionCardComponent } from "./components/baseline-projectio
 import { StressTestCardComponent } from "./components/stress-test-card/stress-test-card.component";
 import { AlgorithmNotesCardComponent } from "./components/algorithm-notes-card/algorithm-notes-card.component";
 import { AuditLogSectionComponent } from "./components/audit-log-section/audit-log-section.component";
+import { ProvidersService } from "../../providers/providers.service";
 
 const DEFAULT_STATUS_WORKFLOW: Record<string, string[]> = {
   "New": ["Underwriting", "Cancelled"],
@@ -37,7 +38,6 @@ const DEFAULT_STATUS_WORKFLOW: Record<string, string[]> = {
   imports: [
     CommonModule,
     FormsModule,
-    RouterLink,
     CoverageCardComponent,
     FinancialCardComponent,
     TimelineCardComponent,
@@ -58,6 +58,7 @@ export class InsuranceDetailComponent implements OnInit, OnDestroy {
   auditLogs: InsuranceAuditLogItem[] = [];
   auditLoading = false;
   activeTab: "details" | "financial" | "audit" = "details";
+  providerOptions: string[] = [];
   showStatusModal = false;
   formModel = {
     memberName: "",
@@ -81,12 +82,15 @@ export class InsuranceDetailComponent implements OnInit, OnDestroy {
     private readonly route: ActivatedRoute,
     private readonly insuranceFacade: InsuranceFacade,
     private readonly claimsFacade: ClaimsFacade,
+    private readonly providersService: ProvidersService,
     private readonly router: Router,
+    private readonly location: Location,
     public readonly auth: AuthService,
     private readonly cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit() {
+    this.loadProviderOptions();
     this.loadStatusWorkflow();
     this.load();
   }
@@ -255,6 +259,15 @@ export class InsuranceDetailComponent implements OnInit, OnDestroy {
     });
   }
 
+  goBack() {
+    if (window.history.length > 1) {
+      this.location.back();
+      return;
+    }
+
+    this.router.navigateByUrl("/insurance");
+  }
+
   private patchForm(item: InsurancePlanItem) {
     this.formModel = {
       memberName: item.memberName,
@@ -347,6 +360,20 @@ export class InsuranceDetailComponent implements OnInit, OnDestroy {
 
     clearTimeout(this.alertTimerId);
     this.alertTimerId = null;
+  }
+
+  private loadProviderOptions() {
+    this.providersService.list().subscribe({
+      next: (response) => {
+        this.providerOptions = [...new Set((response.items ?? []).map((item) => item.provider).filter((provider) => !!provider))]
+          .sort((a, b) => a.localeCompare(b));
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.providerOptions = [];
+        this.cdr.markForCheck();
+      },
+    });
   }
 }
 

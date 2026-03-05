@@ -6,26 +6,43 @@
           ☰
         </button>
 
-        <div class="menu-panel" *ngIf="menuOpen">
-          <a class="menu-link menu-brand" routerLink="/users" (click)="closeMenu()">
+        <div class="menu-panel" [class.open]="menuOpen" [attr.aria-hidden]="!menuOpen">
+          <a class="menu-link menu-brand" routerLink="/insurance" (click)="closeMenu()">
             <span class="brand-mark"></span>
             <span>MedCover Central</span>
           </a>
-          <a class="menu-link" routerLink="/users" (click)="closeMenu()">Users</a>
+          <div class="menu-group-label">Operations</div>
           <a class="menu-link" routerLink="/insurance" (click)="closeMenu()">Insurance</a>
+          <a class="menu-link" routerLink="/providers" (click)="closeMenu()">Providers</a>
           <a class="menu-link" routerLink="/claims" (click)="closeMenu()">Claims</a>
+          <div class="menu-group-label">Administration</div>
+          <a class="menu-link" routerLink="/users" (click)="closeMenu()">Users</a>
           <a class="menu-link" routerLink="/audit-logs" (click)="closeMenu()" *ngIf="auth.isAdmin()">Audit Logs</a>
         </div>
       </div>
 
       <div class="brand navbar-brand">
+        <span class="brand-mark"></span>
         <span class="brand-title">MedCover Central</span>
       </div>
     </div>
     <div class="ms-auto d-flex gap-2 align-items-center">
-      <button class="btn btn-outline-primary" type="button" (click)="logout()" *ngIf="auth.isAuthenticated()">
-        Logout
-      </button>
+      <div class="user-menu" *ngIf="auth.isAuthenticated()" (click)="$event.stopPropagation()">
+        <button
+          class="user-menu-toggle"
+          type="button"
+          (click)="toggleUserMenu($event)"
+          [attr.aria-expanded]="userMenuOpen"
+        >
+          <span class="user-name">{{ auth.user()?.name || "Account" }}</span>
+          <span class="user-caret">▾</span>
+        </button>
+
+        <div class="user-menu-panel" *ngIf="userMenuOpen">
+          <button class="user-menu-item" type="button" (click)="goToProfile()">Profile</button>
+          <button class="user-menu-item danger" type="button" (click)="logout()">Logout</button>
+        </div>
+      </div>
       <a class="btn btn-primary" routerLink="/login" *ngIf="!auth.isAuthenticated()">Login</a>
     </div>
   </div>

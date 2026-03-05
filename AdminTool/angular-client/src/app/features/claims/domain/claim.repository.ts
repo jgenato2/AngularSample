@@ -3,7 +3,7 @@ import { Observable } from "rxjs";
 import { ClaimAuditLogItem, ClaimItem, ClaimStatusWorkflowResponse, CreateClaimPayload, UpdateClaimPayload } from "./claim.models";
 
 export interface ClaimRepository {
-  list(): Observable<ClaimItem[]>;
+  list(sort?: Array<{ field: string; direction: "asc" | "desc" }>): Observable<ClaimItem[]>;
   getById(claimId: string): Observable<ClaimItem>;
   getStatusWorkflow(): Observable<ClaimStatusWorkflowResponse>;
   getAuditLogs(claimId: string): Observable<ClaimAuditLogItem[]>;

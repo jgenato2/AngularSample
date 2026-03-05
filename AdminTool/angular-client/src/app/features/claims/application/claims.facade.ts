@@ -22,8 +22,8 @@ export class ClaimsFacade {
     private readonly deleteClaimCommand: DeleteClaimCommand
   ) {}
 
-  list() {
-    return this.listClaimsQuery.execute();
+  list(sort?: Array<{ field: string; direction: "asc" | "desc" }>) {
+    return this.listClaimsQuery.execute(sort);
   }
 
   getById(claimId: string) {

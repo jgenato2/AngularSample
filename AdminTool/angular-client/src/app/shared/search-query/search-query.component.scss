@@ -1,0 +1,27 @@
+:host {
+  display: block;
+}
+
+.search-query {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: nowrap;
+}
+
+.search-input {
+  width: 14rem;
+  max-width: 14rem;
+}
+
+.search-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: nowrap;
+}
+
+.search-query > .btn,
+.search-actions :where(.btn) {
+  white-space: nowrap;
+}

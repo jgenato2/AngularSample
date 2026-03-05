@@ -15,8 +15,8 @@ import { InsuranceRepository } from "../domain/insurance.repository";
 export class InsuranceHttpRepository implements InsuranceRepository {
   constructor(private readonly insuranceService: InsuranceService) {}
 
-  listPlans() {
-    return this.insuranceService.listPlans().pipe(map((response) => response.items ?? []));
+  listPlans(sort?: Array<{ field: string; direction: "asc" | "desc" }>) {
+    return this.insuranceService.listPlans(sort).pipe(map((response) => response.items ?? []));
   }
 
   getByPolicyId(policyId: string) {

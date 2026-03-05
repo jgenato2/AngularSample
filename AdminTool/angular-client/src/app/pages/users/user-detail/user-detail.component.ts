@@ -1,6 +1,6 @@
 import { ChangeDetectorRef, Component, OnDestroy, OnInit } from "@angular/core";
-import { CommonModule, DatePipe } from "@angular/common";
-import { ActivatedRoute, Router, RouterLink } from "@angular/router";
+import { CommonModule, DatePipe, Location } from "@angular/common";
+import { ActivatedRoute, Router } from "@angular/router";
 import { AuthService } from "../../../core/auth.service";
 import { UsersFacade } from "../../../features/users/application/users.facade";
 import { UserAuditLogItem, UserItem } from "../../../features/users/domain/user.models";
@@ -19,7 +19,6 @@ import { DataGridComponent } from "../../../shared/data-grid/data-grid.component
   standalone: true,
   imports: [
     CommonModule,
-    RouterLink,
     UserFormDialogComponent,
     DataGridComponent,
   ],
@@ -72,6 +71,7 @@ export class UserDetailComponent implements OnInit, OnDestroy {
     private readonly route: ActivatedRoute,
     private readonly usersFacade: UsersFacade,
     private readonly router: Router,
+    private readonly location: Location,
     public readonly auth: AuthService,
     public readonly datePipe: DatePipe,
     private readonly cdr: ChangeDetectorRef
@@ -209,6 +209,15 @@ export class UserDetailComponent implements OnInit, OnDestroy {
         this.setAlert("Failed to delete user.");
       },
     });
+  }
+
+  goBack() {
+    if (window.history.length > 1) {
+      this.location.back();
+      return;
+    }
+
+    this.router.navigateByUrl("/users");
   }
 
   private setAlert(message: string, type: "danger" | "success" = "danger") {

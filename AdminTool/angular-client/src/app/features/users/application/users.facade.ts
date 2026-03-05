@@ -20,8 +20,8 @@ export class UsersFacade {
     private readonly getUsersListAccessAuditLogsQuery: GetUsersListAccessAuditLogsQuery
   ) {}
 
-  list() {
-    return this.listUsersQuery.execute();
+  list(sort?: Array<{ field: string; direction: "asc" | "desc" }>, query?: string) {
+    return this.listUsersQuery.execute(sort, query);
   }
 
   getById(id: string) {

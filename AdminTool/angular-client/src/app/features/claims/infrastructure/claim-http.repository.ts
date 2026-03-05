@@ -14,8 +14,8 @@ import { ClaimRepository } from "../domain/claim.repository";
 export class ClaimHttpRepository implements ClaimRepository {
   constructor(private readonly claimsService: ClaimsService) {}
 
-  list() {
-    return this.claimsService.list().pipe(map((response) => response.items ?? []));
+  list(sort?: Array<{ field: string; direction: "asc" | "desc" }>) {
+    return this.claimsService.list(sort).pipe(map((response) => response.items ?? []));
   }
 
   getById(claimId: string) {

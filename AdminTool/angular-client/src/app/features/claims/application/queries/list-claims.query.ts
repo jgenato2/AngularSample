@@ -5,7 +5,7 @@ import { CLAIM_REPOSITORY, ClaimRepository } from "../../domain/claim.repository
 export class ListClaimsQuery {
   constructor(@Inject(CLAIM_REPOSITORY) private readonly claimRepository: ClaimRepository) {}
 
-  execute() {
-    return this.claimRepository.list();
+  execute(sort?: Array<{ field: string; direction: "asc" | "desc" }>) {
+    return this.claimRepository.list(sort);
   }
 }

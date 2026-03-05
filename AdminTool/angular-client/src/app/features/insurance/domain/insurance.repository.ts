@@ -10,7 +10,7 @@ import {
 } from "./insurance.models";
 
 export interface InsuranceRepository {
-  listPlans(): Observable<InsurancePlanItem[]>;
+  listPlans(sort?: Array<{ field: string; direction: "asc" | "desc" }>): Observable<InsurancePlanItem[]>;
   getByPolicyId(policyId: string): Observable<InsurancePlanItem>;
   getFinancialAnalytics(policyId: string): Observable<InsuranceFinancialAnalyticsItem>;
   getAuditLogs(policyId: string): Observable<InsuranceAuditLogItem[]>;

@@ -1,5 +1,5 @@
 import { Injectable } from "@angular/core";
-import { HttpClient } from "@angular/common/http";
+import { HttpClient, HttpParams } from "@angular/common/http";
 import {
   InsuranceAuditLogItem,
   CreateInsurancePlanPayload,
@@ -31,8 +31,14 @@ export class InsuranceService {
 
   constructor(private readonly http: HttpClient) {}
 
-  listPlans() {
-    return this.http.get<PlanListResponse>(`${this.baseUrl}/plans`);
+  listPlans(sort?: Array<{ field: string; direction: "asc" | "desc" }>) {
+    let params = new HttpParams();
+
+    for (const item of sort ?? []) {
+      params = params.append("sort", `${item.field}:${item.direction}`);
+    }
+
+    return this.http.get<PlanListResponse>(`${this.baseUrl}/plans`, { params });
   }
 
   getByPolicyId(policyId: string) {

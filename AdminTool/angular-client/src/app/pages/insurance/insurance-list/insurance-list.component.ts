@@ -2,20 +2,24 @@ import { ChangeDetectorRef, Component, OnDestroy, OnInit } from "@angular/core";
 import { CommonModule, CurrencyPipe, DatePipe } from "@angular/common";
 import { HttpErrorResponse } from "@angular/common/http";
 import { FormsModule } from "@angular/forms";
-import { Router } from "@angular/router";
-import { ColDef } from "ag-grid-community";
-import { finalize } from "rxjs";
+import { ActivatedRoute, Router } from "@angular/router";
+import { CellClickedEvent, ColDef } from "ag-grid-community";
+import { finalize, forkJoin, Subscription } from "rxjs";
 import { AuthService } from "../../../core/auth.service";
+import { ClaimsFacade } from "../../../features/claims/application/claims.facade";
 import { InsuranceFacade } from "../../../features/insurance/application/insurance.facade";
 import { InsurancePlanItem } from "../../../features/insurance/domain/insurance.models";
-import { DataGridComponent } from "../../../shared/data-grid/data-grid.component";
+import { DataGridComponent, GridSortState } from "../../../shared/data-grid/data-grid.component";
+import { SearchQueryComponent } from "../../../shared/search-query/search-query.component";
+import { SummaryStatItem, SummaryStatsComponent } from "../../../shared/summary-stats/summary-stats.component";
+import { ProvidersService } from "../../providers/providers.service";
 
 const DEFAULT_CREATE_STATUS_OPTIONS = ["New"];
 
 @Component({
   selector: "app-insurance-list",
   standalone: true,
-  imports: [CommonModule, FormsModule, DataGridComponent],
+  imports: [CommonModule, FormsModule, DataGridComponent, SearchQueryComponent, SummaryStatsComponent],
   providers: [CurrencyPipe, DatePipe],
   templateUrl: "./insurance-list.component.html",
   styleUrl: "./insurance-list.component.scss",
@@ -23,10 +27,15 @@ const DEFAULT_CREATE_STATUS_OPTIONS = ["New"];
 export class InsuranceListComponent implements OnInit, OnDestroy {
   createStatusOptions = [...DEFAULT_CREATE_STATUS_OPTIONS];
   plans: InsurancePlanItem[] = [];
+  providerOptions: string[] = [];
+  gridSearchQuery = "";
+  gridSort: GridSortState[] = [];
   loading = false;
   creating = false;
   alertMessage: string | null = null;
   alertType: "danger" | "success" = "danger";
+  private claimIdByPolicyId = new Map<string, string>();
+  private listRequestSub: Subscription | null = null;
   private alertTimerId: ReturnType<typeof setTimeout> | null = null;
   createModel = {
     policyId: "",
@@ -43,7 +52,10 @@ export class InsuranceListComponent implements OnInit, OnDestroy {
 
   constructor(
     private readonly insuranceFacade: InsuranceFacade,
+    private readonly claimsFacade: ClaimsFacade,
+    private readonly providersService: ProvidersService,
     public readonly auth: AuthService,
+    private readonly route: ActivatedRoute,
     private readonly router: Router,
     private readonly cdr: ChangeDetectorRef,
     public readonly currencyPipe: CurrencyPipe,
@@ -51,11 +63,14 @@ export class InsuranceListComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
+    this.gridSearchQuery = this.route.snapshot.queryParamMap.get("query") ?? "";
+    this.loadProviderOptions();
     this.loadStatusWorkflow();
     this.load();
   }
 
   ngOnDestroy() {
+    this.listRequestSub?.unsubscribe();
     this.clearAlertTimer();
   }
 
@@ -123,16 +138,27 @@ export class InsuranceListComponent implements OnInit, OnDestroy {
     this.loading = true;
     this.alertMessage = null;
     this.cdr.markForCheck();
+    this.listRequestSub?.unsubscribe();
 
-    this.insuranceFacade
-      .listPlans()
+    this.listRequestSub = forkJoin({
+      plans: this.insuranceFacade.listPlans(this.gridSort),
+      claims: this.claimsFacade.list(),
+    })
       .pipe(finalize(() => {
         this.loading = false;
         this.cdr.markForCheck();
       }))
       .subscribe({
-        next: (plans) => {
-          this.plans = [...plans];
+        next: (result) => {
+          this.plans = [...result.plans];
+          this.claimIdByPolicyId.clear();
+          for (const claim of result.claims) {
+            const policyId = String(claim.policyId ?? "").trim().toLowerCase();
+            if (!policyId || this.claimIdByPolicyId.has(policyId)) {
+              continue;
+            }
+            this.claimIdByPolicyId.set(policyId, claim.claimId);
+          }
           this.cdr.markForCheck();
         },
         error: (error: HttpErrorResponse) => {
@@ -200,6 +226,68 @@ export class InsuranceListComponent implements OnInit, OnDestroy {
       return;
     }
     this.router.navigate(["/insurance", plan.policyId]);
+  }
+
+  openInsuranceFromSearch() {
+    const policyId = this.gridSearchQuery.trim();
+    if (!policyId) {
+      return;
+    }
+
+    this.router.navigate(["/insurance", policyId]);
+  }
+
+  onGridSortChanged(sortState: GridSortState[]) {
+    this.gridSort = [...sortState];
+    this.load();
+  }
+
+  onCellClicked(event: CellClickedEvent<InsurancePlanItem>) {
+    const field = event.colDef.field;
+    const row = event.data;
+    if (!field || !row) {
+      return;
+    }
+
+    if (field === "provider" && row.provider) {
+      event.event?.stopPropagation();
+      this.router.navigate(["/providers", row.provider]);
+      return;
+    }
+
+    if (field === "memberName") {
+      const claimId = this.claimIdByPolicyId.get(String(row.policyId ?? "").trim().toLowerCase());
+      if (!claimId) {
+        this.setAlert("No linked claim record found for this member.");
+        return;
+      }
+      event.event?.stopPropagation();
+      this.router.navigate(["/claims", claimId]);
+    }
+  }
+
+  get summaryItems(): SummaryStatItem[] {
+    let activePlans = 0;
+    let pendingPlans = 0;
+    let expiredPlans = 0;
+
+    for (const plan of this.plans) {
+      const status = String(plan.status ?? "").toLowerCase();
+      if (status.includes("active")) {
+        activePlans += 1;
+      } else if (status.includes("pending")) {
+        pendingPlans += 1;
+      } else if (status.includes("expired")) {
+        expiredPlans += 1;
+      }
+    }
+
+    return [
+      { label: "Total plans", value: this.plans.length },
+      { label: "Active plans", value: activePlans, tone: "success" },
+      { label: "Pending plans", value: pendingPlans, tone: "warning" },
+      { label: "Expired plans", value: expiredPlans, tone: "danger" },
+    ];
   }
 
   createPlan() {
@@ -271,6 +359,20 @@ export class InsuranceListComponent implements OnInit, OnDestroy {
 
     clearTimeout(this.alertTimerId);
     this.alertTimerId = null;
+  }
+
+  private loadProviderOptions() {
+    this.providersService.list().subscribe({
+      next: (response) => {
+        this.providerOptions = [...new Set((response.items ?? []).map((item) => item.provider).filter((provider) => !!provider))]
+          .sort((a, b) => a.localeCompare(b));
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.providerOptions = [];
+        this.cdr.markForCheck();
+      },
+    });
   }
 }
 

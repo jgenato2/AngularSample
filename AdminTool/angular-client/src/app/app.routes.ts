@@ -6,18 +6,22 @@ import { InsuranceListComponent } from "./pages/insurance/insurance-list/insuran
 import { InsuranceDetailComponent } from "./pages/insurance/insurance-detail/insurance-detail.component";
 import { ClaimListComponent } from "./pages/claims/claim-list/claim-list.component";
 import { ClaimDetailComponent } from "./pages/claims/claim-detail/claim-detail.component";
+import { ProviderListComponent } from "./pages/providers/provider-list/provider-list.component";
+import { ProviderDetailComponent } from "./pages/providers/provider-detail/provider-detail.component";
 import { AuditLogComponent } from "./pages/audit-log/audit-log.component";
 import { authGuard } from "./core/auth.guard";
 
 export const routes: Routes = [
-  { path: "", pathMatch: "full", redirectTo: "users" },
+  { path: "", pathMatch: "full", redirectTo: "insurance" },
   { path: "login", component: LoginComponent },
   { path: "users", component: UserListComponent, canActivate: [authGuard] },
   { path: "users/:id", component: UserDetailComponent, canActivate: [authGuard] },
   { path: "insurance", component: InsuranceListComponent, canActivate: [authGuard] },
   { path: "insurance/:policyId", component: InsuranceDetailComponent, canActivate: [authGuard] },
+  { path: "providers", component: ProviderListComponent, canActivate: [authGuard] },
+  { path: "providers/:provider", component: ProviderDetailComponent, canActivate: [authGuard] },
   { path: "claims", component: ClaimListComponent, canActivate: [authGuard] },
   { path: "claims/:claimId", component: ClaimDetailComponent, canActivate: [authGuard] },
   { path: "audit-logs", component: AuditLogComponent, canActivate: [authGuard] },
-  { path: "**", redirectTo: "users" },
+  { path: "**", redirectTo: "insurance" },
 ];

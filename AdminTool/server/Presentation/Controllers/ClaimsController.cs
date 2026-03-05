@@ -18,10 +18,11 @@ namespace Server.Presentation.Controllers;
 public class ClaimsController(ICqrsDispatcher cqrsDispatcher) : ApiControllerBase
 {
     [HttpGet]
-    public async Task<IActionResult> List(CancellationToken cancellationToken)
+    public async Task<IActionResult> List([FromQuery(Name = "sort")] string[]? sort, CancellationToken cancellationToken)
     {
         var query = new ListClaimsQuery(GetActor());
-        var items = (await cqrsDispatcher.ExecuteQuery<ListClaimsQuery, IEnumerable<Domain.Entities.Claim>>(query, cancellationToken)).Select(item => item.ToResponse());
+        var claims = await cqrsDispatcher.ExecuteQuery<ListClaimsQuery, IEnumerable<Domain.Entities.Claim>>(query, cancellationToken);
+        var items = ApplySorting(claims, sort).Select(item => item.ToResponse());
         return Ok(new { items });
     }
 
@@ -137,5 +138,84 @@ public class ClaimsController(ICqrsDispatcher cqrsDispatcher) : ApiControllerBas
         }
 
         return "unknown";
+    }
+
+    private static IEnumerable<Domain.Entities.Claim> ApplySorting(
+        IEnumerable<Domain.Entities.Claim> items,
+        IEnumerable<string>? sortTokens)
+    {
+        var parsedSorts = ParseSorts(sortTokens).ToList();
+        if (parsedSorts.Count == 0)
+        {
+            return items;
+        }
+
+        IOrderedEnumerable<Domain.Entities.Claim>? ordered = null;
+        foreach (var sort in parsedSorts)
+        {
+            ordered = ApplySort(ordered ?? items, ordered is not null, sort.Field, sort.Descending);
+        }
+
+        return ordered ?? items;
+    }
+
+    private static IEnumerable<(string Field, bool Descending)> ParseSorts(IEnumerable<string>? sortTokens)
+    {
+        foreach (var token in sortTokens ?? Enumerable.Empty<string>())
+        {
+            if (string.IsNullOrWhiteSpace(token))
+            {
+                continue;
+            }
+
+            var parts = token.Split(':', 2, StringSplitOptions.TrimEntries);
+            var field = parts[0].Trim().ToLowerInvariant();
+            if (string.IsNullOrWhiteSpace(field))
+            {
+                continue;
+            }
+
+            var descending = parts.Length > 1 && string.Equals(parts[1], "desc", StringComparison.OrdinalIgnoreCase);
+            yield return (field, descending);
+        }
+    }
+
+    private static IOrderedEnumerable<Domain.Entities.Claim> ApplySort(
+        IEnumerable<Domain.Entities.Claim> source,
+        bool thenBy,
+        string field,
+        bool descending)
+    {
+        return field switch
+        {
+            "claimid" => OrderBy(source, thenBy, descending, item => item.ClaimId),
+            "policyid" => OrderBy(source, thenBy, descending, item => item.PolicyId),
+            "membername" => OrderBy(source, thenBy, descending, item => item.MemberName),
+            "provider" => OrderBy(source, thenBy, descending, item => item.Provider),
+            "claimtype" => OrderBy(source, thenBy, descending, item => item.ClaimType),
+            "servicecategory" => OrderBy(source, thenBy, descending, item => item.ServiceCategory),
+            "diagnosiscode" => OrderBy(source, thenBy, descending, item => item.DiagnosisCode),
+            "submittedat" => OrderBy(source, thenBy, descending, item => item.SubmittedAt),
+            "servicedate" => OrderBy(source, thenBy, descending, item => item.ServiceDate),
+            "claimamount" => OrderBy(source, thenBy, descending, item => item.ClaimAmount),
+            "status" => OrderBy(source, thenBy, descending, item => item.Status),
+            "notes" => OrderBy(source, thenBy, descending, item => item.Notes ?? string.Empty),
+            _ => thenBy ? (IOrderedEnumerable<Domain.Entities.Claim>)source : source.OrderBy(item => 0),
+        };
+    }
+
+    private static IOrderedEnumerable<Domain.Entities.Claim> OrderBy<TKey>(
+        IEnumerable<Domain.Entities.Claim> source,
+        bool thenBy,
+        bool descending,
+        Func<Domain.Entities.Claim, TKey> keySelector)
+    {
+        if (thenBy)
+        {
+            var ordered = (IOrderedEnumerable<Domain.Entities.Claim>)source;
+            return descending ? ordered.ThenByDescending(keySelector) : ordered.ThenBy(keySelector);
+        }
+
+        return descending ? source.OrderByDescending(keySelector) : source.OrderBy(keySelector);
     }
 }

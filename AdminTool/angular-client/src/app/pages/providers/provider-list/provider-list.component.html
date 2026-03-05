@@ -1,20 +1,8 @@
 <section class="page">
   <header class="page-header">
     <div>
-      <p class="eyebrow">User module</p>
-      <h1>Accounts</h1>
-    </div>
-    <div class="actions">
-      <button class="btn btn-outline-secondary" (click)="load()">Refresh</button>
-      <button
-        class="btn btn-primary"
-        (click)="prepareCreate()"
-        data-bs-toggle="modal"
-        [attr.data-bs-target]="'#' + createModalId"
-        *ngIf="auth.isAdmin()"
-      >
-        Create user
-      </button>
+      <p class="eyebrow">Healthcare module</p>
+      <h1>Providers</h1>
     </div>
   </header>
 
@@ -31,7 +19,7 @@
 
   <app-search-query
     [query]="gridSearchQuery"
-    [placeholder]="'Search users'"
+    [placeholder]="'Search providers'"
     [showRefresh]="true"
     [refreshDisabled]="loading"
     (queryChange)="onSearchQueryChange($event)"
@@ -41,24 +29,20 @@
   <div class="card grid-card">
     <div class="card-body grid-shell">
       <app-data-grid
-        [rows]="users"
+        [rows]="providers"
         [columnDefs]="columnDefs"
         [defaultColDef]="defaultColDef"
+        [showSearch]="false"
+        [externalSearchQuery]="gridSearchQuery"
         (gridSortChange)="onGridSortChanged($event)"
-        (rowClicked)="openDetail($event.data)"
+        (rowClicked)="openInsuranceForProvider($event.data)"
       ></app-data-grid>
       <div class="loading" *ngIf="loading">
         <div class="spinner-border text-primary" role="status">
           <span class="visually-hidden">Loading...</span>
         </div>
-        <span>Loading users...</span>
+        <span>Loading providers...</span>
       </div>
     </div>
   </div>
 </section>
-
-<app-user-form-dialog
-  [modalId]="createModalId"
-  [data]="createDialogData"
-  (submitted)="handleCreateSubmit($event)"
-></app-user-form-dialog>

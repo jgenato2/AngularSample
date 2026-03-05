@@ -1,5 +1,5 @@
 import { ChangeDetectorRef, Component, OnDestroy, OnInit } from "@angular/core";
-import { CommonModule, CurrencyPipe, DatePipe } from "@angular/common";
+import { CommonModule, CurrencyPipe, DatePipe, Location } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { HttpErrorResponse } from "@angular/common/http";
 import { ActivatedRoute, Router, RouterLink } from "@angular/router";
@@ -58,6 +58,7 @@ export class ClaimDetailComponent implements OnInit, OnDestroy {
     private readonly claimsFacade: ClaimsFacade,
     private readonly insuranceFacade: InsuranceFacade,
     private readonly router: Router,
+    private readonly location: Location,
     public readonly auth: AuthService,
     public readonly currencyPipe: CurrencyPipe,
     public readonly datePipe: DatePipe,
@@ -224,6 +225,15 @@ export class ClaimDetailComponent implements OnInit, OnDestroy {
       next: () => this.router.navigateByUrl("/claims"),
       error: () => this.setAlert("Failed to delete claim."),
     });
+  }
+
+  goBack() {
+    if (window.history.length > 1) {
+      this.location.back();
+      return;
+    }
+
+    this.router.navigateByUrl("/claims");
   }
 
   private patchForm(claim: ClaimItem) {

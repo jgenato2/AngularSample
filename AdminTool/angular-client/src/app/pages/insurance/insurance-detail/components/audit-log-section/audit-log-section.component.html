@@ -2,9 +2,17 @@
   <div class="card-body grid-shell">
     <p class="label">Audit Log</p>
 
+    <app-search-query
+      [query]="searchQuery"
+      [placeholder]="'Search insurance audit logs'"
+      (queryChange)="searchQuery = $event"
+    ></app-search-query>
+
     <app-data-grid
       [columns]="columns"
       [rows]="rows"
+      [showSearch]="false"
+      [externalSearchQuery]="searchQuery"
     ></app-data-grid>
 
     <div class="loading" *ngIf="loading">

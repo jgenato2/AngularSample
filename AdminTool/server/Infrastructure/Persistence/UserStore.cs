@@ -38,18 +38,68 @@ public sealed class UserStore : IUserStore
             return;
         }
 
+        var firstNames = new[]
+        {
+            "Ariana", "Marco", "Bianca", "Diego", "Nadine", "Paolo", "Trisha", "Vincent", "Kara", "Julian",
+            "Monica", "Rafael", "Nicole", "Andre", "Camille", "Jericho", "Daphne", "Gabriel", "Selena", "Nathan",
+        };
+        var lastNames = new[]
+        {
+            "Reyes", "Mendoza", "Delacruz", "Bautista", "Navarro", "Valdez", "Torres", "Ramos", "Castillo", "Santiago",
+            "Garcia", "Flores", "Hernandez", "Ortiz", "Domingo", "Pineda", "Aquino", "Mercado", "Velasco", "Cabrera",
+        };
+        var domains = new[] { "healthops.local", "carehub.local", "medinet.local", "insuregrid.local" };
+        var usedEmails = new HashSet<string>(_users.Select(user => user.Email), StringComparer.OrdinalIgnoreCase);
+        var usedNames = new HashSet<string>(_users.Select(user => user.Name), StringComparer.OrdinalIgnoreCase);
+
         var now = DateTime.UtcNow;
         for (var i = 2; i <= 180; i++)
         {
+            var index = i - 2;
+            var first = firstNames[index % firstNames.Length];
+            var last = lastNames[(index / firstNames.Length) % lastNames.Length];
+            var baseName = $"{first} {last}";
+            var name = baseName;
+            if (!usedNames.Add(name))
+            {
+                var suffix = 2;
+                while (true)
+                {
+                    var candidate = $"{baseName} {suffix}";
+                    if (usedNames.Add(candidate))
+                    {
+                        name = candidate;
+                        break;
+                    }
+
+                    suffix++;
+                }
+            }
+
+            var alias = $"{first}.{last}".ToLowerInvariant();
+            var domain = domains[index % domains.Length];
+            var email = $"{alias}@{domain}";
+            if (!usedEmails.Add(email))
+            {
+                email = $"{alias}{i:000}@{domain}";
+                usedEmails.Add(email);
+            }
+
+            var createdAt = now
+                .AddDays(-(index % 330))
+                .AddHours(-((index * 3) % 24))
+                .AddMinutes(-((index * 11) % 60));
+            var updatedAt = createdAt.AddDays(index % 17).AddMinutes((index * 7) % 60);
+
             _users.Add(new User
             {
                 Id = _nextId.ToString(),
-                Name = $"User {i:000}",
-                Email = $"user{i:000}@local.com",
-                Role = i % 15 == 0 ? "admin" : "user",
+                Name = name,
+                Email = email,
+                Role = i % 23 == 0 || i % 41 == 0 ? "admin" : "user",
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin123!"),
-                CreatedAt = now.AddMinutes(-i),
-                UpdatedAt = now.AddMinutes(-i),
+                CreatedAt = createdAt,
+                UpdatedAt = updatedAt,
             });
 
             _nextId++;

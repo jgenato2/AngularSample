@@ -1,37 +1,40 @@
-import { ChangeDetectorRef, Component, OnInit } from "@angular/core";
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from "@angular/core";
 import { CommonModule, CurrencyPipe, DatePipe } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { HttpErrorResponse } from "@angular/common/http";
 import { Router, RouterLink } from "@angular/router";
 import { CellClickedEvent, ColDef } from "ag-grid-community";
-import { finalize } from "rxjs";
+import { finalize, Subscription } from "rxjs";
 import { AuthService } from "../../../core/auth.service";
 import { ClaimsFacade } from "../../../features/claims/application/claims.facade";
 import { ClaimItem, ClaimStatusWorkflowItem, CreateClaimPayload } from "../../../features/claims/domain/claim.models";
 import { InsuranceFacade } from "../../../features/insurance/application/insurance.facade";
-import { DataGridComponent } from "../../../shared/data-grid/data-grid.component";
+import { DataGridComponent, GridSortState } from "../../../shared/data-grid/data-grid.component";
+import { SearchQueryComponent } from "../../../shared/search-query/search-query.component";
 
 const DEFAULT_CREATE_STATUS_OPTIONS = ["Submitted"];
 
 @Component({
   selector: "app-claim-list",
   standalone: true,
-  imports: [CommonModule, FormsModule, DataGridComponent, RouterLink],
+  imports: [CommonModule, FormsModule, DataGridComponent, SearchQueryComponent, RouterLink],
   providers: [CurrencyPipe, DatePipe],
   templateUrl: "./claim-list.component.html",
   styleUrl: "./claim-list.component.scss",
 })
-export class ClaimListComponent implements OnInit {
+export class ClaimListComponent implements OnInit, OnDestroy {
   createStatusOptions = [...DEFAULT_CREATE_STATUS_OPTIONS];
   statusWorkflow: Record<string, string[]> = {};
   policyIdOptions: string[] = [];
   claims: ClaimItem[] = [];
   displayedClaims: ClaimItem[] = [];
-  policyIdSearch = "";
+  gridSearchQuery = "";
+  gridSort: GridSortState[] = [];
   loading = false;
   creating = false;
   alertMessage: string | null = null;
   alertType: "danger" | "success" = "danger";
+  private listRequestSub: Subscription | null = null;
 
   createModel: CreateClaimPayload = {
     claimId: "",
@@ -62,6 +65,10 @@ export class ClaimListComponent implements OnInit {
     this.loadPolicyIdOptions();
     this.loadStatusWorkflow();
     this.load();
+  }
+
+  ngOnDestroy() {
+    this.listRequestSub?.unsubscribe();
   }
 
   
@@ -117,9 +124,10 @@ export class ClaimListComponent implements OnInit {
   load() {
     this.loading = true;
     this.alertMessage = null;
+    this.listRequestSub?.unsubscribe();
 
-    this.claimsFacade
-      .list()
+    this.listRequestSub = this.claimsFacade
+      .list(this.gridSort)
       .pipe(finalize(() => {
         this.loading = false;
         this.cdr.markForCheck();
@@ -127,7 +135,7 @@ export class ClaimListComponent implements OnInit {
       .subscribe({
         next: (items) => {
           this.claims = [...items];
-          this.applyPolicyIdFilter();
+          this.displayedClaims = [...items];
           this.cdr.markForCheck();
         },
         error: (error: HttpErrorResponse) => {
@@ -283,18 +291,8 @@ export class ClaimListComponent implements OnInit {
     this.router.navigate(["/insurance", policyId]);
   }
 
-  onPolicyIdSearchChange(value: string) {
-    this.policyIdSearch = value;
-    this.applyPolicyIdFilter();
-    this.cdr.markForCheck();
-  }
-
-  clearPolicyIdSearch() {
-    this.onPolicyIdSearchChange("");
-  }
-
   openInsuranceFromSearch() {
-    const policyId = this.policyIdSearch.trim();
+    const policyId = this.gridSearchQuery.trim();
     if (!policyId) {
       return;
     }
@@ -309,6 +307,11 @@ export class ClaimListComponent implements OnInit {
     }
 
     this.router.navigate(["/insurance", policyId]);
+  }
+
+  onGridSortChanged(sortState: GridSortState[]) {
+    this.gridSort = [...sortState];
+    this.load();
   }
 
   private loadPolicyIdOptions() {
@@ -329,14 +332,5 @@ export class ClaimListComponent implements OnInit {
     });
   }
 
-  private applyPolicyIdFilter() {
-    const query = this.policyIdSearch.trim().toLowerCase();
-    if (!query) {
-      this.displayedClaims = [...this.claims];
-      return;
-    }
-
-    this.displayedClaims = this.claims.filter((claim) => claim.policyId.toLowerCase().includes(query));
-  }
 }
 

@@ -1,0 +1,6 @@
+<div class="stats-grid" *ngIf="items.length">
+  <article class="card stat-card" *ngFor="let item of items" [ngClass]="cardToneClass(item)">
+    <p class="label">{{ item.label }}</p>
+    <p class="value">{{ item.value }}</p>
+  </article>
+</div>

@@ -16,7 +16,7 @@
         <p class="sub">{{ plan.memberName }} · {{ plan.provider }}</p>
       </div>
       <div class="actions">
-        <button class="btn btn-outline-secondary" routerLink="/insurance">Back</button>
+        <button class="btn btn-outline-secondary" type="button" (click)="goBack()">Back</button>
         <button class="btn btn-danger" (click)="remove()" *ngIf="canManage">Delete</button>
       </div>
     </header>
@@ -75,7 +75,12 @@
 
           <div>
             <label class="form-label">Provider</label>
-            <input class="form-control" name="provider" [(ngModel)]="formModel.provider" [disabled]="!canManage" required />
+            <input class="form-control" list="provider-options" name="provider" [(ngModel)]="formModel.provider" [disabled]="!canManage" required />
+            <datalist id="provider-options">
+              @for (provider of providerOptions; track provider) {
+                <option [value]="provider"></option>
+              }
+            </datalist>
           </div>
 
           <div>

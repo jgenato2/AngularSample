@@ -8,8 +8,8 @@ import { UserRepository } from "../domain/user.repository";
 export class UserHttpRepository implements UserRepository {
   constructor(private readonly usersService: UsersService) {}
 
-  list() {
-    return this.usersService.list().pipe(map((response) => response.items ?? []));
+  list(sort?: Array<{ field: string; direction: "asc" | "desc" }>, query?: string) {
+    return this.usersService.list(sort, query).pipe(map((response) => response.items ?? []));
   }
 
   getById(id: string) {

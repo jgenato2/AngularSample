@@ -16,7 +16,7 @@
         <p class="sub">{{ claim.memberName }} · {{ claim.provider }}</p>
       </div>
       <div class="actions">
-        <button class="btn btn-outline-secondary" routerLink="/claims">Back</button>
+        <button class="btn btn-outline-secondary" type="button" (click)="goBack()">Back</button>
         <button class="btn btn-danger" (click)="remove()" *ngIf="canManage">Delete</button>
       </div>
     </header>

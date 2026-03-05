@@ -1,5 +1,5 @@
 import { Injectable } from "@angular/core";
-import { HttpClient } from "@angular/common/http";
+import { HttpClient, HttpParams } from "@angular/common/http";
 import { ClaimAuditLogItem, ClaimItem, ClaimStatusWorkflowResponse, CreateClaimPayload, UpdateClaimPayload } from "../../features/claims/domain/claim.models";
 
 interface ClaimListResponse {
@@ -20,8 +20,14 @@ export class ClaimsService {
 
   constructor(private readonly http: HttpClient) {}
 
-  list() {
-    return this.http.get<ClaimListResponse>(this.baseUrl);
+  list(sort?: Array<{ field: string; direction: "asc" | "desc" }>) {
+    let params = new HttpParams();
+
+    for (const item of sort ?? []) {
+      params = params.append("sort", `${item.field}:${item.direction}`);
+    }
+
+    return this.http.get<ClaimListResponse>(this.baseUrl, { params });
   }
 
   getById(claimId: string) {

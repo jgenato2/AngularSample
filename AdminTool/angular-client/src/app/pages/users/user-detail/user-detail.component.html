@@ -16,7 +16,7 @@
         <p class="sub">{{ user!.email }}</p>
       </div>
       <div class="actions">
-        <button class="btn btn-outline-secondary" routerLink="/users">Back</button>
+        <button class="btn btn-outline-secondary" type="button" (click)="goBack()">Back</button>
         <button
           class="btn btn-primary"
           (click)="openEdit()"

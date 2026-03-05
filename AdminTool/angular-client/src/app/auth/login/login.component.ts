@@ -44,7 +44,7 @@ export class LoginComponent {
       next: () => {
         this.loading = false;
         this.clearAlert();
-        this.router.navigateByUrl("/users");
+        this.router.navigateByUrl("/insurance");
       },
       error: () => {
         this.loading = false;

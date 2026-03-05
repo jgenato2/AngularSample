@@ -1,6 +1,7 @@
 import { CommonModule, DatePipe } from "@angular/common";
 import { Component, Input } from "@angular/core";
 import { DataGridColumn, DataGridComponent } from "../../../../../shared/data-grid/data-grid.component";
+import { SearchQueryComponent } from "../../../../../shared/search-query/search-query.component";
 
 export interface AuditLogListItem {
   occurredAtUtc: string;
@@ -14,7 +15,7 @@ export interface AuditLogListItem {
 @Component({
   selector: "app-audit-log-section",
   standalone: true,
-  imports: [CommonModule, DataGridComponent],
+  imports: [CommonModule, DataGridComponent, SearchQueryComponent],
   providers: [DatePipe],
   templateUrl: "./audit-log-section.component.html",
   styleUrl: "./audit-log-section.component.scss",
@@ -22,6 +23,7 @@ export interface AuditLogListItem {
 export class AuditLogSectionComponent {
   @Input() items: AuditLogListItem[] = [];
   @Input() loading = false;
+  searchQuery = "";
 
   readonly columns: DataGridColumn[] = [
     { key: "occurredAtUtc", label: "Time (UTC)", type: "dateTime", minWidth: 190, flex: 1.2 },

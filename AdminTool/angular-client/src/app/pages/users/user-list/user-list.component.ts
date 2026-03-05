@@ -8,7 +8,8 @@ import { UsersFacade } from "../../../features/users/application/users.facade";
 import { UserItem } from "../../../features/users/domain/user.models";
 import { filter, finalize, Subscription } from "rxjs";
 import { Modal } from "bootstrap";
-import { DataGridComponent } from "../../../shared/data-grid/data-grid.component";
+import { DataGridComponent, GridSortState } from "../../../shared/data-grid/data-grid.component";
+import { SearchQueryComponent } from "../../../shared/search-query/search-query.component";
 import {
   UserFormDialogComponent,
   UserDialogData,
@@ -20,6 +21,7 @@ import {
   imports: [
     CommonModule,
     DataGridComponent,
+    SearchQueryComponent,
     UserFormDialogComponent,
   ],
   providers: [DatePipe],
@@ -28,13 +30,17 @@ import {
 })
 export class UserListComponent implements OnInit, OnDestroy {
   users: UserItem[] = [];
+  gridSearchQuery = "";
+  gridSort: GridSortState[] = [];
   loading = false;
   alertMessage: string | null = null;
   alertType: "danger" | "success" = "danger";
   createModalId = "create-user-modal";
   createDialogData: UserDialogData = { mode: "create", isAdmin: true };
   private readonly subscriptions = new Subscription();
+  private listRequestSub: Subscription | null = null;
   private alertTimerId: ReturnType<typeof setTimeout> | null = null;
+  private searchDebounceId: ReturnType<typeof setTimeout> | null = null;
 
   columnDefs: ColDef<UserItem>[] = [
     { field: "id", headerName: "ID", width: 260, minWidth: 240, sort: "desc", sortIndex: 1 },
@@ -85,15 +91,18 @@ export class UserListComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    this.listRequestSub?.unsubscribe();
     this.subscriptions.unsubscribe();
     this.clearAlertTimer();
+    this.clearSearchDebounce();
     this.cleanupModalArtifacts();
   }
 
   load() {
     this.loading = true;
-    this.usersFacade
-      .list()
+    this.listRequestSub?.unsubscribe();
+    this.listRequestSub = this.usersFacade
+      .list(this.gridSort, this.gridSearchQuery)
       .pipe(finalize(() => {
         this.loading = false;
         this.cdr.markForCheck();
@@ -119,6 +128,16 @@ export class UserListComponent implements OnInit, OnDestroy {
       return;
     }
     this.router.navigate(["/users", user.id]);
+  }
+
+  onGridSortChanged(sortState: GridSortState[]) {
+    this.gridSort = [...sortState];
+    this.load();
+  }
+
+  onSearchQueryChange(value: string) {
+    this.gridSearchQuery = value;
+    this.scheduleSearchLoad();
   }
 
   prepareCreate() {
@@ -167,6 +186,23 @@ export class UserListComponent implements OnInit, OnDestroy {
 
     clearTimeout(this.alertTimerId);
     this.alertTimerId = null;
+  }
+
+  private scheduleSearchLoad() {
+    this.clearSearchDebounce();
+    this.searchDebounceId = setTimeout(() => {
+      this.load();
+      this.searchDebounceId = null;
+    }, 250);
+  }
+
+  private clearSearchDebounce() {
+    if (!this.searchDebounceId) {
+      return;
+    }
+
+    clearTimeout(this.searchDebounceId);
+    this.searchDebounceId = null;
   }
 
   private hideModal(id: string) {

@@ -4,22 +4,6 @@
       <p class="eyebrow">Healthcare module</p>
       <h1>Claims</h1>
     </div>
-    <div class="actions">
-      <input
-        class="form-control policy-search"
-        type="text"
-        placeholder="Search Policy ID"
-        list="policy-id-options"
-        [ngModel]="policyIdSearch"
-        (ngModelChange)="onPolicyIdSearchChange($event)"
-      />
-      <button class="btn btn-outline-secondary" type="button" (click)="openInsuranceFromSearch()" [disabled]="!policyIdSearch">Open</button>
-      <button class="btn btn-outline-secondary" type="button" (click)="clearPolicyIdSearch()" [disabled]="!policyIdSearch">Clear</button>
-      <button class="btn btn-outline-secondary" (click)="load()" [disabled]="loading">Refresh</button>
-      <button class="btn btn-primary add-claim-btn" *ngIf="auth.isAdmin()" type="button" data-bs-toggle="collapse" data-bs-target="#create-claim-form" aria-expanded="false">
-        Add claim
-      </button>
-    </div>
   </header>
 
   <div
@@ -106,13 +90,35 @@
     </div>
   </div>
 
+  <div class="grid-toolbar">
+    <app-search-query
+      [query]="gridSearchQuery"
+      [placeholder]="'Search claims'"
+      [showOpen]="true"
+      [showRefresh]="true"
+      [openDisabled]="!gridSearchQuery"
+      [refreshDisabled]="loading"
+      (queryChange)="gridSearchQuery = $event"
+      (openClicked)="openInsuranceFromSearch()"
+      (refreshClicked)="load()"
+    ></app-search-query>
+    <div class="grid-toolbar-actions">
+      <button class="btn btn-primary add-claim-btn" *ngIf="auth.isAdmin()" type="button" data-bs-toggle="collapse" data-bs-target="#create-claim-form" aria-expanded="false">
+        Add claim
+      </button>
+    </div>
+  </div>
+
   <div class="card grid-card">
     <div class="card-body grid-shell">
       <app-data-grid
         [rows]="displayedClaims"
         [columnDefs]="columnDefs"
         [defaultColDef]="defaultColDef"
+        [showSearch]="false"
+        [externalSearchQuery]="gridSearchQuery"
         (cellClicked)="onCellClicked($event)"
+        (gridSortChange)="onGridSortChanged($event)"
         (rowClicked)="openDetail($event.data)"
       ></app-data-grid>
       <div class="loading" *ngIf="loading">

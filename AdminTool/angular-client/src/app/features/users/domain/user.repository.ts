@@ -3,7 +3,7 @@ import { Observable } from "rxjs";
 import { CreateUserPayload, UpdateUserPayload, UserAuditLogItem, UserItem } from "./user.models";
 
 export interface UserRepository {
-  list(): Observable<UserItem[]>;
+  list(sort?: Array<{ field: string; direction: "asc" | "desc" }>, query?: string): Observable<UserItem[]>;
   getById(id: string): Observable<UserItem>;
   getAuditLogs(id: string): Observable<UserAuditLogItem[]>;
   create(payload: CreateUserPayload): Observable<UserItem>;

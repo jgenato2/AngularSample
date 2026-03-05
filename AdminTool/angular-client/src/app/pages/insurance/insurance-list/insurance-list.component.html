@@ -5,7 +5,6 @@
       <h1>Insurance Plans</h1>
     </div>
     <div class="actions">
-      <button class="btn btn-outline-secondary" (click)="load()">Refresh</button>
       <button class="btn btn-primary" *ngIf="auth.isAdmin()" type="button" data-bs-toggle="collapse" data-bs-target="#create-plan-form" aria-expanded="false">
         Add plan
       </button>
@@ -37,7 +36,7 @@
           </div>
           <div>
             <label class="form-label">Provider</label>
-            <input class="form-control" name="provider" [(ngModel)]="createModel.provider" required />
+            <input class="form-control" list="provider-options" name="provider" [(ngModel)]="createModel.provider" required />
           </div>
           <div>
             <label class="form-label">Plan type</label>
@@ -88,12 +87,30 @@
     </div>
   </div>
 
+  <app-summary-stats [items]="summaryItems"></app-summary-stats>
+
+  <app-search-query
+    [query]="gridSearchQuery"
+    [placeholder]="'Search insurance plans'"
+    [showOpen]="true"
+    [showRefresh]="true"
+    [openDisabled]="!gridSearchQuery"
+    [refreshDisabled]="loading"
+    (queryChange)="gridSearchQuery = $event"
+    (openClicked)="openInsuranceFromSearch()"
+    (refreshClicked)="load()"
+  ></app-search-query>
+
   <div class="card grid-card">
     <div class="card-body grid-shell">
       <app-data-grid
         [rows]="plans"
         [columnDefs]="columnDefs"
         [defaultColDef]="defaultColDef"
+        [showSearch]="false"
+        [externalSearchQuery]="gridSearchQuery"
+        (cellClicked)="onCellClicked($event)"
+        (gridSortChange)="onGridSortChanged($event)"
         (rowClicked)="openDetail($event.data)"
       ></app-data-grid>
       <div class="loading" *ngIf="loading">
@@ -104,4 +121,8 @@
       </div>
     </div>
   </div>
+
+  <datalist id="provider-options">
+    <option *ngFor="let provider of providerOptions" [value]="provider"></option>
+  </datalist>
 </section>
