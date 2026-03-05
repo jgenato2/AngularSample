@@ -1,27 +1,27 @@
-<div class="card detail-card audit-card grid-card">
-  <div class="card-body grid-shell">
-    <p class="label">Audit Log</p>
-
-    <app-search-query
-      [query]="searchQuery"
-      [placeholder]="'Search insurance audit logs'"
-      (queryChange)="searchQuery = $event"
-    ></app-search-query>
-
-    <app-data-grid
-      [columns]="columns"
-      [rows]="rows"
-      [showSearch]="false"
-      [externalSearchQuery]="searchQuery"
-    ></app-data-grid>
-
-    <div class="loading" *ngIf="loading">
-      <div class="spinner-border text-primary" role="status">
-        <span class="visually-hidden">Loading...</span>
-      </div>
-      <span>Loading audit logs...</span>
+<div class="card audit-log-section">
+  <div class="card-body">
+    <div class="search-bar">
+      <app-search-query
+        [query]="searchQuery"
+        [placeholder]="'Search audit logs'"
+        (queryChange)="searchQuery = $event"
+      ></app-search-query>
     </div>
-
-    <div class="empty-state" *ngIf="!loading && !items.length">No audit logs available.</div>
+    <div class="data-grid-shell">
+      <app-data-grid
+        [rows]="users"
+        [columnDefs]="columnDefs"
+        [defaultColDef]="defaultColDef"
+        [showSearch]="false"
+        [externalSearchQuery]="searchQuery"
+      ></app-data-grid>
+      <div class="loading" *ngIf="loading">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <span>Loading audit logs...</span>
+      </div>
+      <div class="empty-state" *ngIf="!loading && !items.length">No audit logs available.</div>
+    </div>
   </div>
 </div>

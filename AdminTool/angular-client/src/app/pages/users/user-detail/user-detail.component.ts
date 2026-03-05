@@ -13,6 +13,7 @@ import {
   UserDialogData,
 } from "../user-form-dialog/user-form-dialog.component";
 import { DataGridComponent } from "../../../shared/data-grid/data-grid.component";
+import { DetailActionsBarComponent } from '../../../shared/detail-actions/detail-actions-bar.component';
 
 @Component({
   selector: "app-user-detail",
@@ -21,10 +22,11 @@ import { DataGridComponent } from "../../../shared/data-grid/data-grid.component
     CommonModule,
     UserFormDialogComponent,
     DataGridComponent,
+    DetailActionsBarComponent,
   ],
   providers: [DatePipe],
   templateUrl: "./user-detail.component.html",
-  styleUrl: "./user-detail.component.scss",
+  styleUrls: ["./user-detail.component.scss"],
 })
 export class UserDetailComponent implements OnInit, OnDestroy {
   user: UserItem | null = null;

@@ -3,7 +3,10 @@ import { Component, Input } from "@angular/core";
 import { DataGridColumn, DataGridComponent } from "../../../../../shared/data-grid/data-grid.component";
 import { SearchQueryComponent } from "../../../../../shared/search-query/search-query.component";
 
+// Match the full interface used by the caller
 export interface AuditLogListItem {
+  id: string;
+  entityId: string;
   occurredAtUtc: string;
   performedBy: string;
   action: string;
@@ -20,30 +23,42 @@ export interface AuditLogListItem {
   templateUrl: "./audit-log-section.component.html",
   styleUrl: "./audit-log-section.component.scss",
 })
+
 export class AuditLogSectionComponent {
   @Input() items: AuditLogListItem[] = [];
   @Input() loading = false;
   searchQuery = "";
 
-  readonly columns: DataGridColumn[] = [
-    { key: "occurredAtUtc", label: "Time (UTC)", type: "dateTime", minWidth: 190, flex: 1.2 },
-    { key: "performedBy", label: "Actor", minWidth: 150, flex: 1 },
-    { key: "action", label: "Action", minWidth: 140, flex: 1 },
-    { key: "field", label: "Field", minWidth: 140, flex: 1 },
-    { key: "oldValue", label: "Old", minWidth: 160, flex: 1 },
-    { key: "newValue", label: "New", minWidth: 160, flex: 1 },
+
+  columnDefs = [
+    { field: "occurredAtUtc", headerName: "Time (UTC)", minWidth: 190, flex: 1.2, valueFormatter: (params: any) => this.datePipe.transform(params.value, 'MMM d, y, HH:mm') ?? '' },
+    { field: "performedBy", headerName: "Actor", minWidth: 150, flex: 1 },
+    { field: "entityId", headerName: "Record", minWidth: 150, flex: 1 },
+    { field: "action", headerName: "Action", minWidth: 140, flex: 1 },
+    { field: "field", headerName: "Field", minWidth: 140, flex: 1 },
+    { field: "oldValue", headerName: "Old", minWidth: 160, flex: 1 },
+    { field: "newValue", headerName: "New", minWidth: 160, flex: 1 },
   ];
+
+  defaultColDef = {
+    sortable: true,
+    filter: true,
+    resizable: true,
+  };
 
   constructor(public readonly datePipe: DatePipe) {}
 
-  get rows() {
+  get users() {
+    // Ensure all required fields are present for ag-Grid and map entityId/id if needed
     return this.items.map((item) => ({
+      id: item.id,
+      entityId: item.entityId,
       occurredAtUtc: item.occurredAtUtc,
       performedBy: item.performedBy,
       action: item.action,
       field: item.field,
-      oldValue: item.oldValue || "-",
-      newValue: item.newValue || "-",
+      oldValue: item.oldValue ?? '-',
+      newValue: item.newValue ?? '-',
     }));
   }
 }

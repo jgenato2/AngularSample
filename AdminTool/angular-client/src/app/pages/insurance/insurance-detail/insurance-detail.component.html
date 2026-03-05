@@ -15,10 +15,9 @@
         <h1>{{ plan.policyId }}</h1>
         <p class="sub">{{ plan.memberName }} · {{ plan.provider }}</p>
       </div>
-      <div class="actions">
-        <button class="btn btn-outline-secondary" type="button" (click)="goBack()">Back</button>
+      <app-detail-actions-bar (back)="goBack()">
         <button class="btn btn-danger" (click)="remove()" *ngIf="canManage">Delete</button>
-      </div>
+      </app-detail-actions-bar>
     </header>
 
     <div

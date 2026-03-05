@@ -4,10 +4,9 @@
       <p class="eyebrow">Provider module</p>
       <h1>{{ provider?.provider || 'Provider Detail' }}</h1>
     </div>
-    <div class="actions">
-      <button class="btn btn-outline-secondary" type="button" (click)="goBack()">Back</button>
+    <app-detail-actions-bar (back)="goBack()">
       <button class="btn btn-primary" type="button" [disabled]="!provider" (click)="viewPlans()">View plans</button>
-    </div>
+    </app-detail-actions-bar>
   </header>
 
   <div

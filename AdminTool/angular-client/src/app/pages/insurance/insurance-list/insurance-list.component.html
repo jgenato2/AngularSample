@@ -92,12 +92,14 @@
   <app-search-query
     [query]="gridSearchQuery"
     [placeholder]="'Search insurance plans'"
+    [matches]="searchMatches"
+    [matchIdentity]="insuranceMatchIdentity"
     [showOpen]="true"
     [showRefresh]="true"
     [openDisabled]="!gridSearchQuery"
     [refreshDisabled]="loading"
     (queryChange)="gridSearchQuery = $event"
-    (openClicked)="openInsuranceFromSearch()"
+    (matchOpened)="onSearchMatchOpened($event)"
     (refreshClicked)="load()"
   ></app-search-query>
 

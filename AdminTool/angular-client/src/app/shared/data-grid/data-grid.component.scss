@@ -6,12 +6,13 @@
   gap: 0.5rem;
 }
 
-.common-grid-shell {
+ .common-grid-shell {
   flex: 1 1 auto;
   min-height: 240px;
   border-radius: var(--bs-card-border-radius);
   overflow: hidden;
-}
+  /* border and background for debug removed */
+ }
 
 :host ::ng-deep .ag-theme-quartz {
   --ag-font-size: 11px;
@@ -39,8 +40,10 @@
 .common-grid-shell ag-grid-angular {
   display: block;
   width: 100%;
-  height: 100%;
+  height: 320px !important;
+  min-height: 240px;
   border-radius: inherit;
+  background: #fff !important;
 }
 
 .custom-paging {

@@ -25,3 +25,10 @@
 .search-actions :where(.btn) {
   white-space: nowrap;
 }
+
+.search-alert {
+  margin-top: 0.45rem;
+  margin-bottom: 0;
+  padding: 0.3rem 0.5rem;
+  font-size: 0.78rem;
+}

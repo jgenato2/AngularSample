@@ -7,11 +7,12 @@ import { finalize } from "rxjs";
 import { AuthService } from "../../core/auth.service";
 import { AuditLogFacade, AuditLogListItem } from "../../features/audit-log/application/audit-log.facade";
 import { DataGridComponent } from "../../shared/data-grid/data-grid.component";
+import { AuditLogSectionComponent } from '../insurance/insurance-detail/components/audit-log-section/audit-log-section.component';
 
 @Component({
   selector: "app-audit-log",
   standalone: true,
-  imports: [CommonModule, DataGridComponent],
+  imports: [CommonModule, DataGridComponent, AuditLogSectionComponent],
   templateUrl: "./audit-log.component.html",
   styleUrl: "./audit-log.component.scss",
 })

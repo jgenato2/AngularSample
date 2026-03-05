@@ -228,13 +228,21 @@ export class InsuranceListComponent implements OnInit, OnDestroy {
     this.router.navigate(["/insurance", plan.policyId]);
   }
 
-  openInsuranceFromSearch() {
-    const policyId = this.gridSearchQuery.trim();
-    if (!policyId) {
-      return;
+  get searchMatches(): InsurancePlanItem[] {
+    const query = this.gridSearchQuery.trim().toLowerCase();
+    if (!query) {
+      return [];
     }
 
-    this.router.navigate(["/insurance", policyId]);
+    return this.plans.filter((plan) =>
+      [plan.policyId, plan.memberName, plan.provider, plan.planType, plan.status].some((value) => String(value ?? "").toLowerCase().includes(query)),
+    );
+  }
+
+  readonly insuranceMatchIdentity = (match: unknown) => String((match as InsurancePlanItem | null)?.policyId ?? "");
+
+  onSearchMatchOpened(match: unknown) {
+    this.openDetail(match as InsurancePlanItem);
   }
 
   onGridSortChanged(sortState: GridSortState[]) {

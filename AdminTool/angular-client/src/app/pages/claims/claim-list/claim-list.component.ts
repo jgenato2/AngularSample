@@ -9,6 +9,7 @@ import { AuthService } from "../../../core/auth.service";
 import { ClaimsFacade } from "../../../features/claims/application/claims.facade";
 import { ClaimItem, ClaimStatusWorkflowItem, CreateClaimPayload } from "../../../features/claims/domain/claim.models";
 import { InsuranceFacade } from "../../../features/insurance/application/insurance.facade";
+import { InsurancePlanItem } from "../../../features/insurance/domain/insurance.models";
 import { DataGridComponent, GridSortState } from "../../../shared/data-grid/data-grid.component";
 import { SearchQueryComponent } from "../../../shared/search-query/search-query.component";
 
@@ -25,6 +26,7 @@ const DEFAULT_CREATE_STATUS_OPTIONS = ["Submitted"];
 export class ClaimListComponent implements OnInit, OnDestroy {
   createStatusOptions = [...DEFAULT_CREATE_STATUS_OPTIONS];
   statusWorkflow: Record<string, string[]> = {};
+  insurancePlans: InsurancePlanItem[] = [];
   policyIdOptions: string[] = [];
   claims: ClaimItem[] = [];
   displayedClaims: ClaimItem[] = [];
@@ -291,8 +293,21 @@ export class ClaimListComponent implements OnInit, OnDestroy {
     this.router.navigate(["/insurance", policyId]);
   }
 
-  openInsuranceFromSearch() {
-    const policyId = this.gridSearchQuery.trim();
+  get insuranceSearchMatches(): InsurancePlanItem[] {
+    const query = this.gridSearchQuery.trim().toLowerCase();
+    if (!query) {
+      return [];
+    }
+
+    return this.insurancePlans.filter((plan) =>
+      [plan.policyId, plan.memberName, plan.provider, plan.planType, plan.status].some((value) => String(value ?? "").toLowerCase().includes(query)),
+    );
+  }
+
+  readonly insurancePolicyMatchIdentity = (match: unknown) => String((match as InsurancePlanItem | null)?.policyId ?? "");
+
+  onInsuranceSearchMatchOpened(match: unknown) {
+    const policyId = String((match as InsurancePlanItem | null)?.policyId ?? "").trim();
     if (!policyId) {
       return;
     }
@@ -317,6 +332,7 @@ export class ClaimListComponent implements OnInit, OnDestroy {
   private loadPolicyIdOptions() {
     this.insuranceFacade.listPlans().subscribe({
       next: (plans) => {
+        this.insurancePlans = [...plans];
         this.policyIdOptions = [...new Set(plans.map((plan) => plan.policyId).filter((policyId) => !!policyId))].sort((a, b) => a.localeCompare(b));
         this.cdr.markForCheck();
       },
@@ -326,6 +342,7 @@ export class ClaimListComponent implements OnInit, OnDestroy {
           this.router.navigateByUrl("/login");
           return;
         }
+        this.insurancePlans = [];
         this.policyIdOptions = [];
         this.cdr.markForCheck();
       },

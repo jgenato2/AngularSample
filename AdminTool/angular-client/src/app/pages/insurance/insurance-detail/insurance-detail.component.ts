@@ -1,3 +1,4 @@
+import { DetailActionsBarComponent } from '../../../shared/detail-actions/detail-actions-bar.component';
 import { ChangeDetectorRef, Component, OnDestroy, OnInit } from "@angular/core";
 import { CommonModule, Location } from "@angular/common";
 import { FormsModule } from "@angular/forms";
@@ -46,9 +47,10 @@ const DEFAULT_STATUS_WORKFLOW: Record<string, string[]> = {
     StressTestCardComponent,
     AlgorithmNotesCardComponent,
     AuditLogSectionComponent,
+    DetailActionsBarComponent,
   ],
   templateUrl: "./insurance-detail.component.html",
-  styleUrl: "./insurance-detail.component.scss",
+  styleUrls: ["./insurance-detail.component.scss"],
 })
 export class InsuranceDetailComponent implements OnInit, OnDestroy {
   statusWorkflow: Record<string, string[]> = { ...DEFAULT_STATUS_WORKFLOW };

@@ -1,0 +1,6 @@
+// Add spacing between buttons in the actions bar
+.detail-actions {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+}

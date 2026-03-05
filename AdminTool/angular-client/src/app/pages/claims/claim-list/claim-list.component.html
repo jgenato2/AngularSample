@@ -94,12 +94,14 @@
     <app-search-query
       [query]="gridSearchQuery"
       [placeholder]="'Search claims'"
+      [matches]="insuranceSearchMatches"
+      [matchIdentity]="insurancePolicyMatchIdentity"
       [showOpen]="true"
       [showRefresh]="true"
       [openDisabled]="!gridSearchQuery"
       [refreshDisabled]="loading"
       (queryChange)="gridSearchQuery = $event"
-      (openClicked)="openInsuranceFromSearch()"
+      (matchOpened)="onInsuranceSearchMatchOpened($event)"
       (refreshClicked)="load()"
     ></app-search-query>
     <div class="grid-toolbar-actions">

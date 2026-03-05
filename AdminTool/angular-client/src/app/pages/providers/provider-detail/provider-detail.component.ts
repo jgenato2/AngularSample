@@ -3,6 +3,7 @@ import { HttpErrorResponse } from "@angular/common/http";
 import { ChangeDetectorRef, Component, OnDestroy, OnInit } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { ActivatedRoute, ParamMap, Router } from "@angular/router";
+import { DetailActionsBarComponent } from '../../../shared/detail-actions/detail-actions-bar.component';
 import { finalize, Subscription, timeout } from "rxjs";
 import { AuthService } from "../../../core/auth.service";
 import { SummaryStatItem, SummaryStatsComponent } from "../../../shared/summary-stats/summary-stats.component";
@@ -11,10 +12,10 @@ import { ProviderDetailItem, ProvidersService } from "../providers.service";
 @Component({
   selector: "app-provider-detail",
   standalone: true,
-  imports: [CommonModule, FormsModule, SummaryStatsComponent],
+  imports: [CommonModule, FormsModule, SummaryStatsComponent, DetailActionsBarComponent],
   providers: [DatePipe],
   templateUrl: "./provider-detail.component.html",
-  styleUrl: "./provider-detail.component.scss",
+  styleUrls: ["./provider-detail.component.scss"],
 })
 export class ProviderDetailComponent implements OnInit, OnDestroy {
   provider: ProviderDetailItem | null = null;
