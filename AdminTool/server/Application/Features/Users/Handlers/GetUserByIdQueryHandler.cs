@@ -9,5 +9,5 @@ public sealed class GetUserByIdQueryHandler(IUsersApplicationService usersServic
     : IQueryHandler<GetUserByIdQuery, OperationResult<User>>
 {
     public Task<OperationResult<User>> Handle(GetUserByIdQuery query, CancellationToken cancellationToken = default)
-        => Task.FromResult(usersService.GetById(query.Id));
+        => usersService.GetById(query.Id);
 }

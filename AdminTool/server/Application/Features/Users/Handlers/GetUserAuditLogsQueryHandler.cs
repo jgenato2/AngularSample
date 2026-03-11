@@ -9,5 +9,5 @@ public sealed class GetUserAuditLogsQueryHandler(IUsersApplicationService usersS
     : IQueryHandler<GetUserAuditLogsQuery, OperationResult<IEnumerable<AuditLogEntry>>>
 {
     public Task<OperationResult<IEnumerable<AuditLogEntry>>> Handle(GetUserAuditLogsQuery query, CancellationToken cancellationToken = default)
-        => Task.FromResult(usersService.GetAuditLogs(query.Id));
+        => usersService.GetAuditLogs(query.Id);
 }

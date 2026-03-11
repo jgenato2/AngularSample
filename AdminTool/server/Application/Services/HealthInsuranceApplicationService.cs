@@ -65,47 +65,47 @@ public sealed class HealthInsuranceApplicationService(
         }
     }
 
-    public OperationResult<HealthInsurancePlanResponse> GetByPolicyId(string policyId, string actor)
+    public Task<OperationResult<HealthInsurancePlanResponse>> GetByPolicyId(string policyId, string actor)
     {
         lock (PlansLock)
         {
             var item = Plans.FirstOrDefault(plan => plan.PolicyId.Equals(policyId, StringComparison.OrdinalIgnoreCase));
             if (item is null)
             {
-                return OperationResult<HealthInsurancePlanResponse>.Fail("Insurance plan not found.", ErrorType.NotFound);
+                return Task.FromResult(OperationResult<HealthInsurancePlanResponse>.Fail("Insurance plan not found.", ErrorType.NotFound));
             }
 
             auditService.AddPlanRead(item.PolicyId, actor);
-            return OperationResult<HealthInsurancePlanResponse>.Ok(item);
+            return Task.FromResult(OperationResult<HealthInsurancePlanResponse>.Ok(item));
         }
     }
 
-    public OperationResult<HealthInsuranceFinancialAnalyticsResponse> GetFinancialAnalytics(string policyId, string actor)
+    public Task<OperationResult<HealthInsuranceFinancialAnalyticsResponse>> GetFinancialAnalytics(string policyId, string actor)
     {
         lock (PlansLock)
         {
             var item = Plans.FirstOrDefault(plan => plan.PolicyId.Equals(policyId, StringComparison.OrdinalIgnoreCase));
             if (item is null)
             {
-                return OperationResult<HealthInsuranceFinancialAnalyticsResponse>.Fail("Insurance plan not found.", ErrorType.NotFound);
+                return Task.FromResult(OperationResult<HealthInsuranceFinancialAnalyticsResponse>.Fail("Insurance plan not found.", ErrorType.NotFound));
             }
 
             auditService.AddFinancialAnalyticsRead(item.PolicyId, actor);
-            return OperationResult<HealthInsuranceFinancialAnalyticsResponse>.Ok(analyticsService.Build(item));
+            return Task.FromResult(OperationResult<HealthInsuranceFinancialAnalyticsResponse>.Ok(analyticsService.Build(item)));
         }
     }
 
-    public OperationResult<IEnumerable<AuditLogEntry>> GetAuditLogs(string policyId)
+    public Task<OperationResult<IEnumerable<AuditLogEntry>>> GetAuditLogs(string policyId)
     {
         lock (PlansLock)
         {
             var exists = Plans.Any(plan => plan.PolicyId.Equals(policyId, StringComparison.OrdinalIgnoreCase));
             if (!exists)
             {
-                return OperationResult<IEnumerable<AuditLogEntry>>.Fail("Insurance plan not found.", ErrorType.NotFound);
+                return Task.FromResult(OperationResult<IEnumerable<AuditLogEntry>>.Fail("Insurance plan not found.", ErrorType.NotFound));
             }
 
-            return OperationResult<IEnumerable<AuditLogEntry>>.Ok(auditService.GetAuditLogs(policyId));
+            return Task.FromResult(OperationResult<IEnumerable<AuditLogEntry>>.Ok(auditService.GetAuditLogs(policyId)));
         }
     }
 
@@ -128,27 +128,27 @@ public sealed class HealthInsuranceApplicationService(
     public InsuranceStatusWorkflowModel GetStatusWorkflow()
         => workflowService.GetStatusWorkflow();
 
-    public OperationResult<HealthInsurancePlanResponse> Create(CreateHealthInsurancePlanRequest request, string actor)
+    public Task<OperationResult<HealthInsurancePlanResponse>> Create(CreateHealthInsurancePlanRequest request, string actor)
     {
         lock (PlansLock)
         {
             var normalizedStatus = workflowService.NormalizeStatus(request.status);
             if (normalizedStatus is null)
             {
-                return OperationResult<HealthInsurancePlanResponse>.Fail("Invalid insurance status.", ErrorType.Validation);
+                return Task.FromResult(OperationResult<HealthInsurancePlanResponse>.Fail("Invalid insurance status.", ErrorType.Validation));
             }
 
             if (!workflowService.AllowedInitialStatuses.Contains(normalizedStatus, StringComparer.OrdinalIgnoreCase))
             {
-                return OperationResult<HealthInsurancePlanResponse>.Fail(
+                return Task.FromResult(OperationResult<HealthInsurancePlanResponse>.Fail(
                     $"Status '{normalizedStatus}' is not allowed when creating a plan. Allowed values: {string.Join(", ", workflowService.AllowedInitialStatuses)}.",
-                    ErrorType.Validation);
+                    ErrorType.Validation));
             }
 
             var duplicate = Plans.Any(plan => plan.PolicyId.Equals(request.policyId, StringComparison.OrdinalIgnoreCase));
             if (duplicate)
             {
-                return OperationResult<HealthInsurancePlanResponse>.Fail("Policy ID already exists.", ErrorType.Conflict);
+                return Task.FromResult(OperationResult<HealthInsurancePlanResponse>.Fail("Policy ID already exists.", ErrorType.Conflict));
             }
 
             var item = new HealthInsurancePlanResponse(
@@ -166,18 +166,18 @@ public sealed class HealthInsuranceApplicationService(
 
             Plans.Add(item);
             auditService.AddPlanCreated(item, actor);
-            return OperationResult<HealthInsurancePlanResponse>.Ok(item);
+            return Task.FromResult(OperationResult<HealthInsurancePlanResponse>.Ok(item));
         }
     }
 
-    public OperationResult<HealthInsurancePlanResponse> Update(string policyId, UpdateHealthInsurancePlanRequest request, string actor)
+    public Task<OperationResult<HealthInsurancePlanResponse>> Update(string policyId, UpdateHealthInsurancePlanRequest request, string actor)
     {
         lock (PlansLock)
         {
             var index = Plans.FindIndex(plan => plan.PolicyId.Equals(policyId, StringComparison.OrdinalIgnoreCase));
             if (index < 0)
             {
-                return OperationResult<HealthInsurancePlanResponse>.Fail("Insurance plan not found.", ErrorType.NotFound);
+                return Task.FromResult(OperationResult<HealthInsurancePlanResponse>.Fail("Insurance plan not found.", ErrorType.NotFound));
             }
 
             var current = Plans[index];
@@ -188,7 +188,7 @@ public sealed class HealthInsuranceApplicationService(
                 nextStatus = workflowService.NormalizeStatus(request.status);
                 if (nextStatus is null)
                 {
-                    return OperationResult<HealthInsurancePlanResponse>.Fail("Invalid insurance status.", ErrorType.Validation);
+                    return Task.FromResult(OperationResult<HealthInsurancePlanResponse>.Fail("Invalid insurance status.", ErrorType.Validation));
                 }
 
                 if (string.Equals(current.Status, nextStatus, StringComparison.OrdinalIgnoreCase))
@@ -197,9 +197,9 @@ public sealed class HealthInsuranceApplicationService(
                 }
                 else if (!workflowService.CanTransition(current.Status, nextStatus))
                 {
-                    return OperationResult<HealthInsurancePlanResponse>.Fail(
+                    return Task.FromResult(OperationResult<HealthInsurancePlanResponse>.Fail(
                         $"Invalid status transition from '{current.Status}' to '{nextStatus}'.",
-                        ErrorType.Validation);
+                        ErrorType.Validation));
                 }
             }
 
@@ -219,24 +219,24 @@ public sealed class HealthInsuranceApplicationService(
 
             Plans[index] = updated;
             auditService.AddChangeAuditLogs(current, updated, actor);
-            return OperationResult<HealthInsurancePlanResponse>.Ok(updated);
+            return Task.FromResult(OperationResult<HealthInsurancePlanResponse>.Ok(updated));
         }
     }
 
-    public OperationResult<bool> Delete(string policyId, string actor)
+    public Task<OperationResult<bool>> Delete(string policyId, string actor)
     {
         lock (PlansLock)
         {
             var index = Plans.FindIndex(plan => plan.PolicyId.Equals(policyId, StringComparison.OrdinalIgnoreCase));
             if (index < 0)
             {
-                return OperationResult<bool>.Fail("Insurance plan not found.", ErrorType.NotFound);
+                return Task.FromResult(OperationResult<bool>.Fail("Insurance plan not found.", ErrorType.NotFound));
             }
 
             var current = Plans[index];
             auditService.AddPlanDeleted(current, actor);
             Plans.RemoveAt(index);
-            return OperationResult<bool>.Ok(true);
+            return Task.FromResult(OperationResult<bool>.Ok(true));
         }
     }
 

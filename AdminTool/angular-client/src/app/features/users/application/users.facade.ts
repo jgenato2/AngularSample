@@ -1,4 +1,4 @@
-import { Injectable } from "@angular/core";
+import { Injectable, inject } from "@angular/core";
 import { CreateUserCommand } from "./commands/create-user.command";
 import { DeleteUserCommand } from "./commands/delete-user.command";
 import { UpdateUserCommand } from "./commands/update-user.command";
@@ -10,15 +10,16 @@ import { CreateUserPayload, UpdateUserPayload } from "../domain/user.models";
 
 @Injectable({ providedIn: "root" })
 export class UsersFacade {
-  constructor(
-    private readonly listUsersQuery: ListUsersQuery,
-    private readonly getUserByIdQuery: GetUserByIdQuery,
-    private readonly getUserAuditLogsQuery: GetUserAuditLogsQuery,
-    private readonly createUserCommand: CreateUserCommand,
-    private readonly updateUserCommand: UpdateUserCommand,
-    private readonly deleteUserCommand: DeleteUserCommand,
-    private readonly getUsersListAccessAuditLogsQuery: GetUsersListAccessAuditLogsQuery
-  ) {}
+  private readonly listUsersQuery = inject(ListUsersQuery);
+  private readonly getUserByIdQuery = inject(GetUserByIdQuery);
+  private readonly getUserAuditLogsQuery = inject(GetUserAuditLogsQuery);
+  private readonly createUserCommand = inject(CreateUserCommand);
+  private readonly updateUserCommand = inject(UpdateUserCommand);
+  private readonly deleteUserCommand = inject(DeleteUserCommand);
+  private readonly getUsersListAccessAuditLogsQuery = inject(GetUsersListAccessAuditLogsQuery);
+
+
+  constructor() {}
 
   list(sort?: Array<{ field: string; direction: "asc" | "desc" }>, query?: string) {
     return this.listUsersQuery.execute(sort, query);

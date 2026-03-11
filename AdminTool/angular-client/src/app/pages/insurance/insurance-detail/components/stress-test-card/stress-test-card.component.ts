@@ -1,5 +1,5 @@
 import { CommonModule, CurrencyPipe, DecimalPipe } from "@angular/common";
-import { Component, Input } from "@angular/core";
+import { Component, Input, inject } from "@angular/core";
 import { InsuranceFinancialAnalyticsItem } from "../../../../../features/insurance/domain/insurance.models";
 
 @Component({
@@ -11,12 +11,13 @@ import { InsuranceFinancialAnalyticsItem } from "../../../../../features/insuran
   styleUrl: "./stress-test-card.component.scss",
 })
 export class StressTestCardComponent {
+  private readonly currencyPipe = inject(CurrencyPipe);
+  private readonly decimalPipe = inject(DecimalPipe);
+
   @Input() financial: InsuranceFinancialAnalyticsItem | null = null;
 
-  constructor(
-    private readonly currencyPipe: CurrencyPipe,
-    private readonly decimalPipe: DecimalPipe,
-  ) {}
+
+  constructor() {}
 
   formatCurrency(value: number | null | undefined, digits: string = "1.2-2") {
     const amount = value ?? 0;

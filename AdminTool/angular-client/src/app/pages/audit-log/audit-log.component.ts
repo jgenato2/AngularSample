@@ -1,22 +1,27 @@
 import { CommonModule } from "@angular/common";
 import { HttpErrorResponse } from "@angular/common/http";
-import { ChangeDetectorRef, Component, OnDestroy, OnInit } from "@angular/core";
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from "@angular/core";
 import { Router } from "@angular/router";
 import { ColDef } from "ag-grid-community";
 import { finalize } from "rxjs";
 import { AuthService } from "../../core/auth.service";
 import { AuditLogFacade, AuditLogListItem } from "../../features/audit-log/application/audit-log.facade";
-import { DataGridComponent } from "../../shared/data-grid/data-grid.component";
+// import { DataGridComponent } from "../../shared/data-grid/data-grid.component";
 import { AuditLogSectionComponent } from '../insurance/insurance-detail/components/audit-log-section/audit-log-section.component';
 
 @Component({
   selector: "app-audit-log",
   standalone: true,
-  imports: [CommonModule, DataGridComponent, AuditLogSectionComponent],
+  imports: [CommonModule, AuditLogSectionComponent],
   templateUrl: "./audit-log.component.html",
   styleUrl: "./audit-log.component.scss",
 })
 export class AuditLogComponent implements OnInit, OnDestroy {
+  private readonly auditLogFacade = inject(AuditLogFacade);
+  private readonly router = inject(Router);
+  readonly auth = inject(AuthService);
+  private readonly cdr = inject(ChangeDetectorRef);
+
   auditRows: AuditLogListItem[] = [];
   loading = false;
   page = 1;
@@ -62,12 +67,8 @@ export class AuditLogComponent implements OnInit, OnDestroy {
     },
   ];
 
-  constructor(
-    private readonly auditLogFacade: AuditLogFacade,
-    private readonly router: Router,
-    public readonly auth: AuthService,
-    private readonly cdr: ChangeDetectorRef,
-  ) {}
+
+  constructor() {}
 
   ngOnInit() {
     this.load(1);

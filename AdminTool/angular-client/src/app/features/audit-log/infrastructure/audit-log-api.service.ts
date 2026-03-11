@@ -1,4 +1,4 @@
-import { Injectable } from "@angular/core";
+import { Injectable, inject } from "@angular/core";
 import { HttpClient, HttpParams } from "@angular/common/http";
 import { Observable } from "rxjs";
 
@@ -27,9 +27,12 @@ export interface AuditLogListApiResponse {
 
 @Injectable({ providedIn: "root" })
 export class AuditLogApiService {
+  private readonly http = inject(HttpClient);
+
   private readonly baseUrl = "/api/audit-logs";
 
-  constructor(private readonly http: HttpClient) {}
+
+  constructor() {}
 
   getListAccessAuditLogs(page: number, pageSize: number): Observable<AuditLogListApiResponse> {
     const params = new HttpParams()

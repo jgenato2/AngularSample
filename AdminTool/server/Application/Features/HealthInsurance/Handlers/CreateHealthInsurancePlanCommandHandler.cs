@@ -8,6 +8,6 @@ namespace Server.Application.Features.HealthInsurance.Handlers;
 public sealed class CreateHealthInsurancePlanCommandHandler(IHealthInsuranceApplicationService service)
     : ICommandHandler<CreateHealthInsurancePlanCommand, OperationResult<HealthInsurancePlanResponse>>
 {
-    public Task<OperationResult<HealthInsurancePlanResponse>> Handle(CreateHealthInsurancePlanCommand command, CancellationToken cancellationToken = default)
-        => Task.FromResult(service.Create(command.Request, command.Actor));
+    public async Task<OperationResult<HealthInsurancePlanResponse>> Handle(CreateHealthInsurancePlanCommand command, CancellationToken cancellationToken = default)
+        => await service.Create(command.Request, command.Actor);
 }

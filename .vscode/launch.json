@@ -1,0 +1,37 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  "version": "0.2.0",
+  "compounds": [
+    {
+      "name": "Backend + Angular",
+      "configurations": [
+        ".NET Core Launch (server)",
+        "Angular Start"
+      ]
+    }
+  ],
+  "configurations": [
+    {
+      "name": ".NET Core Launch (server)",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build",
+      "program": "${workspaceFolder}/AdminTool/server/bin/Debug/net8.0/server.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}/AdminTool/server",
+      "stopAtEntry": false,
+      "console": "internalConsole"
+    },
+    {
+      "name": "Angular Start",
+      "type": "pwa-node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["start"],
+      "cwd": "${workspaceFolder}/AdminTool/angular-client",
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen"
+    }
+  ]
+}

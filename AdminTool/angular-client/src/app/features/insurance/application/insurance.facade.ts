@@ -1,4 +1,4 @@
-import { Injectable } from "@angular/core";
+import { Injectable, inject } from "@angular/core";
 import { CreateInsurancePlanCommand } from "./commands/create-insurance-plan.command";
 import { DeleteInsurancePlanCommand } from "./commands/delete-insurance-plan.command";
 import { UpdateInsurancePlanCommand } from "./commands/update-insurance-plan.command";
@@ -15,17 +15,18 @@ import {
 
 @Injectable({ providedIn: "root" })
 export class InsuranceFacade {
-  constructor(
-    private readonly listInsurancePlansQuery: ListInsurancePlansQuery,
-    private readonly getInsurancePlanByPolicyIdQuery: GetInsurancePlanByPolicyIdQuery,
-    private readonly getInsuranceFinancialAnalyticsQuery: GetInsuranceFinancialAnalyticsQuery,
-    private readonly getInsuranceAuditLogsQuery: GetInsuranceAuditLogsQuery,
-    private readonly getInsuranceListAccessAuditLogsQuery: GetInsuranceListAccessAuditLogsQuery,
-    private readonly getInsuranceStatusWorkflowQuery: GetInsuranceStatusWorkflowQuery,
-    private readonly createInsurancePlanCommand: CreateInsurancePlanCommand,
-    private readonly updateInsurancePlanCommand: UpdateInsurancePlanCommand,
-    private readonly deleteInsurancePlanCommand: DeleteInsurancePlanCommand
-  ) {}
+  private readonly listInsurancePlansQuery = inject(ListInsurancePlansQuery);
+  private readonly getInsurancePlanByPolicyIdQuery = inject(GetInsurancePlanByPolicyIdQuery);
+  private readonly getInsuranceFinancialAnalyticsQuery = inject(GetInsuranceFinancialAnalyticsQuery);
+  private readonly getInsuranceAuditLogsQuery = inject(GetInsuranceAuditLogsQuery);
+  private readonly getInsuranceListAccessAuditLogsQuery = inject(GetInsuranceListAccessAuditLogsQuery);
+  private readonly getInsuranceStatusWorkflowQuery = inject(GetInsuranceStatusWorkflowQuery);
+  private readonly createInsurancePlanCommand = inject(CreateInsurancePlanCommand);
+  private readonly updateInsurancePlanCommand = inject(UpdateInsurancePlanCommand);
+  private readonly deleteInsurancePlanCommand = inject(DeleteInsurancePlanCommand);
+
+
+  constructor() {}
 
   listPlans(sort?: Array<{ field: string; direction: "asc" | "desc" }>) {
     return this.listInsurancePlansQuery.execute(sort);

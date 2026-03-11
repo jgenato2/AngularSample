@@ -6,12 +6,13 @@
   </div>
   <div class="snapshot-item">
     <span>Member</span>
-    <strong *ngIf="memberClaimId; else plainMember">
-      <a class="member-link" [routerLink]="['/claims', memberClaimId]">{{ plan.memberName }}</a>
-    </strong>
-    <ng-template #plainMember>
+    @if (memberClaimId) {
+      <strong>
+        <a class="member-link" [routerLink]="['/claims', memberClaimId]">{{ plan.memberName }}</a>
+      </strong>
+    } @else {
       <strong>{{ plan.memberName }}</strong>
-    </ng-template>
+    }
   </div>
   <div class="snapshot-item">
     <span>Provider</span>

@@ -5,14 +5,16 @@
       <h1>Insurance Plans</h1>
     </div>
     <div class="actions">
-      <button class="btn btn-primary" *ngIf="auth.isAdmin()" type="button" data-bs-toggle="collapse" data-bs-target="#create-plan-form" aria-expanded="false">
+      @if (auth.isAdmin()) {
+      <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#create-plan-form" aria-expanded="false">
         Add plan
       </button>
+      }
     </div>
   </header>
 
+  @if (alertMessage) {
   <div
-    *ngIf="alertMessage"
     class="alert"
     [ngClass]="'alert-' + alertType"
     animate.enter="alert-enter"
@@ -21,8 +23,10 @@
   >
     {{ alertMessage }}
   </div>
+  }
 
-  <div id="create-plan-form" class="collapse" *ngIf="auth.isAdmin()">
+  @if (auth.isAdmin()) {
+  <div id="create-plan-form" class="collapse">
     <div class="card form-card">
       <div class="card-body">
         <form class="form-grid" (ngSubmit)="createPlan()" #createForm="ngForm">
@@ -45,7 +49,9 @@
           <div>
             <label class="form-label">Status</label>
             <select class="form-select" name="status" [(ngModel)]="createModel.status" required>
-              <option *ngFor="let status of createStatusOptions" [value]="status">{{ status }}</option>
+              @for (status of createStatusOptions; track status) {
+                <option [value]="status">{{ status }}</option>
+              }
             </select>
           </div>
           <div>
@@ -115,16 +121,21 @@
         (gridSortChange)="onGridSortChanged($event)"
         (rowClicked)="openDetail($event.data)"
       ></app-data-grid>
-      <div class="loading" *ngIf="loading">
+      @if (loading) {
+      <div class="loading">
         <div class="spinner-border text-primary" role="status">
           <span class="visually-hidden">Loading...</span>
         </div>
         <span>Loading insurance plans...</span>
       </div>
+      }
     </div>
   </div>
 
   <datalist id="provider-options">
-    <option *ngFor="let provider of providerOptions" [value]="provider"></option>
+    @for (provider of providerOptions; track provider) {
+      <option [value]="provider"></option>
+    }
   </datalist>
+  }
 </section>

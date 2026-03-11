@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnDestroy, OnInit } from "@angular/core";
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from "@angular/core";
 import { CommonModule, DatePipe } from "@angular/common";
 import { NavigationEnd, Router } from "@angular/router";
 import { HttpErrorResponse } from "@angular/common/http";
@@ -29,6 +29,12 @@ import {
   styleUrl: "./user-list.component.scss",
 })
 export class UserListComponent implements OnInit, OnDestroy {
+  private readonly usersFacade = inject(UsersFacade);
+  private readonly router = inject(Router);
+  readonly auth = inject(AuthService);
+  readonly datePipe = inject(DatePipe);
+  private readonly cdr = inject(ChangeDetectorRef);
+
   users: UserItem[] = [];
   gridSearchQuery = "";
   gridSort: GridSortState[] = [];
@@ -69,13 +75,8 @@ export class UserListComponent implements OnInit, OnDestroy {
     resizable: true,
   };
 
-  constructor(
-    private readonly usersFacade: UsersFacade,
-    private readonly router: Router,
-    public readonly auth: AuthService,
-    public readonly datePipe: DatePipe,
-    private readonly cdr: ChangeDetectorRef
-  ) {}
+
+  constructor() {}
 
   ngOnInit() {
     this.load();

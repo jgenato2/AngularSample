@@ -1,9 +1,9 @@
-import { ChangeDetectorRef, Component, OnDestroy, OnInit } from "@angular/core";
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from "@angular/core";
 import { CommonModule, DatePipe, Location } from "@angular/common";
 import { ActivatedRoute, Router } from "@angular/router";
 import { AuthService } from "../../../core/auth.service";
 import { UsersFacade } from "../../../features/users/application/users.facade";
-import { UserAuditLogItem, UserItem } from "../../../features/users/domain/user.models";
+import { UserItem, UserAuditLogItem } from "../../../features/users/domain/user.models";
 import { HttpErrorResponse } from "@angular/common/http";
 import { finalize } from "rxjs";
 import { Modal } from "bootstrap";
@@ -29,6 +29,14 @@ import { DetailActionsBarComponent } from '../../../shared/detail-actions/detail
   styleUrls: ["./user-detail.component.scss"],
 })
 export class UserDetailComponent implements OnInit, OnDestroy {
+  private readonly route = inject(ActivatedRoute);
+  private readonly usersFacade = inject(UsersFacade);
+  private readonly router = inject(Router);
+  private readonly location = inject(Location);
+  readonly auth = inject(AuthService);
+  readonly datePipe = inject(DatePipe);
+  private readonly cdr = inject(ChangeDetectorRef);
+
   user: UserItem | null = null;
   auditRows: UserAuditLogItem[] = [];
   loading = false;
@@ -69,15 +77,8 @@ export class UserDetailComponent implements OnInit, OnDestroy {
     { field: "newValue", headerName: "New Value", width: 220, minWidth: 180 },
   ];
 
-  constructor(
-    private readonly route: ActivatedRoute,
-    private readonly usersFacade: UsersFacade,
-    private readonly router: Router,
-    private readonly location: Location,
-    public readonly auth: AuthService,
-    public readonly datePipe: DatePipe,
-    private readonly cdr: ChangeDetectorRef
-  ) {}
+
+  constructor() {}
 
   ngOnInit() {
     this.load();
@@ -181,7 +182,7 @@ export class UserDetailComponent implements OnInit, OnDestroy {
       })
       .subscribe({
         next: (user) => {
-          queueMicrotask(() => {
+          window.queueMicrotask(() => {
             this.user = user;
             this.cdr.detectChanges();
           });
@@ -198,7 +199,7 @@ export class UserDetailComponent implements OnInit, OnDestroy {
     if (!this.user) {
       return;
     }
-    if (!confirm(`Delete ${this.user.name}?`)) {
+    if (!window.confirm(`Delete ${this.user.name}?`)) {
       return;
     }
 

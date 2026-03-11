@@ -6,8 +6,8 @@
         <h1>Welcome back</h1>
         <p class="sub">Sign in to continue to your dashboard.</p>
       </header>
+      @if (alertMessage) {
       <div
-        *ngIf="alertMessage"
         class="alert"
         [ngClass]="'alert-' + alertType"
         animate.enter="alert-enter"
@@ -16,6 +16,7 @@
       >
         {{ alertMessage }}
       </div>
+      }
       <form [formGroup]="form" (ngSubmit)="submit()">
         <div class="mb-3">
           <label for="login-email" class="form-label">Email</label>

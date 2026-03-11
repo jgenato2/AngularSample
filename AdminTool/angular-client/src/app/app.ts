@@ -1,4 +1,4 @@
-import { Component, HostListener } from "@angular/core";
+import { Component, HostListener, inject } from "@angular/core";
 import { Router, RouterLink, RouterOutlet } from "@angular/router";
 import { CommonModule } from "@angular/common";
 import { AuthService } from "./core/auth.service";
@@ -10,10 +10,14 @@ import { AuthService } from "./core/auth.service";
   styleUrl: "./app.scss",
 })
 export class App {
+  readonly auth = inject(AuthService);
+  private readonly router = inject(Router);
+
   menuOpen = false;
   userMenuOpen = false;
 
-  constructor(public readonly auth: AuthService, private readonly router: Router) {}
+
+  constructor() {}
 
   get isLoginPage() {
     return this.router.url.startsWith("/login");

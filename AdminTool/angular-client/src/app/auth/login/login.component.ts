@@ -16,6 +16,9 @@ import { emailValidators, passwordValidators } from "../../core/validators";
   styleUrl: "./login.component.scss",
 })
 export class LoginComponent {
+  private readonly auth = inject(AuthService);
+  private readonly router = inject(Router);
+
   private readonly fb = inject(FormBuilder);
   loading = false;
   alertMessage: string | null = null;
@@ -27,10 +30,8 @@ export class LoginComponent {
     password: ["", passwordValidators],
   });
 
-  constructor(
-    private readonly auth: AuthService,
-    private readonly router: Router
-  ) {}
+
+  constructor() {}
 
   submit() {
     if (this.form.invalid) {

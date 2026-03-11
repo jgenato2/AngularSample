@@ -1,4 +1,4 @@
-import { Injectable } from "@angular/core";
+import { Injectable, inject } from "@angular/core";
 import { map, Observable } from "rxjs";
 import { AuditLogApiService } from "../infrastructure/audit-log-api.service";
 
@@ -25,7 +25,10 @@ export interface AuditLogPage {
 
 @Injectable({ providedIn: "root" })
 export class AuditLogFacade {
-  constructor(private readonly auditLogApiService: AuditLogApiService) {}
+  private readonly auditLogApiService = inject(AuditLogApiService);
+
+
+  constructor() {}
 
   getAllListAccessAuditLogs(page: number, pageSize: number): Observable<AuditLogPage> {
     return this.auditLogApiService.getListAccessAuditLogs(page, pageSize).pipe(

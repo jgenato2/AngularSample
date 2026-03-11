@@ -1,6 +1,6 @@
 import { CommonModule, DatePipe } from "@angular/common";
-import { Component, Input } from "@angular/core";
-import { DataGridColumn, DataGridComponent } from "../../../../../shared/data-grid/data-grid.component";
+import { Component, Input, inject } from "@angular/core";
+import { DataGridComponent } from "../../../../../shared/data-grid/data-grid.component";
 import { SearchQueryComponent } from "../../../../../shared/search-query/search-query.component";
 
 // Match the full interface used by the caller
@@ -25,13 +25,15 @@ export interface AuditLogListItem {
 })
 
 export class AuditLogSectionComponent {
+  readonly datePipe = inject(DatePipe);
+
   @Input() items: AuditLogListItem[] = [];
   @Input() loading = false;
   searchQuery = "";
 
 
   columnDefs = [
-    { field: "occurredAtUtc", headerName: "Time (UTC)", minWidth: 190, flex: 1.2, valueFormatter: (params: any) => this.datePipe.transform(params.value, 'MMM d, y, HH:mm') ?? '' },
+    { field: "occurredAtUtc", headerName: "Time (UTC)", minWidth: 190, flex: 1.2, valueFormatter: (params: { value: string }) => this.datePipe.transform(params.value, 'MMM d, y, HH:mm') ?? '' },
     { field: "performedBy", headerName: "Actor", minWidth: 150, flex: 1 },
     { field: "entityId", headerName: "Record", minWidth: 150, flex: 1 },
     { field: "action", headerName: "Action", minWidth: 140, flex: 1 },
@@ -46,7 +48,8 @@ export class AuditLogSectionComponent {
     resizable: true,
   };
 
-  constructor(public readonly datePipe: DatePipe) {}
+
+  constructor() {}
 
   get users() {
     // Ensure all required fields are present for ag-Grid and map entityId/id if needed

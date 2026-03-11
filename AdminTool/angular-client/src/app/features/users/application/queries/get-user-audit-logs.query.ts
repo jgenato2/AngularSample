@@ -1,9 +1,13 @@
-import { Inject, Injectable } from "@angular/core";
+import { Injectable, inject } from "@angular/core";
 import { USER_REPOSITORY, UserRepository } from "../../domain/user.repository";
 
 @Injectable({ providedIn: "root" })
 export class GetUserAuditLogsQuery {
-  constructor(@Inject(USER_REPOSITORY) private readonly userRepository: UserRepository) {}
+  private readonly userRepository = inject<UserRepository>(USER_REPOSITORY);
+
+  /** Inserted by Angular inject() migration for backwards compatibility */
+
+  constructor() {}
 
   execute(id: string) {
     return this.userRepository.getAuditLogs(id);

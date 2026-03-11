@@ -9,5 +9,5 @@ public sealed class GetHealthInsuranceFinancialAnalyticsQueryHandler(IHealthInsu
     : IQueryHandler<GetHealthInsuranceFinancialAnalyticsQuery, OperationResult<HealthInsuranceFinancialAnalyticsResponse>>
 {
     public Task<OperationResult<HealthInsuranceFinancialAnalyticsResponse>> Handle(GetHealthInsuranceFinancialAnalyticsQuery query, CancellationToken cancellationToken = default)
-        => Task.FromResult(service.GetFinancialAnalytics(query.PolicyId, query.Actor));
+        => service.GetFinancialAnalytics(query.PolicyId, query.Actor);
 }

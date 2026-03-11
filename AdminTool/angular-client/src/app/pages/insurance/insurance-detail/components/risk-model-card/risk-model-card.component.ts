@@ -1,5 +1,5 @@
 import { CommonModule, DecimalPipe } from "@angular/common";
-import { Component, Input } from "@angular/core";
+import { Component, Input, inject } from "@angular/core";
 import { InsuranceFinancialAnalyticsItem } from "../../../../../features/insurance/domain/insurance.models";
 
 @Component({
@@ -11,9 +11,12 @@ import { InsuranceFinancialAnalyticsItem } from "../../../../../features/insuran
   styleUrl: "./risk-model-card.component.scss",
 })
 export class RiskModelCardComponent {
+  readonly decimalPipe = inject(DecimalPipe);
+
   @Input() financial: InsuranceFinancialAnalyticsItem | null = null;
 
-  constructor(public readonly decimalPipe: DecimalPipe) {}
+
+  constructor() {}
 
   formatPercent(value: number | null | undefined, digits: string = "1.1-1") {
     const amount = value ?? 0;

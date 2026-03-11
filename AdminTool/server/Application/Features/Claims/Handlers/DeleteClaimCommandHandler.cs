@@ -8,5 +8,5 @@ public sealed class DeleteClaimCommandHandler(IClaimsApplicationService claimsSe
     : ICommandHandler<DeleteClaimCommand, OperationResult<bool>>
 {
     public Task<OperationResult<bool>> Handle(DeleteClaimCommand command, CancellationToken cancellationToken = default)
-        => Task.FromResult(claimsService.Delete(command.ClaimId, command.Actor));
+        => claimsService.Delete(command.ClaimId, command.Actor);
 }

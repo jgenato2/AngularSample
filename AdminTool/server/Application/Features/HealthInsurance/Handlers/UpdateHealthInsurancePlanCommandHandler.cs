@@ -8,6 +8,6 @@ namespace Server.Application.Features.HealthInsurance.Handlers;
 public sealed class UpdateHealthInsurancePlanCommandHandler(IHealthInsuranceApplicationService service)
     : ICommandHandler<UpdateHealthInsurancePlanCommand, OperationResult<HealthInsurancePlanResponse>>
 {
-    public Task<OperationResult<HealthInsurancePlanResponse>> Handle(UpdateHealthInsurancePlanCommand command, CancellationToken cancellationToken = default)
-        => Task.FromResult(service.Update(command.PolicyId, command.Request, command.Actor));
+    public async Task<OperationResult<HealthInsurancePlanResponse>> Handle(UpdateHealthInsurancePlanCommand command, CancellationToken cancellationToken = default)
+        => await service.Update(command.PolicyId, command.Request, command.Actor);
 }

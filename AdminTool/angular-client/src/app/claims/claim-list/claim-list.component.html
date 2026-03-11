@@ -5,35 +5,30 @@
       <h1>Claims</h1>
     </div>
     <div class="actions">
-      <input
-        class="form-control policy-search"
-        type="text"
-        placeholder="Search Policy ID"
-        list="policy-id-options"
-        [ngModel]="policyIdSearch"
-        (ngModelChange)="onPolicyIdSearchChange($event)"
-      />
-      <button class="btn btn-outline-secondary" type="button" (click)="openInsuranceFromSearch()" [disabled]="!policyIdSearch">Open</button>
-      <button class="btn btn-outline-secondary" type="button" (click)="clearPolicyIdSearch()" [disabled]="!policyIdSearch">Clear</button>
+      <input class="form-control policy-search" type="text" placeholder="Search Policy ID" list="policy-id-options"
+        [ngModel]="policyIdSearch" (ngModelChange)="onPolicyIdSearchChange($event)" />
+      <button class="btn btn-outline-secondary" type="button" (click)="openInsuranceFromSearch()"
+        [disabled]="!policyIdSearch">Open</button>
+      <button class="btn btn-outline-secondary" type="button" (click)="clearPolicyIdSearch()"
+        [disabled]="!policyIdSearch">Clear</button>
       <button class="btn btn-outline-secondary" (click)="load()" [disabled]="loading">Refresh</button>
-      <button class="btn btn-primary add-claim-btn" *ngIf="auth.isAdmin()" type="button" data-bs-toggle="collapse" data-bs-target="#create-claim-form" aria-expanded="false">
+      @if (auth.isAdmin()) {
+      <button class="btn btn-primary add-claim-btn" type="button" data-bs-toggle="collapse"
+        data-bs-target="#create-claim-form" aria-expanded="false">
         Add claim
       </button>
+      }
     </div>
   </header>
 
-  <div
-    *ngIf="alertMessage"
-    class="alert"
-    [ngClass]="'alert-' + alertType"
-    animate.enter="alert-enter"
-    animate.leave="alert-leave"
-    role="alert"
-  >
+  @if (alertMessage) {
+  <div class="alert" [ngClass]="'alert-' + alertType" animate.enter="alert-enter" animate.leave="alert-leave"
+    role="alert">
     {{ alertMessage }}
   </div>
+  }
 
-  <div id="create-claim-form" class="collapse" *ngIf="auth.isAdmin()">
+  <div id="create-claim-form" class="collapse">
     <div class="card form-card">
       <div class="card-body">
         <form class="form-grid" (ngSubmit)="create()" #createForm="ngForm">
@@ -43,8 +38,11 @@
           </div>
           <div>
             <label class="form-label">Policy ID</label>
-            <input class="form-control" list="policy-id-options" name="policyId" [(ngModel)]="createModel.policyId" required />
-            <a class="policy-link" [routerLink]="['/insurance', createModel.policyId]" *ngIf="createModel.policyId">Open insurance detail</a>
+            <input class="form-control" list="policy-id-options" name="policyId" [(ngModel)]="createModel.policyId"
+              required />
+            @if (createModel.policyId) {
+            <a class="policy-link" [routerLink]="['/insurance', createModel.policyId]">Open insurance detail</a>
+            }
           </div>
           <div>
             <label class="form-label">Member Name</label>
@@ -83,13 +81,16 @@
             <label class="form-label">Amount</label>
             <div class="input-group money-input-group">
               <span class="input-group-text">$</span>
-              <input type="number" class="form-control money-input" name="claimAmount" [(ngModel)]="createModel.claimAmount" min="0" step="0.01" inputmode="decimal" required />
+              <input type="number" class="form-control money-input" name="claimAmount"
+                [(ngModel)]="createModel.claimAmount" min="0" step="0.01" inputmode="decimal" required />
             </div>
           </div>
           <div>
             <label class="form-label">Status</label>
             <select class="form-select status-select" name="status" [(ngModel)]="createModel.status" required>
-              <option *ngFor="let status of createStatusOptions" [value]="status">{{ status }}</option>
+              @for (status of createStatusOptions; track status) {
+              <option [value]="status">{{ status }}</option>
+              }
             </select>
           </div>
           <div>
@@ -108,23 +109,22 @@
 
   <div class="card grid-card">
     <div class="card-body grid-shell">
-      <app-data-grid
-        [rows]="displayedClaims"
-        [columnDefs]="columnDefs"
-        [defaultColDef]="defaultColDef"
-        (cellClicked)="onCellClicked($event)"
-        (rowClicked)="openDetail($event.data)"
-      ></app-data-grid>
-      <div class="loading" *ngIf="loading">
+      <app-data-grid [rows]="displayedClaims" [columnDefs]="columnDefs" [defaultColDef]="defaultColDef"
+        (cellClicked)="onCellClicked($event)" (rowClicked)="openDetail($event.data)"></app-data-grid>
+      @if (loading) {
+      <div class="loading">
         <div class="spinner-border text-primary" role="status">
           <span class="visually-hidden">Loading...</span>
         </div>
         <span>Loading claims...</span>
       </div>
+      }
     </div>
   </div>
 
   <datalist id="policy-id-options">
-    <option *ngFor="let policyId of policyIdOptions" [value]="policyId"></option>
+    @for (policyId of policyIdOptions; track policyId) {
+    <option [value]="policyId"></option>
+    }
   </datalist>
 </section>

@@ -1,7 +1,9 @@
-<nav class="navbar topbar navbar-expand" *ngIf="!isLoginPage">
+@if (!isLoginPage) {
+<nav class="navbar topbar navbar-expand">
   <div class="container-fluid">
     <div class="left-cluster">
-      <div class="menu-inline" *ngIf="auth.isAuthenticated()">
+      @if (auth.isAuthenticated()) {
+      <div class="menu-inline">
         <button class="menu-toggle" type="button" (click)="toggleMenu()" [attr.aria-expanded]="menuOpen">
           ☰
         </button>
@@ -17,17 +19,21 @@
           <a class="menu-link" routerLink="/claims" (click)="closeMenu()">Claims</a>
           <div class="menu-group-label">Administration</div>
           <a class="menu-link" routerLink="/users" (click)="closeMenu()">Users</a>
-          <a class="menu-link" routerLink="/audit-logs" (click)="closeMenu()" *ngIf="auth.isAdmin()">Audit Logs</a>
+          @if (auth.isAdmin()) {
+            <a class="menu-link" routerLink="/audit-logs" (click)="closeMenu()">Audit Logs</a>
+          }
         </div>
       </div>
 
+      }
       <div class="brand navbar-brand">
         <span class="brand-mark"></span>
         <span class="brand-title">MedCover Central</span>
       </div>
     </div>
     <div class="ms-auto d-flex gap-2 align-items-center">
-      <div class="user-menu" *ngIf="auth.isAuthenticated()" (click)="$event.stopPropagation()">
+      @if (auth.isAuthenticated()) {
+        <div class="user-menu" (click)="$event.stopPropagation()">
         <button
           class="user-menu-toggle"
           type="button"
@@ -38,17 +44,27 @@
           <span class="user-caret">▾</span>
         </button>
 
-        <div class="user-menu-panel" *ngIf="userMenuOpen">
-          <button class="user-menu-item" type="button" (click)="goToProfile()">Profile</button>
-          <button class="user-menu-item danger" type="button" (click)="logout()">Logout</button>
-        </div>
+        @if (userMenuOpen) {
+          <div class="user-menu-panel">
+            <button class="user-menu-item" type="button" (click)="goToProfile()">Profile</button>
+            <button class="user-menu-item danger" type="button" (click)="logout()">Logout</button>
+          </div>
+        }
       </div>
-      <a class="btn btn-primary" routerLink="/login" *ngIf="!auth.isAuthenticated()">Login</a>
+      }
+      @if (!auth.isAuthenticated()) {
+        <a class="btn btn-primary" routerLink="/login">Login</a>
+      }
     </div>
   </div>
 </nav>
 
-<div class="menu-backdrop" *ngIf="!isLoginPage && menuOpen" (click)="closeMenu()"></div>
+@if (!isLoginPage && menuOpen) {
+}
+@if (!isLoginPage && menuOpen) {
+  <div class="menu-backdrop" (click)="closeMenu()"></div>
+}
+}
 
 <main class="app-shell">
   <router-outlet></router-outlet>

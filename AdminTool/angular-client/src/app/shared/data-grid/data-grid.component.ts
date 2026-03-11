@@ -7,7 +7,6 @@ import {
   ColDef,
   GridApi,
   GridReadyEvent,
-  PaginationChangedEvent,
   RowClickedEvent,
   SortChangedEvent,
 } from "ag-grid-community";
@@ -198,7 +197,7 @@ export class DataGridComponent {
     }, 0);
   }
 
-  onPaginationChanged(_: PaginationChangedEvent) {
+  onPaginationChanged() {
     this.syncPaginationState();
   }
 

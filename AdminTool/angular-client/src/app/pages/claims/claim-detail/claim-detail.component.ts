@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnDestroy, OnInit } from "@angular/core";
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from "@angular/core";
 import { CommonModule, CurrencyPipe, DatePipe, Location } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { HttpErrorResponse } from "@angular/common/http";
@@ -6,7 +6,8 @@ import { ActivatedRoute, Router, RouterLink } from "@angular/router";
 import { finalize, forkJoin } from "rxjs";
 import { AuthService } from "../../../core/auth.service";
 import { ClaimsFacade } from "../../../features/claims/application/claims.facade";
-import { ClaimAuditLogItem, ClaimItem, ClaimStatusWorkflowItem } from "../../../features/claims/domain/claim.models";
+import { ClaimItem, ClaimStatusWorkflowItem } from "../../../features/claims/domain/claim.models";
+import { AuditLogListItem } from "../../insurance/insurance-detail/components/audit-log-section/audit-log-section.component";
 import { InsuranceFacade } from "../../../features/insurance/application/insurance.facade";
 import { AuditLogSectionComponent } from "../../insurance/insurance-detail/components/audit-log-section/audit-log-section.component";
 import { DetailActionsBarComponent } from '../../../shared/detail-actions/detail-actions-bar.component';
@@ -27,10 +28,20 @@ const DEFAULT_STATUS_WORKFLOW: Record<string, string[]> = {
   styleUrls: ["./claim-detail.component.scss"],
 })
 export class ClaimDetailComponent implements OnInit, OnDestroy {
+  private readonly route = inject(ActivatedRoute);
+  private readonly claimsFacade = inject(ClaimsFacade);
+  private readonly insuranceFacade = inject(InsuranceFacade);
+  private readonly router = inject(Router);
+  private readonly location = inject(Location);
+  readonly auth = inject(AuthService);
+  readonly currencyPipe = inject(CurrencyPipe);
+  readonly datePipe = inject(DatePipe);
+  private readonly cdr = inject(ChangeDetectorRef);
+
   statusWorkflow: Record<string, string[]> = { ...DEFAULT_STATUS_WORKFLOW };
   policyIdOptions: string[] = [];
   claim: ClaimItem | null = null;
-  auditLogs: ClaimAuditLogItem[] = [];
+  auditLogs: AuditLogListItem[] = [];
   auditLoading = false;
   activeTab: "details" | "audit" = "details";
   showStatusModal = false;
@@ -54,17 +65,8 @@ export class ClaimDetailComponent implements OnInit, OnDestroy {
     notes: "",
   };
 
-  constructor(
-    private readonly route: ActivatedRoute,
-    private readonly claimsFacade: ClaimsFacade,
-    private readonly insuranceFacade: InsuranceFacade,
-    private readonly router: Router,
-    private readonly location: Location,
-    public readonly auth: AuthService,
-    public readonly currencyPipe: CurrencyPipe,
-    public readonly datePipe: DatePipe,
-    private readonly cdr: ChangeDetectorRef,
-  ) {}
+
+  constructor() {}
 
   ngOnInit() {
     this.loadPolicyIdOptions();
@@ -155,7 +157,10 @@ export class ClaimDetailComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (result) => {
           this.claim = result.claim;
-          this.auditLogs = result.auditLogs;
+          this.auditLogs = (result.auditLogs ?? []).map(log => ({
+            ...log,
+            entityId: log.claimId || '',
+          }));
           this.patchForm(result.claim);
           this.cdr.markForCheck();
         },
@@ -218,7 +223,7 @@ export class ClaimDetailComponent implements OnInit, OnDestroy {
       return;
     }
 
-    if (!confirm(`Delete claim ${this.claim.claimId}?`)) {
+    if (!window.confirm(`Delete claim ${this.claim.claimId}?`)) {
       return;
     }
 
@@ -298,7 +303,10 @@ export class ClaimDetailComponent implements OnInit, OnDestroy {
       }))
       .subscribe({
         next: (auditLogs) => {
-          this.auditLogs = auditLogs;
+          this.auditLogs = (auditLogs ?? []).map(log => ({
+            ...log,
+            entityId: log.claimId || '',
+          }));
           this.cdr.markForCheck();
         },
       });

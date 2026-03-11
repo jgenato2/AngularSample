@@ -9,5 +9,5 @@ public sealed class CreateClaimCommandHandler(IClaimsApplicationService claimsSe
     : ICommandHandler<CreateClaimCommand, OperationResult<Claim>>
 {
     public Task<OperationResult<Claim>> Handle(CreateClaimCommand command, CancellationToken cancellationToken = default)
-        => Task.FromResult(claimsService.Create(command.Claim, command.Actor));
+        => claimsService.Create(command.Claim, command.Actor);
 }

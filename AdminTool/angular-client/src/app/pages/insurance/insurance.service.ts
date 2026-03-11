@@ -1,4 +1,4 @@
-import { Injectable } from "@angular/core";
+import { Injectable, inject } from "@angular/core";
 import { HttpClient, HttpParams } from "@angular/common/http";
 import {
   InsuranceAuditLogItem,
@@ -27,9 +27,12 @@ interface AuditLogListResponse {
 
 @Injectable({ providedIn: "root" })
 export class InsuranceService {
+  private readonly http = inject(HttpClient);
+
   private readonly baseUrl = "/api/health-insurance";
 
-  constructor(private readonly http: HttpClient) {}
+
+  constructor() {}
 
   listPlans(sort?: Array<{ field: string; direction: "asc" | "desc" }>) {
     let params = new HttpParams();

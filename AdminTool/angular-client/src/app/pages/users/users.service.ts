@@ -1,4 +1,4 @@
-import { Injectable } from "@angular/core";
+import { Injectable, inject } from "@angular/core";
 import { HttpClient, HttpParams } from "@angular/common/http";
 import { CreateUserPayload, UpdateUserPayload, UserAuditLogItem, UserItem } from "../../features/users/domain/user.models";
 
@@ -16,9 +16,12 @@ interface AuditLogListResponse {
 
 @Injectable({ providedIn: "root" })
 export class UsersService {
+  private readonly http = inject(HttpClient);
+
   private readonly baseUrl = "/api";
 
-  constructor(private readonly http: HttpClient) {}
+
+  constructor() {}
 
   list(sort?: Array<{ field: string; direction: "asc" | "desc" }>, query?: string) {
     let params = new HttpParams();

@@ -15,13 +15,17 @@
         [showSearch]="false"
         [externalSearchQuery]="searchQuery"
       ></app-data-grid>
-      <div class="loading" *ngIf="loading">
-        <div class="spinner-border text-primary" role="status">
-          <span class="visually-hidden">Loading...</span>
+      @if (loading) {
+        <div class="loading">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+          <span>Loading audit logs...</span>
         </div>
-        <span>Loading audit logs...</span>
-      </div>
-      <div class="empty-state" *ngIf="!loading && !items.length">No audit logs available.</div>
+      }
+      @if (!loading && !items.length) {
+        <div class="empty-state">No audit logs available.</div>
+      }
     </div>
   </div>
 </div>

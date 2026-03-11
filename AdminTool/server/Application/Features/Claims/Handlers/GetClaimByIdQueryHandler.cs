@@ -9,5 +9,5 @@ public sealed class GetClaimByIdQueryHandler(IClaimsApplicationService claimsSer
     : IQueryHandler<GetClaimByIdQuery, OperationResult<Claim>>
 {
     public Task<OperationResult<Claim>> Handle(GetClaimByIdQuery query, CancellationToken cancellationToken = default)
-        => Task.FromResult(claimsService.GetById(query.ClaimId, query.Actor));
+        => claimsService.GetById(query.ClaimId, query.Actor);
 }

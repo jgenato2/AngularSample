@@ -9,5 +9,5 @@ public sealed class UpdateClaimCommandHandler(IClaimsApplicationService claimsSe
     : ICommandHandler<UpdateClaimCommand, OperationResult<Claim>>
 {
     public Task<OperationResult<Claim>> Handle(UpdateClaimCommand command, CancellationToken cancellationToken = default)
-        => Task.FromResult(claimsService.Update(command.ClaimId, command.Updates, command.Actor));
+        => claimsService.Update(command.ClaimId, command.Updates, command.Actor);
 }

@@ -1,5 +1,5 @@
 import { DetailActionsBarComponent } from '../../../shared/detail-actions/detail-actions-bar.component';
-import { ChangeDetectorRef, Component, OnDestroy, OnInit } from "@angular/core";
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from "@angular/core";
 import { CommonModule, Location } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { HttpErrorResponse } from "@angular/common/http";
@@ -7,7 +7,7 @@ import { ActivatedRoute, Router } from "@angular/router";
 import { finalize, forkJoin } from "rxjs";
 import { AuthService } from "../../../core/auth.service";
 import { InsuranceFacade } from "../../../features/insurance/application/insurance.facade";
-import { InsuranceAuditLogItem, InsuranceFinancialAnalyticsItem, InsurancePlanItem, InsuranceStatusWorkflowItem } from "../../../features/insurance/domain/insurance.models";
+import { InsuranceFinancialAnalyticsItem, InsurancePlanItem, InsuranceStatusWorkflowItem } from "../../../features/insurance/domain/insurance.models";
 import { ClaimsFacade } from "../../../features/claims/application/claims.facade";
 import { ClaimItem } from "../../../features/claims/domain/claim.models";
 import { CoverageCardComponent } from "./components/coverage-card/coverage-card.component";
@@ -18,6 +18,7 @@ import { BaselineProjectionCardComponent } from "./components/baseline-projectio
 import { StressTestCardComponent } from "./components/stress-test-card/stress-test-card.component";
 import { AlgorithmNotesCardComponent } from "./components/algorithm-notes-card/algorithm-notes-card.component";
 import { AuditLogSectionComponent } from "./components/audit-log-section/audit-log-section.component";
+import { AuditLogListItem } from "./components/audit-log-section/audit-log-section.component";
 import { ProvidersService } from "../../providers/providers.service";
 
 const DEFAULT_STATUS_WORKFLOW: Record<string, string[]> = {
@@ -53,11 +54,20 @@ const DEFAULT_STATUS_WORKFLOW: Record<string, string[]> = {
   styleUrls: ["./insurance-detail.component.scss"],
 })
 export class InsuranceDetailComponent implements OnInit, OnDestroy {
+  private readonly route = inject(ActivatedRoute);
+  private readonly insuranceFacade = inject(InsuranceFacade);
+  private readonly claimsFacade = inject(ClaimsFacade);
+  private readonly providersService = inject(ProvidersService);
+  private readonly router = inject(Router);
+  private readonly location = inject(Location);
+  readonly auth = inject(AuthService);
+  private readonly cdr = inject(ChangeDetectorRef);
+
   statusWorkflow: Record<string, string[]> = { ...DEFAULT_STATUS_WORKFLOW };
   plan: InsurancePlanItem | null = null;
   memberClaimId: string | null = null;
   financial: InsuranceFinancialAnalyticsItem | null = null;
-  auditLogs: InsuranceAuditLogItem[] = [];
+  auditLogs: AuditLogListItem[] = [];
   auditLoading = false;
   activeTab: "details" | "financial" | "audit" = "details";
   providerOptions: string[] = [];
@@ -80,16 +90,8 @@ export class InsuranceDetailComponent implements OnInit, OnDestroy {
   alertType: "danger" | "success" = "danger";
   private alertTimerId: ReturnType<typeof setTimeout> | null = null;
 
-  constructor(
-    private readonly route: ActivatedRoute,
-    private readonly insuranceFacade: InsuranceFacade,
-    private readonly claimsFacade: ClaimsFacade,
-    private readonly providersService: ProvidersService,
-    private readonly router: Router,
-    private readonly location: Location,
-    public readonly auth: AuthService,
-    private readonly cdr: ChangeDetectorRef,
-  ) {}
+
+  constructor() {}
 
   ngOnInit() {
     this.loadProviderOptions();
@@ -195,7 +197,10 @@ export class InsuranceDetailComponent implements OnInit, OnDestroy {
           this.plan = result.plan;
           this.memberClaimId = this.resolveClaimId(result.plan.policyId, result.claims);
           this.financial = result.financial;
-          this.auditLogs = result.auditLogs;
+          this.auditLogs = (result.auditLogs ?? []).map(log => ({
+            ...log,
+            entityId: log.policyId || '',
+          }));
           this.patchForm(result.plan);
           this.cdr.markForCheck();
         },
@@ -251,7 +256,7 @@ export class InsuranceDetailComponent implements OnInit, OnDestroy {
       return;
     }
 
-    if (!confirm(`Delete policy ${this.plan.policyId}?`)) {
+    if (!window.confirm(`Delete policy ${this.plan.policyId}?`)) {
       return;
     }
 
@@ -308,7 +313,10 @@ export class InsuranceDetailComponent implements OnInit, OnDestroy {
       }))
       .subscribe({
         next: (auditLogs) => {
-          this.auditLogs = auditLogs;
+          this.auditLogs = (auditLogs ?? []).map(log => ({
+            ...log,
+            entityId: log.policyId || '',
+          }));
           this.cdr.markForCheck();
         },
       });

@@ -1,4 +1,4 @@
-import { Injectable, computed, signal } from "@angular/core";
+import { Injectable, computed, signal, inject } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { tap } from "rxjs";
 
@@ -18,6 +18,8 @@ interface AuthResponse {
 
 @Injectable({ providedIn: "root" })
 export class AuthService {
+  private readonly http = inject(HttpClient);
+
   private readonly tokenKey = "adminTool.token";
   private readonly userKey = "adminTool.user";
   private readonly baseUrl = "/api";
@@ -27,21 +29,22 @@ export class AuthService {
   readonly isAuthenticated = computed(() => !!this.userSignal());
   readonly isAdmin = computed(() => this.userSignal()?.role === "admin");
 
-  constructor(private readonly http: HttpClient) {
-    const savedUser = localStorage.getItem(this.userKey);
-    const savedToken = localStorage.getItem(this.tokenKey);
+
+  constructor() {
+    const savedUser = window.localStorage.getItem(this.userKey);
+    const savedToken = window.localStorage.getItem(this.tokenKey);
 
     if (savedUser && savedToken) {
       this.userSignal.set(JSON.parse(savedUser));
       return;
     }
 
-    localStorage.removeItem(this.userKey);
-    localStorage.removeItem(this.tokenKey);
+    window.localStorage.removeItem(this.userKey);
+    window.localStorage.removeItem(this.tokenKey);
   }
 
   getToken(): string | null {
-    return localStorage.getItem(this.tokenKey);
+    return window.localStorage.getItem(this.tokenKey);
   }
 
   login(email: string, password: string) {
@@ -57,14 +60,14 @@ export class AuthService {
   }
 
   logout() {
-    localStorage.removeItem(this.tokenKey);
-    localStorage.removeItem(this.userKey);
+    window.localStorage.removeItem(this.tokenKey);
+    window.localStorage.removeItem(this.userKey);
     this.userSignal.set(null);
   }
 
   private persistAuth(response: AuthResponse) {
-    localStorage.setItem(this.tokenKey, response.token);
-    localStorage.setItem(this.userKey, JSON.stringify(response.user));
+    window.localStorage.setItem(this.tokenKey, response.token);
+    window.localStorage.setItem(this.userKey, JSON.stringify(response.user));
     this.userSignal.set(response.user);
   }
 }

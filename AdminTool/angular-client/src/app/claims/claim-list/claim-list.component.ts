@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnInit } from "@angular/core";
+import { ChangeDetectorRef, Component, OnInit, inject } from "@angular/core";
 import { CommonModule, CurrencyPipe, DatePipe } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { HttpErrorResponse } from "@angular/common/http";
@@ -22,6 +22,14 @@ const DEFAULT_CREATE_STATUS_OPTIONS = ["Submitted"];
   styleUrl: "./claim-list.component.scss",
 })
 export class ClaimListComponent implements OnInit {
+  private readonly claimsFacade = inject(ClaimsFacade);
+  private readonly insuranceFacade = inject(InsuranceFacade);
+  readonly auth = inject(AuthService);
+  readonly currencyPipe = inject(CurrencyPipe);
+  readonly datePipe = inject(DatePipe);
+  private readonly router = inject(Router);
+  private readonly cdr = inject(ChangeDetectorRef);
+
   createStatusOptions = [...DEFAULT_CREATE_STATUS_OPTIONS];
   statusWorkflow: Record<string, string[]> = {};
   policyIdOptions: string[] = [];
@@ -48,15 +56,8 @@ export class ClaimListComponent implements OnInit {
     notes: "",
   };
 
-  constructor(
-    private readonly claimsFacade: ClaimsFacade,
-    private readonly insuranceFacade: InsuranceFacade,
-    public readonly auth: AuthService,
-    public readonly currencyPipe: CurrencyPipe,
-    public readonly datePipe: DatePipe,
-    private readonly router: Router,
-    private readonly cdr: ChangeDetectorRef,
-  ) {}
+
+  constructor() {}
 
   ngOnInit() {
     this.loadPolicyIdOptions();

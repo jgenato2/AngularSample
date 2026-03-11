@@ -9,5 +9,5 @@ public sealed class GetHealthInsurancePlanByPolicyIdQueryHandler(IHealthInsuranc
     : IQueryHandler<GetHealthInsurancePlanByPolicyIdQuery, OperationResult<HealthInsurancePlanResponse>>
 {
     public Task<OperationResult<HealthInsurancePlanResponse>> Handle(GetHealthInsurancePlanByPolicyIdQuery query, CancellationToken cancellationToken = default)
-        => Task.FromResult(service.GetByPolicyId(query.PolicyId, query.Actor));
+        => service.GetByPolicyId(query.PolicyId, query.Actor);
 }

@@ -1,8 +1,8 @@
-import { ChangeDetectorRef, Component, OnDestroy, OnInit } from "@angular/core";
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from "@angular/core";
 import { CommonModule, CurrencyPipe, DatePipe } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { HttpErrorResponse } from "@angular/common/http";
-import { Router, RouterLink } from "@angular/router";
+import { Router } from "@angular/router";
 import { CellClickedEvent, ColDef } from "ag-grid-community";
 import { finalize, Subscription } from "rxjs";
 import { AuthService } from "../../../core/auth.service";
@@ -18,12 +18,20 @@ const DEFAULT_CREATE_STATUS_OPTIONS = ["Submitted"];
 @Component({
   selector: "app-claim-list",
   standalone: true,
-  imports: [CommonModule, FormsModule, DataGridComponent, SearchQueryComponent, RouterLink],
+  imports: [CommonModule, FormsModule, DataGridComponent, SearchQueryComponent],
   providers: [CurrencyPipe, DatePipe],
   templateUrl: "./claim-list.component.html",
   styleUrl: "./claim-list.component.scss",
 })
 export class ClaimListComponent implements OnInit, OnDestroy {
+  private readonly claimsFacade = inject(ClaimsFacade);
+  private readonly insuranceFacade = inject(InsuranceFacade);
+  readonly auth = inject(AuthService);
+  readonly currencyPipe = inject(CurrencyPipe);
+  readonly datePipe = inject(DatePipe);
+  private readonly router = inject(Router);
+  private readonly cdr = inject(ChangeDetectorRef);
+
   createStatusOptions = [...DEFAULT_CREATE_STATUS_OPTIONS];
   statusWorkflow: Record<string, string[]> = {};
   insurancePlans: InsurancePlanItem[] = [];
@@ -53,15 +61,8 @@ export class ClaimListComponent implements OnInit, OnDestroy {
     notes: "",
   };
 
-  constructor(
-    private readonly claimsFacade: ClaimsFacade,
-    private readonly insuranceFacade: InsuranceFacade,
-    public readonly auth: AuthService,
-    public readonly currencyPipe: CurrencyPipe,
-    public readonly datePipe: DatePipe,
-    private readonly router: Router,
-    private readonly cdr: ChangeDetectorRef,
-  ) {}
+
+  constructor() {}
 
   ngOnInit() {
     this.loadPolicyIdOptions();

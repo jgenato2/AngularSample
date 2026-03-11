@@ -1,4 +1,4 @@
-import { Injectable } from "@angular/core";
+import { Injectable, inject } from "@angular/core";
 import { Observable, map } from "rxjs";
 import { InsuranceService } from "../../../pages/insurance/insurance.service";
 import {
@@ -13,7 +13,10 @@ import { InsuranceRepository } from "../domain/insurance.repository";
 
 @Injectable({ providedIn: "root" })
 export class InsuranceHttpRepository implements InsuranceRepository {
-  constructor(private readonly insuranceService: InsuranceService) {}
+  private readonly insuranceService = inject(InsuranceService);
+
+
+  constructor() {}
 
   listPlans(sort?: Array<{ field: string; direction: "asc" | "desc" }>) {
     return this.insuranceService.listPlans(sort).pipe(map((response) => response.items ?? []));

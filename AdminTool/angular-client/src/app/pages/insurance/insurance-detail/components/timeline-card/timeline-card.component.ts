@@ -1,5 +1,5 @@
 import { CommonModule, DatePipe } from "@angular/common";
-import { Component, Input } from "@angular/core";
+import { Component, Input, inject } from "@angular/core";
 import { InsurancePlanItem } from "../../../../../features/insurance/domain/insurance.models";
 
 @Component({
@@ -11,8 +11,11 @@ import { InsurancePlanItem } from "../../../../../features/insurance/domain/insu
   styleUrl: "./timeline-card.component.scss",
 })
 export class TimelineCardComponent {
+  readonly datePipe = inject(DatePipe);
+
   @Input({ required: true }) plan!: InsurancePlanItem;
 
-  constructor(public readonly datePipe: DatePipe) {}
+
+  constructor() {}
 }
 

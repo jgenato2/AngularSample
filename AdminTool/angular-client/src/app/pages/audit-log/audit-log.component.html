@@ -6,25 +6,29 @@
     </div>
   </header>
 
-  <div
-    *ngIf="alertMessage"
-    class="alert"
-    [ngClass]="'alert-' + alertType"
-    animate.enter="alert-enter"
-    animate.leave="alert-leave"
-    role="alert"
-  >
-    {{ alertMessage }}
-  </div>
+  @if (alertMessage) {
+    <div
+      class="alert"
+      [ngClass]="'alert-' + alertType"
+      animate.enter="alert-enter"
+      animate.leave="alert-leave"
+      role="alert"
+    >
+      {{ alertMessage }}
+    </div>
+  }
 
-  <div class="alert alert-warning" *ngIf="!auth.isAdmin()" role="alert">
-    Admin access is required to view list access audit logs.
-  </div>
+  @if (!auth.isAdmin()) {
+    <div class="alert alert-warning" role="alert">
+      Admin access is required to view list access audit logs.
+    </div>
+  }
 
-  <app-audit-log-section
-    *ngIf="auth.isAdmin()"
-    [items]="auditRows"
-    [loading]="loading"
-  ></app-audit-log-section>
+  @if (auth.isAdmin()) {
+    <app-audit-log-section
+      [items]="auditRows"
+      [loading]="loading"
+    ></app-audit-log-section>
+  }
 
 </section>

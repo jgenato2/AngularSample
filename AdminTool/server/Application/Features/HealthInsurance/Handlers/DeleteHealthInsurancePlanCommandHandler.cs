@@ -7,6 +7,6 @@ namespace Server.Application.Features.HealthInsurance.Handlers;
 public sealed class DeleteHealthInsurancePlanCommandHandler(IHealthInsuranceApplicationService service)
     : ICommandHandler<DeleteHealthInsurancePlanCommand, OperationResult<bool>>
 {
-    public Task<OperationResult<bool>> Handle(DeleteHealthInsurancePlanCommand command, CancellationToken cancellationToken = default)
-        => Task.FromResult(service.Delete(command.PolicyId, command.Actor));
+    public async Task<OperationResult<bool>> Handle(DeleteHealthInsurancePlanCommand command, CancellationToken cancellationToken = default)
+        => await service.Delete(command.PolicyId, command.Actor);
 }

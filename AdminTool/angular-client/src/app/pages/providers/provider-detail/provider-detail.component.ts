@@ -1,6 +1,6 @@
 import { CommonModule, DatePipe } from "@angular/common";
 import { HttpErrorResponse } from "@angular/common/http";
-import { ChangeDetectorRef, Component, OnDestroy, OnInit } from "@angular/core";
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { ActivatedRoute, ParamMap, Router } from "@angular/router";
 import { DetailActionsBarComponent } from '../../../shared/detail-actions/detail-actions-bar.component';
@@ -18,6 +18,13 @@ import { ProviderDetailItem, ProvidersService } from "../providers.service";
   styleUrls: ["./provider-detail.component.scss"],
 })
 export class ProviderDetailComponent implements OnInit, OnDestroy {
+  private readonly providersService = inject(ProvidersService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly cdr = inject(ChangeDetectorRef);
+  readonly auth = inject(AuthService);
+  readonly datePipe = inject(DatePipe);
+
   provider: ProviderDetailItem | null = null;
   loading = false;
   noteDraft = "";
@@ -28,14 +35,8 @@ export class ProviderDetailComponent implements OnInit, OnDestroy {
   private loadRequestSub: Subscription | null = null;
   private alertTimerId: ReturnType<typeof setTimeout> | null = null;
 
-  constructor(
-    private readonly providersService: ProvidersService,
-    private readonly route: ActivatedRoute,
-    private readonly router: Router,
-    private readonly cdr: ChangeDetectorRef,
-    public readonly auth: AuthService,
-    public readonly datePipe: DatePipe,
-  ) {}
+
+  constructor() {}
 
   ngOnInit() {
     this.subscriptions.add(

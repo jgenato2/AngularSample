@@ -7,33 +7,37 @@
     (input)="onInput($event)"
     aria-label="Search records"
   />
-  <button
-    *ngIf="showOpen"
-    class="btn btn-primary btn-sm"
-    type="button"
-    (click)="open()"
-    [disabled]="isOpenDisabled"
-  >
-    Open
-  </button>
+  @if (showOpen) {
+    <button
+      class="btn btn-primary btn-sm"
+      type="button"
+      (click)="open()"
+      [disabled]="isOpenDisabled"
+    >
+      Open
+    </button>
+  }
 
   <button class="btn btn-outline-secondary btn-sm" type="button" (click)="clear()" [disabled]="!query">Clear</button>
 
-  <button
-    *ngIf="showRefresh"
-    class="btn btn-outline-success btn-sm"
-    type="button"
-    (click)="refresh()"
-    [disabled]="refreshDisabled"
-  >
-    Refresh
-  </button>
+  @if (showRefresh) {
+    <button
+      class="btn btn-outline-success btn-sm"
+      type="button"
+      (click)="refresh()"
+      [disabled]="refreshDisabled"
+    >
+      Refresh
+    </button>
+  }
 
   <div class="search-actions">
     <ng-content select="[searchActions]"></ng-content>
   </div>
 </div>
 
-<div class="alert alert-warning search-alert" role="alert" *ngIf="alertMessage">
-  {{ alertMessage }}
-</div>
+@if (alertMessage) {
+  <div class="alert alert-warning search-alert" role="alert">
+    {{ alertMessage }}
+  </div>
+}

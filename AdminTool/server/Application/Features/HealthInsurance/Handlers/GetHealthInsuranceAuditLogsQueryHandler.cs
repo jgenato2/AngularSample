@@ -9,5 +9,5 @@ public sealed class GetHealthInsuranceAuditLogsQueryHandler(IHealthInsuranceAppl
     : IQueryHandler<GetHealthInsuranceAuditLogsQuery, OperationResult<IEnumerable<AuditLogEntry>>>
 {
     public Task<OperationResult<IEnumerable<AuditLogEntry>>> Handle(GetHealthInsuranceAuditLogsQuery query, CancellationToken cancellationToken = default)
-        => Task.FromResult(service.GetAuditLogs(query.PolicyId));
+        => service.GetAuditLogs(query.PolicyId);
 }

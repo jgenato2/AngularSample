@@ -1,6 +1,8 @@
 <div class="detail-actions">
-  <button *ngIf="showBack" class="btn btn-outline-secondary btn-sm back-btn" type="button" (click)="back.emit()">
+  @if (showBack) {
+  <button class="btn btn-outline-secondary btn-sm back-btn" type="button" (click)="back.emit()">
     <span aria-hidden="true">&#8592;</span> {{ backLabel }}
   </button>
+  }
   <ng-content></ng-content>
 </div>

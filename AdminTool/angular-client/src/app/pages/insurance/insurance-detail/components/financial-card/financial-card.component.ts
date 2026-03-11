@@ -1,5 +1,5 @@
 import { CommonModule, CurrencyPipe } from "@angular/common";
-import { Component, Input } from "@angular/core";
+import { Component, Input, inject } from "@angular/core";
 import { InsurancePlanItem } from "../../../../../features/insurance/domain/insurance.models";
 
 @Component({
@@ -11,8 +11,11 @@ import { InsurancePlanItem } from "../../../../../features/insurance/domain/insu
   styleUrl: "./financial-card.component.scss",
 })
 export class FinancialCardComponent {
+  readonly currencyPipe = inject(CurrencyPipe);
+
   @Input({ required: true }) plan!: InsurancePlanItem;
 
-  constructor(public readonly currencyPipe: CurrencyPipe) {}
+
+  constructor() {}
 }
 

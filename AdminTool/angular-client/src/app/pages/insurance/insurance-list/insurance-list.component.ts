@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnDestroy, OnInit } from "@angular/core";
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from "@angular/core";
 import { CommonModule, CurrencyPipe, DatePipe } from "@angular/common";
 import { HttpErrorResponse } from "@angular/common/http";
 import { FormsModule } from "@angular/forms";
@@ -25,6 +25,16 @@ const DEFAULT_CREATE_STATUS_OPTIONS = ["New"];
   styleUrl: "./insurance-list.component.scss",
 })
 export class InsuranceListComponent implements OnInit, OnDestroy {
+  private readonly insuranceFacade = inject(InsuranceFacade);
+  private readonly claimsFacade = inject(ClaimsFacade);
+  private readonly providersService = inject(ProvidersService);
+  readonly auth = inject(AuthService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly cdr = inject(ChangeDetectorRef);
+  readonly currencyPipe = inject(CurrencyPipe);
+  readonly datePipe = inject(DatePipe);
+
   createStatusOptions = [...DEFAULT_CREATE_STATUS_OPTIONS];
   plans: InsurancePlanItem[] = [];
   providerOptions: string[] = [];
@@ -50,17 +60,8 @@ export class InsuranceListComponent implements OnInit, OnDestroy {
     renewalDate: "",
   };
 
-  constructor(
-    private readonly insuranceFacade: InsuranceFacade,
-    private readonly claimsFacade: ClaimsFacade,
-    private readonly providersService: ProvidersService,
-    public readonly auth: AuthService,
-    private readonly route: ActivatedRoute,
-    private readonly router: Router,
-    private readonly cdr: ChangeDetectorRef,
-    public readonly currencyPipe: CurrencyPipe,
-    public readonly datePipe: DatePipe,
-  ) {}
+
+  constructor() {}
 
   ngOnInit() {
     this.gridSearchQuery = this.route.snapshot.queryParamMap.get("query") ?? "";

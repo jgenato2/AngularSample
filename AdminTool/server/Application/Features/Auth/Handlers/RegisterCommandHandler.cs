@@ -7,6 +7,6 @@ namespace Server.Application.Features.Auth.Handlers;
 public sealed class RegisterCommandHandler(IAuthApplicationService authService)
     : ICommandHandler<RegisterCommand, OperationResult<AuthPayload>>
 {
-    public Task<OperationResult<AuthPayload>> Handle(RegisterCommand command, CancellationToken cancellationToken = default)
-        => Task.FromResult(authService.Register(command.Name, command.Email, command.Password));
+    public async Task<OperationResult<AuthPayload>> Handle(RegisterCommand command, CancellationToken cancellationToken = default)
+        => await authService.Register(command.Name, command.Email, command.Password);
 }

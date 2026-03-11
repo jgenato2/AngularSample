@@ -1,4 +1,4 @@
-import { Injectable } from "@angular/core";
+import { Injectable, inject } from "@angular/core";
 import { HttpClient, HttpParams } from "@angular/common/http";
 
 export interface ProviderItem {
@@ -33,9 +33,12 @@ interface ProviderItemResponse {
 
 @Injectable({ providedIn: "root" })
 export class ProvidersService {
+  private readonly http = inject(HttpClient);
+
   private readonly baseUrl = "/api/providers";
 
-  constructor(private readonly http: HttpClient) {}
+
+  constructor() {}
 
   list(sort?: Array<{ field: string; direction: "asc" | "desc" }>, query?: string) {
     let params = new HttpParams();

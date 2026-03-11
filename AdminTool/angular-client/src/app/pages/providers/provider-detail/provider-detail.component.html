@@ -9,8 +9,8 @@
     </app-detail-actions-bar>
   </header>
 
+  @if (alertMessage) {
   <div
-    *ngIf="alertMessage"
     class="alert"
     [ngClass]="'alert-' + alertType"
     animate.enter="alert-enter"
@@ -19,15 +19,19 @@
   >
     {{ alertMessage }}
   </div>
+  }
 
-  <div class="loading" *ngIf="loading">
+  @if (loading) {
+  <div class="loading">
     <div class="spinner-border text-primary" role="status">
       <span class="visually-hidden">Loading...</span>
     </div>
     <span>Loading provider details...</span>
   </div>
+  }
 
-  <ng-container *ngIf="!loading && provider as item">
+  @if (!loading && provider) {
+    @let item = provider;
     <app-summary-stats [items]="summaryItems"></app-summary-stats>
 
     <div class="card detail-card">
@@ -58,22 +62,28 @@
     <div class="detail-columns">
       <div class="card detail-card">
         <h2>Plan Types</h2>
-        <div class="chip-list" *ngIf="item.planTypes.length; else noPlanTypes">
-          <span class="chip" *ngFor="let planType of item.planTypes">{{ planType }}</span>
-        </div>
-        <ng-template #noPlanTypes>
+        @if (item.planTypes.length) {
+          <div class="chip-list">
+            @for (planType of item.planTypes; track planType) {
+              <span class="chip">{{ planType }}</span>
+            }
+          </div>
+        } @else {
           <p class="empty">No plan types available.</p>
-        </ng-template>
+        }
       </div>
 
       <div class="card detail-card">
         <h2>Members</h2>
-        <ul class="list" *ngIf="item.members.length; else noMembers">
-          <li *ngFor="let member of item.members">{{ member }}</li>
-        </ul>
-        <ng-template #noMembers>
+        @if (provider && provider.members && provider.members.length) {
+          <ul class="list">
+            @for (member of provider.members; track member) {
+              <li>{{ member }}</li>
+            }
+          </ul>
+        } @else {
           <p class="empty">No members available.</p>
-        </ng-template>
+        }
       </div>
     </div>
 
@@ -88,12 +98,43 @@
       ></textarea>
 
       <h3 class="notes-heading">Recent plan notes</h3>
-      <ul class="list" *ngIf="item.recentNotes.length; else noRecentNotes">
-        <li *ngFor="let note of item.recentNotes">{{ note }}</li>
-      </ul>
-      <ng-template #noRecentNotes>
-        <p class="empty">No notes from plan comments.</p>
-      </ng-template>
+      @if (item.recentNotes.length) {
+        <ul class="list">
+          @for (note of item.recentNotes; track note) {
+            <li>{{ note }}</li>
+          }
+        </ul>
+            @if (!loading && provider) {
+              @let item = provider;
+              <app-summary-stats [items]="summaryItems"></app-summary-stats>
+
+              <div class="card detail-card">
+                <div class="detail-grid">
+                  <div>
+                    <p class="detail-label">Earliest effective date</p>
+                    <p class="detail-value">{{ datePipe.transform(item.earliestEffectiveDate, "MMM d, y") }}</p>
+                  </div>
+                  <div>
+                    <p class="detail-label">Latest effective date</p>
+                    <p class="detail-value">{{ datePipe.transform(item.latestEffectiveDate, "MMM d, y") }}</p>
+                  </div>
+                  <div>
+                    <p class="detail-label">Avg monthly premium</p>
+                    <p class="detail-value">{{ item.averageMonthlyPremium | currency: 'USD':'symbol':'1.2-2' }}</p>
+                  </div>
+                  <div>
+                    <p class="detail-label">Avg deductible</p>
+                    <p class="detail-value">{{ item.averageDeductible | currency: 'USD':'symbol':'1.0-0' }}</p>
+                  </div>
+                  <div>
+                    <p class="detail-label">Avg out-of-pocket max</p>
+                    <p class="detail-value">{{ item.averageOutOfPocketMax | currency: 'USD':'symbol':'1.0-0' }}</p>
+                  </div>
+                </div>
+              </div>
+              ...existing code...
+            }
+      }
     </div>
-  </ng-container>
+  }
 </section>

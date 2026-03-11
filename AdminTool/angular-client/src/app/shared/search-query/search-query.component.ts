@@ -8,7 +8,7 @@ import { Component, EventEmitter, Input, OnDestroy, Output } from "@angular/core
   templateUrl: "./search-query.component.html",
   styleUrl: "./search-query.component.scss",
 })
-export class SearchQueryComponent {
+export class SearchQueryComponent implements OnDestroy {
   @Input() query = "";
   @Input() placeholder = "Search";
   @Input() showOpen = false;

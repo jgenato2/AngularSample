@@ -1,4 +1,4 @@
-import { Injectable } from "@angular/core";
+import { Injectable, inject } from "@angular/core";
 import { HttpClient, HttpParams } from "@angular/common/http";
 import { ClaimAuditLogItem, ClaimItem, ClaimStatusWorkflowResponse, CreateClaimPayload, UpdateClaimPayload } from "../../features/claims/domain/claim.models";
 
@@ -16,9 +16,12 @@ interface ClaimAuditLogListResponse {
 
 @Injectable({ providedIn: "root" })
 export class ClaimsService {
+  private readonly http = inject(HttpClient);
+
   private readonly baseUrl = "/api/claims";
 
-  constructor(private readonly http: HttpClient) {}
+
+  constructor() {}
 
   list(sort?: Array<{ field: string; direction: "asc" | "desc" }>) {
     let params = new HttpParams();

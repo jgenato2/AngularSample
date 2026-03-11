@@ -53,9 +53,11 @@
             />
           </div>
         </div>
-        <p class="hint" *ngIf="data.mode === 'edit'">
+        @if (data.mode === 'edit') {
+        <p class="hint">
           Leave password empty to keep it unchanged.
         </p>
+        }
       </form>
       <div class="modal-footer">
         <button

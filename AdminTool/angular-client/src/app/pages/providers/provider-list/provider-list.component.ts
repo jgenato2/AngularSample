@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnDestroy, OnInit } from "@angular/core";
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from "@angular/core";
 import { CommonModule, DatePipe } from "@angular/common";
 import { HttpErrorResponse } from "@angular/common/http";
 import { NavigationEnd, Router } from "@angular/router";
@@ -18,6 +18,12 @@ import { ProviderItem, ProvidersService } from "../providers.service";
   styleUrl: "./provider-list.component.scss",
 })
 export class ProviderListComponent implements OnInit, OnDestroy {
+  private readonly providersService = inject(ProvidersService);
+  readonly auth = inject(AuthService);
+  private readonly router = inject(Router);
+  private readonly cdr = inject(ChangeDetectorRef);
+  readonly datePipe = inject(DatePipe);
+
   providers: ProviderItem[] = [];
   gridSearchQuery = "";
   gridSort: GridSortState[] = [];
@@ -47,13 +53,8 @@ export class ProviderListComponent implements OnInit, OnDestroy {
     resizable: true,
   };
 
-  constructor(
-    private readonly providersService: ProvidersService,
-    public readonly auth: AuthService,
-    private readonly router: Router,
-    private readonly cdr: ChangeDetectorRef,
-    public readonly datePipe: DatePipe,
-  ) {}
+
+  constructor() {}
 
   ngOnInit() {
     this.load();

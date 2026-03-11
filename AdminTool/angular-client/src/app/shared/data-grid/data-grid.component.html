@@ -18,12 +18,13 @@
     (rowClicked)="rowClicked.emit($event)"
     (cellClicked)="cellClicked.emit($event)"
     (gridReady)="onGridReady($event)"
-    (paginationChanged)="onPaginationChanged($event)"
+    (paginationChanged)="onPaginationChanged()"
     (sortChanged)="onAgSortChanged($event)"
   ></ag-grid-angular>
 </div>
 
-<div class="ag-paging-panel custom-paging" *ngIf="shouldPaginate" role="navigation" aria-label="Pagination">
+@if (shouldPaginate) {
+<div class="ag-paging-panel custom-paging" role="navigation" aria-label="Pagination">
   <span class="ag-paging-row-summary-panel">
     <span class="ag-paging-row-summary-panel-number">{{ startRow }}</span>
     <span> to </span>
@@ -56,3 +57,4 @@
     <button class="ag-button ag-paging-button" type="button" (click)="goToLastPage()" [disabled]="!canGoNext" aria-label="Last page">»</button>
   </span>
 </div>
+}

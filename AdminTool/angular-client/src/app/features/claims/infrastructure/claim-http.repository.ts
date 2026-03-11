@@ -1,10 +1,9 @@
-import { Injectable } from "@angular/core";
+import { Injectable, inject } from "@angular/core";
 import { map } from "rxjs";
 import { ClaimsService } from "../../../pages/claims/claims.service";
 import {
   ClaimAuditLogItem,
   ClaimItem,
-  ClaimStatusWorkflowResponse,
   CreateClaimPayload,
   UpdateClaimPayload,
 } from "../domain/claim.models";
@@ -12,7 +11,10 @@ import { ClaimRepository } from "../domain/claim.repository";
 
 @Injectable({ providedIn: "root" })
 export class ClaimHttpRepository implements ClaimRepository {
-  constructor(private readonly claimsService: ClaimsService) {}
+  private readonly claimsService = inject(ClaimsService);
+
+
+  constructor() {}
 
   list(sort?: Array<{ field: string; direction: "asc" | "desc" }>) {
     return this.claimsService.list(sort).pipe(map((response) => response.items ?? []));

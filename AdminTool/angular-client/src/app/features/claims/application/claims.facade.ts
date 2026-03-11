@@ -1,4 +1,4 @@
-import { Injectable } from "@angular/core";
+import { Injectable, inject } from "@angular/core";
 import { CreateClaimCommand } from "./commands/create-claim.command";
 import { DeleteClaimCommand } from "./commands/delete-claim.command";
 import { UpdateClaimCommand } from "./commands/update-claim.command";
@@ -11,16 +11,17 @@ import { CreateClaimPayload, UpdateClaimPayload } from "../domain/claim.models";
 
 @Injectable({ providedIn: "root" })
 export class ClaimsFacade {
-  constructor(
-    private readonly listClaimsQuery: ListClaimsQuery,
-    private readonly getClaimByIdQuery: GetClaimByIdQuery,
-    private readonly getClaimStatusWorkflowQuery: GetClaimStatusWorkflowQuery,
-    private readonly getClaimAuditLogsQuery: GetClaimAuditLogsQuery,
-    private readonly getClaimsListAccessAuditLogsQuery: GetClaimsListAccessAuditLogsQuery,
-    private readonly createClaimCommand: CreateClaimCommand,
-    private readonly updateClaimCommand: UpdateClaimCommand,
-    private readonly deleteClaimCommand: DeleteClaimCommand
-  ) {}
+  private readonly listClaimsQuery = inject(ListClaimsQuery);
+  private readonly getClaimByIdQuery = inject(GetClaimByIdQuery);
+  private readonly getClaimStatusWorkflowQuery = inject(GetClaimStatusWorkflowQuery);
+  private readonly getClaimAuditLogsQuery = inject(GetClaimAuditLogsQuery);
+  private readonly getClaimsListAccessAuditLogsQuery = inject(GetClaimsListAccessAuditLogsQuery);
+  private readonly createClaimCommand = inject(CreateClaimCommand);
+  private readonly updateClaimCommand = inject(UpdateClaimCommand);
+  private readonly deleteClaimCommand = inject(DeleteClaimCommand);
+
+
+  constructor() {}
 
   list(sort?: Array<{ field: string; direction: "asc" | "desc" }>) {
     return this.listClaimsQuery.execute(sort);

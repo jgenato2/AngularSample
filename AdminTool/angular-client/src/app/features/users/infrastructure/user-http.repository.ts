@@ -1,4 +1,4 @@
-import { Injectable } from "@angular/core";
+import { Injectable, inject } from "@angular/core";
 import { map } from "rxjs";
 import { UsersService } from "../../../pages/users/users.service";
 import { CreateUserPayload, UpdateUserPayload, UserAuditLogItem, UserItem } from "../domain/user.models";
@@ -6,7 +6,10 @@ import { UserRepository } from "../domain/user.repository";
 
 @Injectable({ providedIn: "root" })
 export class UserHttpRepository implements UserRepository {
-  constructor(private readonly usersService: UsersService) {}
+  private readonly usersService = inject(UsersService);
+
+
+  constructor() {}
 
   list(sort?: Array<{ field: string; direction: "asc" | "desc" }>, query?: string) {
     return this.usersService.list(sort, query).pipe(map((response) => response.items ?? []));
