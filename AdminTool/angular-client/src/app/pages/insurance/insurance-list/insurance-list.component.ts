@@ -11,6 +11,7 @@ import { InsuranceFacade } from "../../../features/insurance/application/insuran
 import { InsurancePlanItem } from "../../../features/insurance/domain/insurance.models";
 import { DataGridComponent, GridSortState } from "../../../shared/data-grid/data-grid.component";
 import { SearchQueryComponent } from "../../../shared/search-query/search-query.component";
+import { StateLayoutComponent } from '../../../shared/state-layout/state-layout.component';
 import { SummaryStatItem, SummaryStatsComponent } from "../../../shared/summary-stats/summary-stats.component";
 import { ProvidersService } from "../../providers/providers.service";
 
@@ -19,7 +20,7 @@ const DEFAULT_CREATE_STATUS_OPTIONS = ["New"];
 @Component({
   selector: "app-insurance-list",
   standalone: true,
-  imports: [CommonModule, FormsModule, DataGridComponent, SearchQueryComponent, SummaryStatsComponent],
+  imports: [CommonModule, FormsModule, DataGridComponent, SearchQueryComponent, SummaryStatsComponent, StateLayoutComponent],
   providers: [CurrencyPipe, DatePipe],
   templateUrl: "./insurance-list.component.html",
   styleUrl: "./insurance-list.component.scss",

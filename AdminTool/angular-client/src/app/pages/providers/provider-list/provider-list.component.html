@@ -29,23 +29,17 @@
 
   <div class="card grid-card">
     <div class="card-body grid-shell">
-      <app-data-grid
-        [rows]="providers"
-        [columnDefs]="columnDefs"
-        [defaultColDef]="defaultColDef"
-        [showSearch]="false"
-        [externalSearchQuery]="gridSearchQuery"
-        (gridSortChange)="onGridSortChanged($event)"
-        (rowClicked)="openInsuranceForProvider($event.data)"
-      ></app-data-grid>
-      @if (loading) {
-      <div class="loading">
-        <div class="spinner-border text-primary" role="status">
-          <span class="visually-hidden">Loading...</span>
-        </div>
-        <span>Loading providers...</span>
-      </div>
-      }
+      <app-state-layout [loading]="loading" [error]="alertMessage" [empty]="!providers.length && !loading && !alertMessage">
+        <app-data-grid
+          [rows]="providers"
+          [columnDefs]="columnDefs"
+          [defaultColDef]="defaultColDef"
+          [showSearch]="false"
+          [externalSearchQuery]="gridSearchQuery"
+          (gridSortChange)="onGridSortChanged($event)"
+          (rowClicked)="openInsuranceForProvider($event.data)"
+        ></app-data-grid>
+      </app-state-layout>
     </div>
   </div>
 </section>

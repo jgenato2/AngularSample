@@ -9,62 +9,42 @@
     </app-detail-actions-bar>
   </header>
 
-  @if (alertMessage) {
-  <div
-    class="alert"
-    [ngClass]="'alert-' + alertType"
-    animate.enter="alert-enter"
-    animate.leave="alert-leave"
-    role="alert"
-  >
-    {{ alertMessage }}
-  </div>
-  }
-
-  @if (loading) {
-  <div class="loading">
-    <div class="spinner-border text-primary" role="status">
-      <span class="visually-hidden">Loading...</span>
-    </div>
-    <span>Loading provider details...</span>
-  </div>
-  }
-
-  @if (!loading && provider) {
-    @let item = provider;
-    <app-summary-stats [items]="summaryItems"></app-summary-stats>
-
-    <div class="card detail-card">
-      <div class="detail-grid">
-        <div>
-          <p class="detail-label">Earliest effective date</p>
-          <p class="detail-value">{{ datePipe.transform(item.earliestEffectiveDate, "MMM d, y") }}</p>
-        </div>
-        <div>
-          <p class="detail-label">Latest effective date</p>
-          <p class="detail-value">{{ datePipe.transform(item.latestEffectiveDate, "MMM d, y") }}</p>
-        </div>
-        <div>
-          <p class="detail-label">Avg monthly premium</p>
-          <p class="detail-value">{{ item.averageMonthlyPremium | currency: 'USD':'symbol':'1.2-2' }}</p>
-        </div>
-        <div>
-          <p class="detail-label">Avg deductible</p>
-          <p class="detail-value">{{ item.averageDeductible | currency: 'USD':'symbol':'1.0-0' }}</p>
-        </div>
-        <div>
-          <p class="detail-label">Avg out-of-pocket max</p>
-          <p class="detail-value">{{ item.averageOutOfPocketMax | currency: 'USD':'symbol':'1.0-0' }}</p>
+  <app-state-layout [loading]="loading" [error]="alertMessage" [empty]="!provider && !loading && !alertMessage">
+    @if (provider) {
+      <app-summary-stats [items]="summaryItems"></app-summary-stats>
+      <div class="card detail-card">
+        <div class="detail-grid">
+          <div>
+            <p class="detail-label">Earliest effective date</p>
+            <p class="detail-value">{{ datePipe.transform(provider.earliestEffectiveDate, 'MMM d, y') }}</p>
+          </div>
+          <div>
+            <p class="detail-label">Latest effective date</p>
+            <p class="detail-value">{{ datePipe.transform(provider.latestEffectiveDate, 'MMM d, y') }}</p>
+          </div>
+          <div>
+            <p class="detail-label">Avg monthly premium</p>
+            <p class="detail-value">{{ provider.averageMonthlyPremium | currency: 'USD':'symbol':'1.2-2' }}</p>
+          </div>
+          <div>
+            <p class="detail-label">Avg deductible</p>
+            <p class="detail-value">{{ provider.averageDeductible | currency: 'USD':'symbol':'1.0-0' }}</p>
+          </div>
+          <div>
+            <p class="detail-label">Avg out-of-pocket max</p>
+            <p class="detail-value">{{ provider.averageOutOfPocketMax | currency: 'USD':'symbol':'1.0-0' }}</p>
+          </div>
         </div>
       </div>
-    </div>
+    }
+  </app-state-layout>
 
     <div class="detail-columns">
       <div class="card detail-card">
         <h2>Plan Types</h2>
-        @if (item.planTypes.length) {
+        @if (provider && provider.planTypes && provider.planTypes.length) {
           <div class="chip-list">
-            @for (planType of item.planTypes; track planType) {
+            @for (planType of provider.planTypes; track planType) {
               <span class="chip">{{ planType }}</span>
             }
           </div>
@@ -98,9 +78,9 @@
       ></textarea>
 
       <h3 class="notes-heading">Recent plan notes</h3>
-      @if (item.recentNotes.length) {
+      @if (provider && provider.recentNotes && provider.recentNotes.length) {
         <ul class="list">
-          @for (note of item.recentNotes; track note) {
+          @for (note of provider.recentNotes; track note) {
             <li>{{ note }}</li>
           }
         </ul>
@@ -136,5 +116,4 @@
             }
       }
     </div>
-  }
 </section>

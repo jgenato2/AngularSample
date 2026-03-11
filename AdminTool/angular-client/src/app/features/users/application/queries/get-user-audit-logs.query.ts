@@ -5,8 +5,6 @@ import { USER_REPOSITORY, UserRepository } from "../../domain/user.repository";
 export class GetUserAuditLogsQuery {
   private readonly userRepository = inject<UserRepository>(USER_REPOSITORY);
 
-  /** Inserted by Angular inject() migration for backwards compatibility */
-
   constructor() {}
 
   execute(id: string) {

@@ -1,63 +1,28 @@
-@if (loading) {
-
-<div class="loading">
-  <div class="spinner-border text-primary">
-    <span class="visually-hidden">Loading...</span>
-  </div>
-  <span>Loading user...</span>
-</div>
-
-} @else if (!user) {
-
-<section class="page">
-  <div class="card detail-card">
-    <p>User not available.</p>
-  </div>
-</section>
-
-} @else {
-
-<section class="page">
-
-  <header class="page-header">
-    <div>
-      <p class="eyebrow">User detail</p>
-      <h1>{{ user.name }}</h1>
-      <p class="sub">{{ user.email }}</p>
-    </div>
-
-    <app-detail-actions-bar (back)="goBack()">
-
-      @if (canEdit) {
-      <button
-        class="btn btn-primary"
-        (click)="openEdit()"
-        data-bs-toggle="modal"
-        [attr.data-bs-target]="'#' + editModalId">
-        Edit
-      </button>
-      }
-
-      @if (auth.isAdmin()) {
-      <button class="btn btn-danger" (click)="remove()">Delete</button>
-      }
-
-    </app-detail-actions-bar>
-  </header>
-
-  @if (alertMessage) {
-  <div
-    class="alert"
-    [ngClass]="'alert-' + alertType"
-    animate.enter="alert-enter"
-    animate.leave="alert-leave">
-
-    {{ alertMessage }}
-
-  </div>
-  }
-
-  <div class="card detail-card">
+<app-state-layout [loading]="loading" [error]="alertMessage" [empty]="!user && !loading && !alertMessage">
+  @if (user) {
+    <section class="page">
+    <header class="page-header">
+      <div>
+        <p class="eyebrow">User detail</p>
+        <h1>{{ user.name }}</h1>
+        <p class="sub">{{ user.email }}</p>
+      </div>
+      <app-detail-actions-bar (back)="goBack()">
+        @if (canEdit) {
+        <button
+          class="btn btn-primary"
+          (click)="openEdit()"
+          data-bs-toggle="modal"
+          [attr.data-bs-target]="'#' + editModalId">
+          Edit
+        </button>
+        }
+        @if (auth.isAdmin()) {
+        <button class="btn btn-danger" (click)="remove()">Delete</button>
+        }
+      </app-detail-actions-bar>
+    </header>
+    <div class="card detail-card">
     <div class="info">
 
       <div>
@@ -113,9 +78,9 @@
 
   </div>
 
-</section>
+    </section>
+  }
 
-}
 
 <app-user-form-dialog
   [modalId]="editModalId"

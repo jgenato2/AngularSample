@@ -7,12 +7,13 @@ import { filter, finalize, Subscription } from "rxjs";
 import { AuthService } from "../../../core/auth.service";
 import { DataGridComponent, GridSortState } from "../../../shared/data-grid/data-grid.component";
 import { SearchQueryComponent } from "../../../shared/search-query/search-query.component";
+import { StateLayoutComponent } from '../../../shared/state-layout/state-layout.component';
 import { ProviderItem, ProvidersService } from "../providers.service";
 
 @Component({
   selector: "app-provider-list",
   standalone: true,
-  imports: [CommonModule, DataGridComponent, SearchQueryComponent],
+  imports: [CommonModule, DataGridComponent, SearchQueryComponent, StateLayoutComponent],
   providers: [DatePipe],
   templateUrl: "./provider-list.component.html",
   styleUrl: "./provider-list.component.scss",

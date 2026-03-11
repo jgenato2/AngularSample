@@ -1,196 +1,146 @@
-@if (loading) {
-<div class="loading">
-  <div class="spinner-border text-primary" role="status">
-    <span class="visually-hidden">Loading...</span>
-  </div>
-  <span>Loading claim...</span>
-</div>
-} @else if (!claim) {
-<section class="page">
-  <div class="card detail-card">
-    <p>Claim not available.</p>
-  </div>
-</section>
-} @else {
-
-<section class="page">
-
-  <header class="page-header">
-    <div>
-      <p class="eyebrow">Claims detail</p>
-      <h1>{{ claim.claimId }}</h1>
-      <p class="sub">{{ claim.memberName }} · {{ claim.provider }}</p>
-    </div>
-
-    <app-detail-actions-bar (back)="goBack()">
-      @if (canManage) {
-      <button class="btn btn-danger" (click)="remove()">Delete</button>
-      }
-    </app-detail-actions-bar>
-  </header>
-
-  @if (alertMessage) {
-  <div class="alert" [ngClass]="'alert-' + alertType" animate.enter="alert-enter" animate.leave="alert-leave"
-    role="alert">
-    {{ alertMessage }}
-  </div>
-  }
-
-  <div class="tab-strip" role="tablist">
-    <button class="tab-btn" type="button" [class.active]="activeTab === 'details'" (click)="switchTab('details')">
-      Claim Details
-    </button>
-
-    <button class="tab-btn" type="button" [class.active]="activeTab === 'audit'" (click)="switchTab('audit')">
-      Audit Log
-    </button>
-  </div>
-
-  @if (activeTab === 'details') {
-
-  <div class="card detail-card">
-    <form class="form-grid" (ngSubmit)="save()" #detailForm="ngForm">
-
+<app-state-layout [loading]="loading" [error]="alertMessage" [empty]="!claim && !loading && !alertMessage">
+  @if (claim) {
+  <section class="page">
+    <header class="page-header">
       <div>
-        <label class="form-label">Policy ID</label>
-        <input class="form-control" list="policy-id-options" name="policyId" [(ngModel)]="formModel.policyId"
-          [disabled]="!canManage" required />
-
-        @if (formModel.policyId) {
-        <a class="policy-link" [routerLink]="['/insurance', formModel.policyId]">
-          Open insurance detail
-        </a>
+        <p class="eyebrow">Claims detail</p>
+        <h1>{{ claim.claimId }}</h1>
+        <p class="sub">{{ claim.memberName }} · {{ claim.provider }}</p>
+      </div>
+      <app-detail-actions-bar (back)="goBack()">
+        @if (canManage) {
+        <button class="btn btn-danger" (click)="remove()">Delete</button>
         }
-      </div>
-
-      <div>
+      </app-detail-actions-bar>
+    </header>
+    <div class="tab-strip" role="tablist">
+      <button class="tab-btn" type="button" [class.active]="activeTab === 'details'" (click)="switchTab('details')">
+        Claim Details
+      </button>
+      <button class="tab-btn" type="button" [class.active]="activeTab === 'audit'" (click)="switchTab('audit')">
+        Audit Log
+      </button>
+    </div>
+    @if (activeTab === 'details') {
+    <div class="card detail-card">
+      <form class="form-grid" (ngSubmit)="save()" #detailForm="ngForm">
+        <div>
+          <label class="form-label">Policy ID</label>
+          <input class="form-control" list="policy-id-options" name="policyId" [(ngModel)]="formModel.policyId"
+            [disabled]="!canManage" required />
+          @if (formModel.policyId) {
+          <a class="policy-link" [routerLink]="['/insurance', formModel.policyId]">
+            Open insurance detail
+          </a>
+          }
+        </div>
         <label class="form-label">Member Name</label>
-        <input class="form-control" name="memberName" [(ngModel)]="formModel.memberName" [disabled]="!canManage"
+        <input class="form-control" name="memberName" [(ngModel)]="formModel.memberName" [disabled]!="!canManage"
           required />
-      </div>
-
-      <div>
         <label class="form-label">Provider</label>
         <input class="form-control" name="provider" [(ngModel)]="formModel.provider" [disabled]="!canManage" required />
-      </div>
 
-      <div>
-        <label class="form-label">Claim Type</label>
-        <select class="form-select status-select" name="claimType" [(ngModel)]="formModel.claimType"
-          [disabled]="!canManage" required>
+        <div>
+          <label class="form-label">Claim Type</label>
+          <select class="form-select status-select" name="claimType" [(ngModel)]="formModel.claimType"
+            [disabled]="!canManage" required>
 
-          <option value="Outpatient">Outpatient</option>
-          <option value="Inpatient">Inpatient</option>
-          <option value="Emergency">Emergency</option>
-          <option value="Pharmacy">Pharmacy</option>
+            <option value="Outpatient">Outpatient</option>
+            <option value="Inpatient">Inpatient</option>
+            <option value="Emergency">Emergency</option>
+            <option value="Pharmacy">Pharmacy</option>
 
-        </select>
-      </div>
-
-      <div>
-        <label class="form-label">Service Category</label>
-        <input class="form-control" name="serviceCategory" [(ngModel)]="formModel.serviceCategory"
-          [disabled]="!canManage" required />
-      </div>
-
-      <div>
-        <label class="form-label">Diagnosis Code</label>
-        <input class="form-control" name="diagnosisCode" [(ngModel)]="formModel.diagnosisCode" [disabled]="!canManage"
-          required />
-      </div>
-
-      <div>
-        <label class="form-label">Submitted At</label>
-        <input type="date" class="form-control" name="submittedAt" [(ngModel)]="formModel.submittedAt"
-          [disabled]="!canManage" required />
-      </div>
-
-      <div>
-        <label class="form-label">Service Date</label>
-        <input type="date" class="form-control" name="serviceDate" [(ngModel)]="formModel.serviceDate"
-          [disabled]="!canManage" required />
-      </div>
-
-      <div>
-        <label class="form-label">Claim Amount</label>
-        <div class="input-group money-input-group">
-          <span class="input-group-text">$</span>
-
-          <input type="number" class="form-control money-input" name="claimAmount" [(ngModel)]="formModel.claimAmount"
-            min="0" step="0.01" [disabled]="!canManage" required />
+          </select>
         </div>
-      </div>
 
-      <div>
-        <label class="form-label">Status</label>
+        <div>
+          <label class="form-label">Service Category</label>
+          <input class="form-control" name="serviceCategory" [(ngModel)]="formModel.serviceCategory"
+            [disabled]="!canManage" required />
+        </div>
 
-        <button type="button" class="btn status-trigger" [disabled]="!canManage || saving" (click)="openStatusModal()"
-          [ngClass]="statusTagClass(formModel.status)">
+        <div>
+          <label class="form-label">Diagnosis Code</label>
+          <input class="form-control" name="diagnosisCode" [(ngModel)]="formModel.diagnosisCode" [disabled]="!canManage"
+            required />
+        </div>
 
-          {{ formModel.status || 'Select status' }}
+        <div>
+          <label class="form-label">Submitted At</label>
+          <input type="date" class="form-control" name="submittedAt" [(ngModel)]="formModel.submittedAt"
+            [disabled]="!canManage" required />
+        </div>
 
-        </button>
-      </div>
+        <div>
+          <label class="form-label">Service Date</label>
+          <input type="date" class="form-control" name="serviceDate" [(ngModel)]="formModel.serviceDate"
+            [disabled]="!canManage" required />
+        </div>
 
-      <div class="full-row">
-        <label class="form-label">Notes</label>
-        <textarea class="form-control" name="notes" rows="3" [(ngModel)]="formModel.notes" [disabled]="!canManage">
+        <div>
+          <label class="form-label">Claim Amount</label>
+          <div class="input-group money-input-group">
+            <span class="input-group-text">$</span>
+
+            <input type="number" class="form-control money-input" name="claimAmount" [(ngModel)]="formModel.claimAmount"
+              min="0" step="0.01" [disabled]="!canManage" required />
+          </div>
+        </div>
+
+        <div>
+          <label class="form-label">Status</label>
+
+          <button type="button" class="btn status-trigger" [disabled]="!canManage || saving" (click)="openStatusModal()"
+            [ngClass]="statusTagClass(formModel.status)">
+
+            {{ formModel.status || 'Select status' }}
+
+          </button>
+        </div>
+
+        <div class="full-row">
+          <label class="form-label">Notes</label>
+          <textarea class="form-control" name="notes" rows="3" [(ngModel)]="formModel.notes" [disabled]="!canManage">
         </textarea>
-      </div>
+        </div>
 
-      @if (canManage) {
-      <div class="full-row actions">
-        <button class="btn btn-primary" type="submit" [disabled]="detailForm.invalid || saving">
+        @if (canManage) {
+        <div class="full-row actions">
+          <button class="btn btn-primary" type="submit" [disabled]="detailForm.invalid || saving">
 
-          {{ saving ? 'Saving...' : 'Save' }}
+            {{ saving ? 'Saving...' : 'Save' }}
 
-        </button>
-      </div>
-      }
-
-    </form>
-  </div>
-
-  }
-
-  @if (activeTab === 'audit') {
-  <app-audit-log-section [items]="auditLogs" [loading]="auditLoading">
-  </app-audit-log-section>
-  }
-
-  @if (showStatusModal) {
-
-  <div class="status-modal-backdrop" animate.enter="modal-backdrop-enter" animate.leave="modal-backdrop-leave"
-    (click)="closeStatusModal()">
-  </div>
-
-  <section class="status-modal" animate.enter="modal-panel-enter" animate.leave="modal-panel-leave">
-
-    <header class="status-modal-header">
-      <h2>Select Status</h2>
-
-      <button class="btn-close" (click)="closeStatusModal()" [disabled]="saving">
-      </button>
-    </header>
-
-    <div class="status-modal-body">
-
-      @for (status of availableStatusOptions; track status) {
-
-      <button class="btn status-choice" [ngClass]="statusTagClass(status)" [disabled]="saving"
-        (click)="selectStatus(status)">
-
-        {{ status }}
-
-      </button>
-
-      }
-
+          </button>
+        </div>
+        }
+      </form>
     </div>
+    @if (isAuditTab()) {
+      <app-audit-log-section [items]="auditLogs" [loading]="auditLoading">
+      </app-audit-log-section>
+    }
+    @if (showStatusModal) {
+    <div class="status-modal-backdrop" animate.enter="modal-backdrop-enter" animate.leave="modal-backdrop-leave"
+      (click)="closeStatusModal()">
+    </div>
+    <section class="status-modal" animate.enter="modal-panel-enter" animate.leave="modal-panel-leave">
+      <header class="status-modal-header">
+        <h2>Select Status</h2>
+        <button class="btn-close" (click)="closeStatusModal()" [disabled]="saving">
+        </button>
+      </header>
+      <div class="status-modal-body">
+        @for (status of availableStatusOptions; track status) {
+        <button class="btn status-choice" [ngClass]="statusTagClass(status)" [disabled]="saving"
+          (click)="selectStatus(status)">
+          {{ status }}
+        </button>
+        }
+      </div>
+    </section>
+    }
+    }
 
   </section>
-
   }
-
-</section>
-}
+</app-state-layout>

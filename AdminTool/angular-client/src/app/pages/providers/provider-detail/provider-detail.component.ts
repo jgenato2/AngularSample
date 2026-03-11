@@ -7,12 +7,13 @@ import { DetailActionsBarComponent } from '../../../shared/detail-actions/detail
 import { finalize, Subscription, timeout } from "rxjs";
 import { AuthService } from "../../../core/auth.service";
 import { SummaryStatItem, SummaryStatsComponent } from "../../../shared/summary-stats/summary-stats.component";
+import { StateLayoutComponent } from '../../../shared/state-layout/state-layout.component';
 import { ProviderDetailItem, ProvidersService } from "../providers.service";
 
 @Component({
   selector: "app-provider-detail",
   standalone: true,
-  imports: [CommonModule, FormsModule, SummaryStatsComponent, DetailActionsBarComponent],
+  imports: [CommonModule, FormsModule, SummaryStatsComponent, DetailActionsBarComponent, StateLayoutComponent],
   providers: [DatePipe],
   templateUrl: "./provider-detail.component.html",
   styleUrls: ["./provider-detail.component.scss"],

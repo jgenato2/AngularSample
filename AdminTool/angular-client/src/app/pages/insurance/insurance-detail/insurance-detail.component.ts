@@ -1,4 +1,5 @@
 import { DetailActionsBarComponent } from '../../../shared/detail-actions/detail-actions-bar.component';
+import { StateLayoutComponent } from '../../../shared/state-layout/state-layout.component';
 import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from "@angular/core";
 import { CommonModule, Location } from "@angular/common";
 import { FormsModule } from "@angular/forms";
@@ -49,6 +50,7 @@ const DEFAULT_STATUS_WORKFLOW: Record<string, string[]> = {
     AlgorithmNotesCardComponent,
     AuditLogSectionComponent,
     DetailActionsBarComponent,
+    StateLayoutComponent,
   ],
   templateUrl: "./insurance-detail.component.html",
   styleUrls: ["./insurance-detail.component.scss"],
@@ -89,6 +91,10 @@ export class InsuranceDetailComponent implements OnInit, OnDestroy {
   alertMessage: string | null = null;
   alertType: "danger" | "success" = "danger";
   private alertTimerId: ReturnType<typeof setTimeout> | null = null;
+
+  public isAuditTab() {
+    return this.activeTab === 'audit';
+  }
 
 
   constructor() {}

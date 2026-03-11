@@ -1,0 +1,34 @@
+@if (loading) {
+  <div class="state-layout-loading">
+    <ng-content select="[loading]"></ng-content>
+    @if (!hasCustomLoading) {
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    }
+  </div>
+} @else {
+  @if (error) {
+    <div class="state-layout-error">
+      <ng-content select="[error]"></ng-content>
+      @if (!hasCustomError) {
+        <div class="alert alert-danger" role="alert">
+          {{ error }}
+        </div>
+      }
+    </div>
+  } @else {
+    @if (empty) {
+      <div class="state-layout-empty">
+        <ng-content select="[empty]"></ng-content>
+        @if (!hasCustomEmpty) {
+          <div class="alert alert-info" role="alert">
+            No data available.
+          </div>
+        }
+      </div>
+    } @else {
+      <ng-content></ng-content>
+    }
+  }
+}

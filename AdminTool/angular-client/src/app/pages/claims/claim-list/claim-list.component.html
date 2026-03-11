@@ -46,18 +46,11 @@
   <!-- GRID -->
   <div class="card grid-card">
     <div class="card-body grid-shell">
-      <app-data-grid [rows]="displayedClaims" [columnDefs]="columnDefs" [defaultColDef]="defaultColDef"
-        [showSearch]="false" [externalSearchQuery]="gridSearchQuery" (cellClicked)="onCellClicked($event)"
-        (gridSortChange)="onGridSortChanged($event)" (rowClicked)="openDetail($event.data)"></app-data-grid>
-
-      @if (loading) {
-      <div class="loading">
-        <div class="spinner-border text-primary" role="status">
-          <span class="visually-hidden">Loading...</span>
-        </div>
-        <span>Loading claims...</span>
-      </div>
-      }
+      <app-state-layout [loading]="loading" [error]="alertMessage" [empty]="!displayedClaims.length && !loading && !alertMessage">
+        <app-data-grid [rows]="displayedClaims" [columnDefs]="columnDefs" [defaultColDef]="defaultColDef"
+          [showSearch]="false" [externalSearchQuery]="gridSearchQuery" (cellClicked)="onCellClicked($event)"
+          (gridSortChange)="onGridSortChanged($event)" (rowClicked)="openDetail($event.data)"></app-data-grid>
+      </app-state-layout>
     </div>
   </div>
 

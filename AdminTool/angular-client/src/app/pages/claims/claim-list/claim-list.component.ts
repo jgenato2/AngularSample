@@ -12,13 +12,14 @@ import { InsuranceFacade } from "../../../features/insurance/application/insuran
 import { InsurancePlanItem } from "../../../features/insurance/domain/insurance.models";
 import { DataGridComponent, GridSortState } from "../../../shared/data-grid/data-grid.component";
 import { SearchQueryComponent } from "../../../shared/search-query/search-query.component";
+import { StateLayoutComponent } from '../../../shared/state-layout/state-layout.component';
 
 const DEFAULT_CREATE_STATUS_OPTIONS = ["Submitted"];
 
 @Component({
   selector: "app-claim-list",
   standalone: true,
-  imports: [CommonModule, FormsModule, DataGridComponent, SearchQueryComponent],
+  imports: [CommonModule, FormsModule, DataGridComponent, SearchQueryComponent, StateLayoutComponent],
   providers: [CurrencyPipe, DatePipe],
   templateUrl: "./claim-list.component.html",
   styleUrl: "./claim-list.component.scss",

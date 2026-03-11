@@ -11,6 +11,7 @@ import { AuditLogListItem } from "../../insurance/insurance-detail/components/au
 import { InsuranceFacade } from "../../../features/insurance/application/insurance.facade";
 import { AuditLogSectionComponent } from "../../insurance/insurance-detail/components/audit-log-section/audit-log-section.component";
 import { DetailActionsBarComponent } from '../../../shared/detail-actions/detail-actions-bar.component';
+import { StateLayoutComponent } from '../../../shared/state-layout/state-layout.component';
 
 const DEFAULT_STATUS_WORKFLOW: Record<string, string[]> = {
   Submitted: ["Under Review", "Rejected"],
@@ -22,7 +23,7 @@ const DEFAULT_STATUS_WORKFLOW: Record<string, string[]> = {
 @Component({
   selector: "app-claim-detail",
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, AuditLogSectionComponent, DetailActionsBarComponent],
+  imports: [CommonModule, FormsModule, RouterLink, AuditLogSectionComponent, DetailActionsBarComponent, StateLayoutComponent],
   providers: [CurrencyPipe, DatePipe],
   templateUrl: "./claim-detail.component.html",
   styleUrls: ["./claim-detail.component.scss"],
@@ -274,6 +275,10 @@ export class ClaimDetailComponent implements OnInit, OnDestroy {
         this.cdr.markForCheck();
       },
     });
+  }
+
+  public isAuditTab() {
+    return this.activeTab === 'audit';
   }
 
   private loadPolicyIdOptions() {

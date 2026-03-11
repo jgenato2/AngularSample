@@ -14,6 +14,7 @@ import {
 } from "../user-form-dialog/user-form-dialog.component";
 import { DataGridComponent } from "../../../shared/data-grid/data-grid.component";
 import { DetailActionsBarComponent } from '../../../shared/detail-actions/detail-actions-bar.component';
+import { StateLayoutComponent } from '../../../shared/state-layout/state-layout.component';
 
 @Component({
   selector: "app-user-detail",
@@ -23,6 +24,7 @@ import { DetailActionsBarComponent } from '../../../shared/detail-actions/detail
     UserFormDialogComponent,
     DataGridComponent,
     DetailActionsBarComponent,
+    StateLayoutComponent,
   ],
   providers: [DatePipe],
   templateUrl: "./user-detail.component.html",

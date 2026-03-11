@@ -10,6 +10,7 @@ import { filter, finalize, Subscription } from "rxjs";
 import { Modal } from "bootstrap";
 import { DataGridComponent, GridSortState } from "../../../shared/data-grid/data-grid.component";
 import { SearchQueryComponent } from "../../../shared/search-query/search-query.component";
+import { StateLayoutComponent } from '../../../shared/state-layout/state-layout.component';
 import {
   UserFormDialogComponent,
   UserDialogData,
@@ -23,6 +24,7 @@ import {
     DataGridComponent,
     SearchQueryComponent,
     UserFormDialogComponent,
+    StateLayoutComponent,
   ],
   providers: [DatePipe],
   templateUrl: "./user-list.component.html",

@@ -1,63 +1,33 @@
-@if (loading) {
-
-<div class="loading">
-  <div class="spinner-border text-primary"></div>
-  <span>Loading insurance plan...</span>
-</div>
-
-} @else if (!plan) {
-
-<section class="page">
-  <div class="card detail-card">
-    <p>Insurance plan not available.</p>
-  </div>
-</section>
-
-} @else {
-
-<section class="page">
-
-  <!-- HEADER -->
-  <header class="page-header">
-    <div>
-      <p class="eyebrow">Insurance detail</p>
-      <h1>{{ plan.policyId }}</h1>
-      <p class="sub">{{ plan.memberName }} · {{ plan.provider }}</p>
+<app-state-layout [loading]="loading" [error]="alertMessage" [empty]="!plan && !loading && !alertMessage">
+  @if (plan) {
+    <section class="page">
+    <!-- HEADER -->
+    <header class="page-header">
+      <div>
+        <p class="eyebrow">Insurance detail</p>
+        <h1>{{ plan.policyId }}</h1>
+        <p class="sub">{{ plan.memberName }} · {{ plan.provider }}</p>
+      </div>
+      <app-detail-actions-bar (back)="goBack()">
+        @if (canManage) {
+        <button class="btn btn-danger" (click)="remove()">Delete</button>
+        }
+      </app-detail-actions-bar>
+    </header>
+    <!-- TABS -->
+    <div class="tab-strip">
+      <button class="tab-btn" [class.active]="activeTab === 'details'" (click)="switchTab('details')">
+        Plan Details
+      </button>
+      <button class="tab-btn" [class.active]="activeTab === 'financial'" (click)="switchTab('financial')">
+        Financial Algorithm
+      </button>
+      <button class="tab-btn" [class.active]="activeTab === 'audit'" (click)="switchTab('audit')">
+        Audit Log
+      </button>
     </div>
-
-    <app-detail-actions-bar (back)="goBack()">
-      @if (canManage) {
-      <button class="btn btn-danger" (click)="remove()">Delete</button>
-      }
-    </app-detail-actions-bar>
-  </header>
-
-  <!-- ALERT -->
-  @if (alertMessage) {
-  <div class="alert" [ngClass]="'alert-' + alertType" animate.enter="alert-enter" animate.leave="alert-leave">
-    {{ alertMessage }}
-  </div>
-  }
-
-  <!-- TABS -->
-  <div class="tab-strip">
-
-    <button class="tab-btn" [class.active]="activeTab === 'details'" (click)="switchTab('details')">
-      Plan Details
-    </button>
-
-    <button class="tab-btn" [class.active]="activeTab === 'financial'" (click)="switchTab('financial')">
-      Financial Algorithm
-    </button>
-
-    <button class="tab-btn" [class.active]="activeTab === 'audit'" (click)="switchTab('audit')">
-      Audit Log
-    </button>
-
-  </div>
-
-  <!-- DETAILS TAB -->
-  @if (activeTab === 'details') {
+    <!-- DETAILS TAB -->
+    @if (activeTab === 'details') {
 
   <div class="snapshot-grid">
     <app-coverage-card [plan]="plan" [memberClaimId]="memberClaimId">
@@ -204,13 +174,10 @@
   }
 
   <!-- AUDIT TAB -->
-  @if (activeTab === 'audit') {
-
-  <app-audit-log-section [items]="auditLogs" [loading]="auditLoading">
-  </app-audit-log-section>
-
+  @if (isAuditTab()) {
+    <app-audit-log-section [items]="auditLogs" [loading]="auditLoading">
+    </app-audit-log-section>
   }
-
-</section>
-
+  </section>
 }
+
