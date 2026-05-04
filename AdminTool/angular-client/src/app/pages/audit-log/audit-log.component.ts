@@ -3,7 +3,7 @@ import { HttpErrorResponse } from "@angular/common/http";
 import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from "@angular/core";
 import { Router } from "@angular/router";
 import { ColDef } from "ag-grid-community";
-import { finalize } from "rxjs";
+import { finalize, Subscription } from "rxjs";
 import { AuthService } from "../../core/auth.service";
 import { AuditLogFacade, AuditLogListItem } from "../../features/audit-log/application/audit-log.facade";
 // import { DataGridComponent } from "../../shared/data-grid/data-grid.component";
@@ -31,6 +31,7 @@ export class AuditLogComponent implements OnInit, OnDestroy {
   alertMessage: string | null = null;
   alertType: "danger" | "success" = "danger";
   private alertTimerId: ReturnType<typeof setTimeout> | null = null;
+  private listRequestSub: Subscription | null = null;
 
   readonly auditColumnDefs: ColDef[] = [
     {
@@ -75,6 +76,7 @@ export class AuditLogComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    this.listRequestSub?.unsubscribe();
     this.clearAlertTimer();
   }
 
@@ -129,8 +131,9 @@ export class AuditLogComponent implements OnInit, OnDestroy {
     }
 
     this.loading = true;
+    this.listRequestSub?.unsubscribe();
 
-    this.auditLogFacade
+    this.listRequestSub = this.auditLogFacade
       .getAllListAccessAuditLogs(requestedPage, this.pageSize)
       .pipe(finalize(() => {
         this.loading = false;

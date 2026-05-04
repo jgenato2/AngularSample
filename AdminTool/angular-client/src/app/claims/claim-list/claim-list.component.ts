@@ -1,10 +1,10 @@
-import { ChangeDetectorRef, Component, OnInit, inject } from "@angular/core";
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from "@angular/core";
 import { CommonModule, CurrencyPipe, DatePipe } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { HttpErrorResponse } from "@angular/common/http";
 import { Router, RouterLink } from "@angular/router";
 import { CellClickedEvent, ColDef } from "ag-grid-community";
-import { finalize } from "rxjs";
+import { finalize, Subscription } from "rxjs";
 import { AuthService } from "../../core/auth.service";
 import { ClaimsFacade } from "../../features/claims/application/claims.facade";
 import { ClaimItem, ClaimStatusWorkflowItem, CreateClaimPayload } from "../../features/claims/domain/claim.models";
@@ -21,7 +21,7 @@ const DEFAULT_CREATE_STATUS_OPTIONS = ["Submitted"];
   templateUrl: "./claim-list.component.html",
   styleUrl: "./claim-list.component.scss",
 })
-export class ClaimListComponent implements OnInit {
+export class ClaimListComponent implements OnInit, OnDestroy {
   private readonly claimsFacade = inject(ClaimsFacade);
   private readonly insuranceFacade = inject(InsuranceFacade);
   readonly auth = inject(AuthService);
@@ -40,6 +40,7 @@ export class ClaimListComponent implements OnInit {
   creating = false;
   alertMessage: string | null = null;
   alertType: "danger" | "success" = "danger";
+  private listRequestSub: Subscription | null = null;
 
   createModel: CreateClaimPayload = {
     claimId: "",
@@ -63,6 +64,10 @@ export class ClaimListComponent implements OnInit {
     this.loadPolicyIdOptions();
     this.loadStatusWorkflow();
     this.load();
+  }
+
+  ngOnDestroy() {
+    this.listRequestSub?.unsubscribe();
   }
 
   
@@ -118,8 +123,9 @@ export class ClaimListComponent implements OnInit {
   load() {
     this.loading = true;
     this.alertMessage = null;
+    this.listRequestSub?.unsubscribe();
 
-    this.claimsFacade
+    this.listRequestSub = this.claimsFacade
       .list()
       .pipe(finalize(() => {
         this.loading = false;

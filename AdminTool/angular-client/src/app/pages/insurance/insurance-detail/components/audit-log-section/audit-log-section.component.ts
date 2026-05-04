@@ -1,5 +1,5 @@
 import { CommonModule, DatePipe } from "@angular/common";
-import { Component, Input, inject } from "@angular/core";
+import { Component, Input, OnChanges, SimpleChanges, inject } from "@angular/core";
 import { DataGridComponent } from "../../../../../shared/data-grid/data-grid.component";
 import { SearchQueryComponent } from "../../../../../shared/search-query/search-query.component";
 
@@ -30,6 +30,16 @@ export class AuditLogSectionComponent {
   @Input() items: AuditLogListItem[] = [];
   @Input() loading = false;
   searchQuery = "";
+  users: Array<{
+    id: string;
+    entityId: string;
+    occurredAtUtc: string;
+    performedBy: string;
+    action: string;
+    field: string;
+    oldValue: string;
+    newValue: string;
+  }> = [];
 
 
   columnDefs = [
@@ -48,21 +58,21 @@ export class AuditLogSectionComponent {
     resizable: true,
   };
 
-
   constructor() {}
 
-  get users() {
-    // Ensure all required fields are present for ag-Grid and map entityId/id if needed
-    return this.items.map((item) => ({
-      id: item.id,
-      entityId: item.entityId,
-      occurredAtUtc: item.occurredAtUtc,
-      performedBy: item.performedBy,
-      action: item.action,
-      field: item.field,
-      oldValue: item.oldValue ?? '-',
-      newValue: item.newValue ?? '-',
-    }));
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes["items"]) {
+      this.users = this.items.map((item) => ({
+        id: item.id,
+        entityId: item.entityId,
+        occurredAtUtc: item.occurredAtUtc,
+        performedBy: item.performedBy,
+        action: item.action,
+        field: item.field,
+        oldValue: item.oldValue ?? "-",
+        newValue: item.newValue ?? "-",
+      }));
+    }
   }
 }
 
