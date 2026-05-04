@@ -9,6 +9,7 @@
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "skipLibCheck": true,
+    "ignoreDeprecations": "5.0",
     "isolatedModules": true,
     "experimentalDecorators": true,
     "importHelpers": true,
