@@ -1,19 +1,18 @@
-import { ApplicationConfig, provideBrowserGlobalErrorListeners } from "@angular/core";
-import { PreloadAllModules, provideRouter, withPreloading } from "@angular/router";
-import { provideHttpClient, withInterceptors } from "@angular/common/http";
-import { routes } from "./app.routes";
-import { tokenInterceptor } from "./core/token.interceptor";
+import { ApplicationConfig } from "@angular/core";
+import { CORE_PROVIDERS } from "./core/core.providers";
 import { CLAIMS_PROVIDERS } from "./features/claims/claims.providers";
 import { INSURANCE_PROVIDERS } from "./features/insurance/insurance.providers";
 import { USERS_PROVIDERS } from "./features/users/users.providers";
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    provideBrowserGlobalErrorListeners(),
-    provideRouter(routes, withPreloading(PreloadAllModules)),
-    provideHttpClient(withInterceptors([tokenInterceptor])),
+    // Core: router, HTTP client, global error listeners
+    ...CORE_PROVIDERS,
+
+    // Feature: DI token bindings (repository abstractions → implementations).
+    // These stay at root because the facades that consume them are providedIn:'root'.
     ...CLAIMS_PROVIDERS,
     ...INSURANCE_PROVIDERS,
     ...USERS_PROVIDERS,
-  ]
+  ],
 };
