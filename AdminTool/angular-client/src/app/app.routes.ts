@@ -1,27 +1,32 @@
 import { Routes } from "@angular/router";
-import { LoginComponent } from "./auth/login/login.component";
-import { UserListComponent } from "./pages/users/user-list/user-list.component";
-import { UserDetailComponent } from "./pages/users/user-detail/user-detail.component";
-import { InsuranceListComponent } from "./pages/insurance/insurance-list/insurance-list.component";
-import { InsuranceDetailComponent } from "./pages/insurance/insurance-detail/insurance-detail.component";
-import { ClaimListComponent } from "./pages/claims/claim-list/claim-list.component";
-import { ClaimDetailComponent } from "./pages/claims/claim-detail/claim-detail.component";
-import { ProviderListComponent } from "./pages/providers/provider-list/provider-list.component";
-import { ProviderDetailComponent } from "./pages/providers/provider-detail/provider-detail.component";
-import { AuditLogComponent } from "./pages/audit-log/audit-log.component";
 import { authGuard } from "./core/auth.guard";
 
 export const routes: Routes = [
   { path: "", pathMatch: "full", redirectTo: "insurance" },
-  { path: "login", component: LoginComponent },
-  { path: "users", component: UserListComponent, canActivate: [authGuard] },
-  { path: "users/:id", component: UserDetailComponent, canActivate: [authGuard] },
-  { path: "insurance", component: InsuranceListComponent, canActivate: [authGuard] },
-  { path: "insurance/:policyId", component: InsuranceDetailComponent, canActivate: [authGuard] },
-  { path: "providers", component: ProviderListComponent, canActivate: [authGuard] },
-  { path: "providers/:provider", component: ProviderDetailComponent, canActivate: [authGuard] },
-  { path: "claims", component: ClaimListComponent, canActivate: [authGuard] },
-  { path: "claims/:claimId", component: ClaimDetailComponent, canActivate: [authGuard] },
-  { path: "audit-logs", component: AuditLogComponent, canActivate: [authGuard] },
+  {
+    path: "login",
+    loadComponent: () => import("./auth/login/login.component").then((m) => m.LoginComponent),
+  },
+  {
+    path: "users",
+    loadChildren: () => import("./pages/users/users.routes").then((m) => m.USERS_ROUTES),
+  },
+  {
+    path: "insurance",
+    loadChildren: () => import("./pages/insurance/insurance.routes").then((m) => m.INSURANCE_ROUTES),
+  },
+  {
+    path: "providers",
+    loadChildren: () => import("./pages/providers/providers.routes").then((m) => m.PROVIDERS_ROUTES),
+  },
+  {
+    path: "claims",
+    loadChildren: () => import("./pages/claims/claims.routes").then((m) => m.CLAIMS_ROUTES),
+  },
+  {
+    path: "audit-logs",
+    loadComponent: () => import("./pages/audit-log/audit-log.component").then((m) => m.AuditLogComponent),
+    canActivate: [authGuard],
+  },
   { path: "**", redirectTo: "insurance" },
 ];

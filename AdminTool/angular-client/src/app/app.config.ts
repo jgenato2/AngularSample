@@ -1,5 +1,5 @@
 import { ApplicationConfig, provideBrowserGlobalErrorListeners } from "@angular/core";
-import { provideRouter } from "@angular/router";
+import { PreloadAllModules, provideRouter, withPreloading } from "@angular/router";
 import { provideHttpClient, withInterceptors } from "@angular/common/http";
 import { routes } from "./app.routes";
 import { tokenInterceptor } from "./core/token.interceptor";
@@ -10,7 +10,7 @@ import { USERS_PROVIDERS } from "./features/users/users.providers";
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
-    provideRouter(routes),
+    provideRouter(routes, withPreloading(PreloadAllModules)),
     provideHttpClient(withInterceptors([tokenInterceptor])),
     ...CLAIMS_PROVIDERS,
     ...INSURANCE_PROVIDERS,
